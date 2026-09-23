@@ -1,0 +1,23 @@
+TYPE "Debouncer Counter Struct"
+VERSION : 0.2
+
+
+  STRUCT 	
+   Bit0_ON_Latch : BOOL ;	//Bit_0 Candidate active
+   Bit1_ON_Latch : BOOL ;	//Bit_1 Candidate active
+   Count_Done_Latch_0 : BOOL ;	//Count done latch InFeed
+   Count_Done_Latch_1 : BOOL ;	//Count done latch Exit
+   Transfer_Active : BOOL ;	//Transfer Active
+   Error : BOOL ;	//Error
+   Spare : BOOL ;	//Spare
+   FirstScan_Done : BOOL ;	//First scan init done
+   Bit0_Entry_mS : INT ;	//Bit_0 elapsed ON time [mS]
+   Bit1_Exit_mS : INT ;	//Bit_1 elapsed ON time [mS]
+   Space_Between : INT ;	//Space Between Packet [mS]
+   InFeed_Window_mS : INT ;	//85% of Packet
+   Exit_Window_mS : INT ;	//Exit Window [mS]
+   Maximum_Count : INT ;	//Maximum Conveyor Count Qty
+   Count_Result : INT ;	//Qty Counted
+  END_STRUCT ;	
+END_TYPE
+
