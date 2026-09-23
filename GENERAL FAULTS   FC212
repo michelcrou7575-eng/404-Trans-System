@@ -1,0 +1,973 @@
+FUNCTION "GENERAL FAULTS" : VOID
+TITLE =General Faults  FC212
+VERSION : 0.0
+
+
+VAR_TEMP
+  INIT_DELAY : BOOL ;	
+  CHECK_PULSE : BOOL ;	
+  ELEVATOR_U42_0 : BOOL ;	//CO ELEVATOR VFD U42.0 - READY    POS.2
+  FAULT_TRIGGERED : BOOL ;	
+  FAULT_REGISTER_1 : BOOL ;	
+  FAULT_REGISTER_2 : BOOL ;	
+  FAULT_REGISTER_3 : BOOL ;	
+  FAULT_REGISTER_4 : BOOL ;	
+  FAULT_REGISTER_5 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Trigger Pulse
+
+      A     "M 6.7"; 
+      FP    "FP 148.5"; 
+      =     #CHECK_PULSE; 
+NETWORK
+TITLE =Fault Status to Registers
+
+      A(    ; 
+      L     "MD 1"; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     #FAULT_TRIGGERED; 
+NETWORK
+TITLE =Fault Reset Push Buttons
+
+      A(    ; 
+      O     "S 0.7"; 
+      O     "S 2.7"; 
+      O     "E 34.1"; 
+      )     ; 
+      =     "M 9.1"; 
+NETWORK
+TITLE =Elevator Brake Release Contactor Monitor - Reset
+
+      A     "M 9.1"; 
+      R     "M 92.5"; // Elevator Fault - Reset
+      R     "M 11.1"; // NOT All Ready - Reset 
+NETWORK
+TITLE =VFDs Init - Delay  8s
+
+      A(    ; 
+      A     "E 14.4"; 
+      A     "E 3.7"; 
+      A     "E 6.5"; 
+      A     "E 7.5"; 
+      A     "E 7.6"; 
+      A     "E 7.7"; 
+      A     "E 8.3"; 
+      A     "E 9.4"; 
+      A     "E 9.5"; 
+      A     "E 13.4"; 
+      A     "E 13.5"; 
+      A     "E 13.6"; 
+      A     "E 13.7"; 
+      A     "E 28.0"; 
+      A     "E 28.1"; 
+      A     "E 28.2"; 
+      A     "E 12.6"; 
+      A     "E 12.7"; 
+      )     ; 
+      =     "M 11.0"; 
+//;
+      AN    "M 11.0"; 
+      S     "M 11.1"; // VFD NOT All Ready !
+//;
+
+      A     "M 11.0"; 
+      AN    "M 0.6"; 
+      A     "M 0.3"; 
+      L     S5T#8S; 
+      SP    "Timer 4"; 
+//;
+      AN    "Timer 4"; 
+      A     "M 0.3"; 
+      =     #INIT_DELAY; 
+NETWORK
+TITLE =Motor Temp Control - Fault Check
+
+      A(    ; 
+      ON    "E 0.3"; 
+      ON    "E 0.4"; 
+      ON    "E 0.5"; 
+      ON    "E 14.0"; 
+      ON    "E 14.1"; 
+      ON    "E 14.2"; 
+      ON    "E 14.3"; 
+      O     "E 14.6"; 
+      O     "E 14.7"; 
+      O     "E 35.0"; 
+      O     "E 35.1"; 
+      O     "E 14.6"; 
+      O     "E 14.7"; 
+      )     ; 
+      A     "M 0.3"; 
+      S     "M 0.6"; 
+//;
+      A     "M 9.1"; 
+      A     "E 0.3"; 
+      A     "E 0.4"; 
+      A     "E 0.5"; 
+      A     "E 14.0"; 
+      A     "E 14.1"; 
+      A     "E 14.2"; 
+      A     "E 14.3"; 
+      AN    "E 35.0"; 
+      AN    "E 35.1"; 
+      AN    "E 14.6"; 
+      AN    "E 14.7"; 
+      R     "M 0.6"; // Fault Reset
+NETWORK
+TITLE =Compressed Air at 5 bar - Fault
+
+      AN    "E 5.3"; 
+      A     "M 0.3"; 
+      S     "M 0.7"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 171.5"; 
+      )     ; 
+      A     "E 5.3"; 
+      R     "M 0.7"; // Fault Reset
+NETWORK
+TITLE =Faults Register 1 - E-Stops & Safety Doors
+
+      A(    ; 
+      L     "MB 1"; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     #FAULT_REGISTER_1; 
+//;
+      A     #FAULT_REGISTER_1; 
+      O     #CHECK_PULSE; 
+      O     "M 17.1"; 
+      O     "M 9.1"; 
+      JNB   FR01; 
+NETWORK
+TITLE =E-Stop  Desk  X120
+
+      AN    "E 0.0"; 
+      A     "S 2.3"; 
+      S     "M 1.0"; 
+//;
+      A(    ; 
+      O     "S 2.0"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 1.0"; 
+NETWORK
+TITLE =E-Stop  Desk  X121
+
+      AN    "E 0.0"; 
+      A     "S 3.0"; 
+      S     "M 1.1"; 
+//;
+      A(    ; 
+      O     "S 2.0"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 1.1"; 
+NETWORK
+TITLE =E-Stop  Elevator Station
+
+      AN    "E 0.0"; 
+      A     "S 5.0"; 
+      S     "M 1.2"; 
+//;
+      A(    ; 
+      O     "S 2.0"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 1.2"; 
+NETWORK
+TITLE =E-Stop  Flipper Station
+
+      AN    "E 0.0"; 
+      A     "S 9.1"; 
+      S     "M 1.3"; 
+//;
+      A(    ; 
+      O     "S 2.0"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 1.3"; 
+NETWORK
+TITLE =Door Open Feeder - Fault
+
+      AN    "E 12.5"; 
+      S     "M 1.5"; 
+//;
+      A(    ; 
+      O     "S 2.7"; 
+      O     "M 0.2"; 
+      O     "M 171.5"; 
+      )     ; 
+      A     "E 12.5"; 
+      R     "M 1.5"; 
+NETWORK
+TITLE =Door Open Elevator - Fault
+
+      AN    "E 4.6"; 
+      S     "M 1.6"; 
+//;
+      A(    ; 
+      O     "S 4.7"; 
+      O     "M 0.2"; 
+      O     "M 171.5"; 
+      )     ; 
+      A     "E 4.6"; 
+      R     "M 1.6"; 
+NETWORK
+TITLE =Door Open Flipper - Fault
+
+      AN    "E 9.0"; 
+      S     "M 1.7"; 
+//;
+      A(    ; 
+      O     "S 8.7"; 
+      O     "M 0.2"; 
+      O     "M 171.5"; 
+      )     ; 
+      A     "E 9.0"; 
+      R     "M 1.7"; 
+NETWORK
+TITLE =Blocks Exit Reset
+
+FR01: NOP   0; 
+
+      AN    #FAULT_REGISTER_1; 
+      FP    "FP 148.6"; 
+      =     "M 17.1"; 
+NETWORK
+TITLE =Faults Register 2 - Conveyor 0 to Conveyor 3
+
+      A(    ; 
+      L     "MB 2"; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     #FAULT_REGISTER_2; 
+      =     "HMI_DB".SCREEN_CALL_1; 
+//;
+      A     #FAULT_REGISTER_2; 
+      O     #CHECK_PULSE; 
+      O     "M 17.2"; 
+      O     "M 9.1"; 
+      JNB   FR02; 
+NETWORK
+TITLE =K62.0 / 1 Conveyor 0 - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 2.0"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 2.0"; 
+NETWORK
+TITLE =K62.2 / 3 Pusher 0 - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 2.1"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 2.1"; 
+NETWORK
+TITLE =VFD  U42.0 Elevator Fault
+
+//   AN    #ELEVATOR_U42_0
+      A     "M 1.6"; 
+      A     #INIT_DELAY; 
+      A     "M 0.3"; 
+      S     "M 2.2"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+//      A     "E 3.6"
+      A     "E 14.4"; 
+      R     "M 2.2"; 
+NETWORK
+TITLE =VFD  U42.6 Pusher 1 - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 2.3"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 2.3"; 
+NETWORK
+TITLE =VFD  U43.0 Conveyor 1 - Fault
+
+      AN    "E 3.7"; 
+      A     #INIT_DELAY; 
+      S     "M 2.4"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 3.7"; 
+      R     "M 2.4"; 
+NETWORK
+TITLE =VFD  U43.4 Conveyor 2 Belt - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 2.5"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 2.5"; 
+NETWORK
+TITLE =VFD  U43.5 Conveyor 2 Roller - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 2.6"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 2.6"; 
+NETWORK
+TITLE =VFD  U44.0 Conveyor 3 Fault
+
+      AN    "E 6.5"; 
+      A     #INIT_DELAY; 
+      S     "M 2.7"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 6.5"; 
+      R     "M 2.7"; 
+NETWORK
+TITLE =Blocks Exit Reset
+
+FR02: NOP   0; 
+
+      AN    #FAULT_REGISTER_2; 
+      FP    "FP 148.7"; 
+      =     "M 17.2"; 
+NETWORK
+TITLE =Faults Register 3 - Conveyor 4 to Conveyor 9
+
+      A(    ; 
+      L     "MB 3"; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     #FAULT_REGISTER_3; 
+      =     "HMI_DB".SCREEN_CALL_2; 
+//;
+      A     #FAULT_REGISTER_3; 
+      O     #CHECK_PULSE; 
+      O     "M 17.3"; 
+      O     "M 9.1"; 
+      JNB   FR03; 
+NETWORK
+TITLE =VFD  U44.3 Fault
+
+      AN    "E 7.5"; 
+      A     #INIT_DELAY; 
+      S     "M 3.0"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 7.5"; 
+      R     "M 3.0"; 
+NETWORK
+TITLE =VFD  U45.0 Fault
+
+      AN    "E 7.6"; 
+      A     #INIT_DELAY; 
+      S     "M 3.1"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 7.6"; 
+      R     "M 3.1"; 
+NETWORK
+TITLE =VFD  U45.3 Fault
+
+      AN    "E 7.7"; 
+      A     #INIT_DELAY; 
+      S     "M 3.2"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 7.7"; 
+      R     "M 3.2"; 
+NETWORK
+TITLE =VFD  U45.6 Fault
+
+      AN    "E 8.3"; 
+      A     #INIT_DELAY; 
+      S     "M 3.3"; 
+///;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 8.3"; 
+      R     "M 3.3"; 
+NETWORK
+TITLE =VFD  U46.0 Flipper Flip - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 3.4"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 3.4"; 
+NETWORK
+TITLE =VFD  U46.4 TurnTable Belt - Fault
+
+      AN    "E 9.4"; 
+      A     #INIT_DELAY; 
+      S     "M 3.5"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 9.4"; 
+      R     "M 3.5"; 
+NETWORK
+TITLE =VFD  U47.0 TurnTable Turn - Fault
+
+      AN    "E 9.5"; 
+      A     #INIT_DELAY; 
+      S     "M 3.6"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 9.5"; 
+      R     "M 3.6"; 
+NETWORK
+TITLE =VFD  U47.5 Conveyor 9 - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 3.7"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 3.7"; 
+NETWORK
+TITLE =Blocks Exit Reset
+
+FR03: NOP   0; 
+
+      AN    #FAULT_REGISTER_3; 
+      FP    "FP 149.0"; 
+      =     "M 17.3"; 
+NETWORK
+TITLE =Faults Register 4 - Pusher 2 to Conveyor 23
+
+      A(    ; 
+      L     "MB 4"; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     #FAULT_REGISTER_4; 
+      =     "HMI_DB".SCREEN_CALL_2; 
+//;
+      A     #FAULT_REGISTER_4; 
+      O     #CHECK_PULSE; 
+      O     "M 17.4"; 
+      O     "M 9.1"; 
+      JNB   FR04; 
+NETWORK
+TITLE =VFD  U47.6 Pusher 2 - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 4.0"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 4.0"; 
+NETWORK
+TITLE =VFD  U48.0 Conveyor 10 - Fault
+
+      AN    "E 13.4"; 
+      A     #INIT_DELAY; 
+      S     "M 4.1"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.4"; 
+      R     "M 4.1"; 
+NETWORK
+TITLE =VFD  U48.3 Conveyor 11 - Fault
+
+      AN    "E 13.5"; 
+      A     #INIT_DELAY; 
+      S     "M 4.2"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.5"; 
+      R     "M 4.2"; 
+NETWORK
+TITLE =VFD  U48.6 Conveyor 12 - Fault
+
+      AN    "E 13.6"; 
+      A     #INIT_DELAY; 
+      S     "M 4.3"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.6"; 
+      R     "M 4.3"; 
+NETWORK
+TITLE =VFD  U49.0 Conveyor 13 - Fault
+
+      AN    "E 13.7"; 
+      A     #INIT_DELAY; 
+      S     "M 4.4"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.7"; 
+      R     "M 4.4"; 
+NETWORK
+TITLE =VFD  U53.2 Conveyor 21 - Fault
+
+      AN    "E 28.0"; 
+      A     #INIT_DELAY; 
+      S     "M 4.5"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.5"; 
+      R     "M 4.5"; 
+NETWORK
+TITLE =VFD  U53.4 Conveyor 22 - Fault
+
+      AN    "E 28.1"; 
+      A     #INIT_DELAY; 
+      S     "M 4.6"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.6"; 
+      R     "M 4.6"; 
+NETWORK
+TITLE =VFD  U54.0 Conveyor 23 - Fault
+
+      AN    "E 28.2"; 
+      A     #INIT_DELAY; 
+      S     "M 4.7"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 13.7"; 
+      R     "M 4.7"; 
+NETWORK
+TITLE =Blocks Exit Reset
+
+FR04: NOP   0; 
+
+      AN    #FAULT_REGISTER_4; 
+      FP    "FP 149.1"; 
+      =     "M 17.4"; 
+NETWORK
+TITLE =Faults Register 5 - Feeder
+
+      A(    ; 
+      O     "M 7.0"; 
+      O     "M 7.1"; 
+      O     "M 7.2"; 
+      )     ; 
+      =     #FAULT_REGISTER_5; 
+      =     "HMI_DB".SCREEN_CALL_3; 
+//;
+      A     #FAULT_REGISTER_5; 
+      O     #CHECK_PULSE; 
+      O     "M 17.5"; 
+      O     "M 9.1"; 
+      JNB   FR05; 
+NETWORK
+TITLE =VFD  U50.0 Feeder Lift - Fault
+
+      AN    "E 12.6"; 
+      A     #INIT_DELAY; 
+      S     "M 7.0"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 12.6"; 
+      R     "M 7.0"; 
+NETWORK
+TITLE =VFD  U50.5 Feeder Fingers - Fault
+
+      AN    "M 50.0"; 
+      A     #INIT_DELAY; 
+      S     "M 7.1"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "M 50.0"; 
+      R     "M 7.1"; 
+NETWORK
+TITLE =VFD  U51.0 Feeder Fingers Belt - Fault
+
+      AN    "E 12.7"; 
+      A     #INIT_DELAY; 
+      S     "M 7.2"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "M 0.2"; 
+      )     ; 
+      A     "E 12.7"; 
+      R     "M 7.2"; 
+NETWORK
+TITLE =Blocks Exit Reset
+
+FR05: NOP   0; 
+
+      AN    #FAULT_REGISTER_5; 
+      FP    "FP 149.2"; 
+      =     "M 17.5"; 
+NETWORK
+TITLE =Elevator OverTemp
+
+      A     "M 0.6"; 
+      AN    "E 0.3"; 
+      L     W#16#1; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =Turntable OverTemp
+
+      A     "M 0.6"; 
+      AN    "E 0.4"; 
+      L     W#16#2; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =Loader OverTemp
+
+      A     "M 0.6"; 
+      AN    "E 0.5"; 
+      L     W#16#3; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =Conveyor 4 Collator OverTemp
+
+      A     "M 0.6"; 
+      AN    "E 14.0"; 
+      L     W#16#4; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =Conveyor 6 Delivery OverTemp
+
+      A     "M 0.6"; 
+      AN    "E 14.1"; 
+      L     W#16#5; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =Pivot Conveyor 10 OverTemp
+
+      A(    ; 
+      ON    "E 14.2"; 
+      ON    "E 14.3"; 
+      )     ; 
+      A     "M 0.6"; 
+      O     ; 
+      A(    ; 
+      O     "E 14.6"; 
+      O     "E 14.7"; 
+      )     ; 
+      A     "M 0.6"; 
+      L     W#16#6; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =OverTemp
+
+      A     "M 0.6"; 
+      A     "E 35.0"; 
+      L     W#16#8; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =OverTemp
+
+      A     "M 0.6"; 
+      A     "E 35.1"; 
+      L     W#16#9; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =OverTemp
+
+      A     "M 0.6"; 
+      A     "E 14.6"; 
+      L     W#16#B; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =OverTemp
+
+      A     "M 0.6"; 
+      A     "E 14.7"; 
+      L     W#16#C; 
+      T     "MB 181"; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.0"; 
+      L     W#16#0; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.1"; 
+      L     W#16#1; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.2"; 
+      L     W#16#2; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.3"; 
+      L     W#16#3; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.4"; 
+      L     W#16#4; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.5"; 
+      L     W#16#5; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.6"; 
+      L     W#16#6; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 3.7"; 
+      L     W#16#7; 
+      T     MB   183; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.0"; 
+      L     W#16#8; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.1"; 
+      L     W#16#9; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.2"; 
+      L     W#16#10; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.3"; 
+      L     W#16#11; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.4"; 
+      L     W#16#12; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.5"; 
+      L     W#16#13; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      A     #FAULT_TRIGGERED; 
+      A     "M 4.6"; 
+      L     W#16#14; 
+      T     MB   182; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      L     W#16#0; 
+      T     "MW 180"; 
+      T     MW   182; 
+NETWORK
+TITLE =Fault Status Lamp X120
+
+      A(    ; 
+      O     #FAULT_TRIGGERED; 
+      O     "M 0.5"; 
+      O     "M 0.6"; 
+      O     "M 0.7"; 
+      O     "M 14.7"; 
+      O     "M 22.7"; 
+      O     "M 30.7"; 
+      O     "M 38.7"; 
+      O     "M 42.7"; 
+      O     "M 54.7"; 
+      O     "M 66.7"; 
+      O     "M 86.7"; 
+      O     "M 98.1"; 
+      O     "M 98.2"; 
+      O     "M 33.7"; 
+      )     ; 
+      A     "M 6.4"; 
+      O     "Timer 0"; 
+      =     "H 40.2"; 
+NETWORK
+TITLE =Fault Status Lamp X121
+//     A(    
+//      O     "M 66.7"
+//      O     "M 86.7"
+//      )     
+//      A     "M 145.0"
+//      O     "M 1.5"
+//      O     "Timer 0"
+//      =     "H 40.3"
+//
+      A(    ; 
+      O     "M 54.7"; 
+      O     "M 66.7"; 
+      O     "M 86.7"; 
+      )     ; 
+      A     "M 145.0"; 
+      O     "M 1.5"; 
+      O     "M 74.5"; 
+      O     "Timer 0"; 
+      =     "H 40.3"; 
+NETWORK
+TITLE =Fault Status Lamp X130
+
+      A     "M 14.7"; 
+      A     "M 145.0"; 
+      O     "M 1.6"; 
+      O     "Timer 0"; 
+      =     "H 40.4"; 
+NETWORK
+TITLE =Fault Status Lamp X134
+
+      A(    ; 
+      O     "M 42.7"; 
+      O     "M 54.7"; 
+      O     "M 46.6"; 
+      )     ; 
+      A     "M 145.0"; 
+      O     "M 1.7"; 
+      O     "Timer 0"; 
+      =     "H 40.5"; 
+END_FUNCTION
+
