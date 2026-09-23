@@ -85,7 +85,7 @@ NETWORK
 TITLE =Feeder Lift - Ready
 
       A     "M 0.3"; 
-      AN    "M 3.7"; 
+      AN    "M 7.0"; // Fix: Feeder Lift VFD Fault (was M 3.7 = C9 slot)
       A     "E 0.5"; 
       A     "E 12.5"; 
       =     "M 74.0"; 

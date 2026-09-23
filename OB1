@@ -115,7 +115,7 @@ TITLE =Faults Monitor
       A(    ; 
       L     "MD 1"; 
       L     0; 
-      >I    ; 
+      <>D   ; // Fix: >I only tested MB3/MB4
       )     ; 
       =     "M 5.1"; 
 NETWORK
