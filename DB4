@@ -1,0 +1,99 @@
+DATA_BLOCK "COLLATORS DB"
+TITLE = DB4
+NAME : COLLATOR
+VERSION : 0.1
+
+
+  STRUCT 	
+   SoftWare_Gate_0 : BOOL ;	//SoftWare Gate 0
+   SoftWare_Gate_1 : BOOL ;	//SoftWare Gate 1
+   SoftWare_Gate_2 : BOOL ;	//SoftWare Gate 2
+   SoftWare_Gate_3 : BOOL ;	//SoftWare Gate 3
+   SoftWare_Gate_4 : BOOL ;	//SoftWare Gate 4
+   SoftWare_Gate_5 : BOOL ;	//SoftWare Gate 5
+   SoftWare_Gate_6 : BOOL ;	//SoftWare Gate 6
+   SoftWare_Gate_7 : BOOL ;	//SoftWare Gate 7
+   DB_VAR8 : BOOL ;	//Temporary placeholder variable
+   DB_VAR9 : BOOL ;	//Temporary placeholder variable
+   DB_VAR10 : BOOL ;	//Temporary placeholder variable
+   DB_VAR11 : BOOL ;	//Temporary placeholder variable
+   DB_VAR12 : BOOL ;	//Temporary placeholder variable
+   DB_VAR13 : BOOL ;	//Temporary placeholder variable
+   DB_VAR14 : BOOL ;	//Temporary placeholder variable
+   DB_VAR15 : BOOL ;	//Temporary placeholder variable
+   Conveyor_Length_C3 : WORD ;	//Conveyor 3 - Conveyor Length (Fixed - Do Not Change !)
+   Press_Length_C3 : WORD ;	//Conveyor 3 - Press Length
+   DB_Conveyor_C3 : WORD ;	//Conveyor 3 - Spare
+   DB_Conveyor_34 : WORD ;	//Conveyor 3 - Spare
+   DB_Conveyor_31 : WORD ;	//Conveyor 3 - Spare
+   Any_Conveyors_mS : DWORD ;	//Conveyor 3 - Any Conveyor mS TEST  [mS]
+   DB_Conveyor_3321 : INT ;	//Conveyor 3 - Spare
+   DB_Conveyor_33211 : INT ;	//Conveyor 3 - Spare
+   Surface_Left_C4 : WORD ;	//Conveyor 4 - Surface_Left_Mem
+   Frac_Packet_Length_C4 : WORD ;	//Conveyor 4 - Fraction of Packet Length
+   PacketLength_C4 : WORD ;	//Conveyor 4 - Packet Length [Encoder Pulses]
+   Packet_Length_Frac_C4 : WORD ;	//Conveyor 4 - Packet Length + Fraction [Encoder Pulses]
+   Surface_Length_C4 : WORD ;	//Conveyor 4 - Surface Length [Encoder Pulses]
+   Surface_Length_Left_C4 : WORD ;	//Conveyor 4 - Surface Length Remaining [Encoder Pulses]
+   Spare_C4 : INT  := 635;	//Conveyor 4 - Spare
+   Packet_Length_C4_mS : INT ;	//Conveyor 4 - Packet Length C4  [mS]
+   Encoder_MM_Pulse_C4 : REAL ;	//Conveyor 4 - Encoder C4 [mm/pulse]
+   Encoder_MM_Pulse_C10 : REAL ;	//Conveyor 10 - Encoder C10 [mm/pulse]
+   DB_Conveyor_332121 : INT ;	//Conveyor 4 - Spare
+   Frac_Packet_Width_C10 : WORD ;	//Conveyor 10 - Fraction of Packet Width [Encoder Pulses]
+   Packet_Width_C10 : WORD ;	//Conveyor 10 - Packet Width [Encoder Pulses]
+   Packet_Width_Frac_C10 : WORD ;	//Conveyor 10 - Packet Width + Fraction [Encoder Pulses]
+   Surface_Length_10 : WORD ;	//Conveyor 10 - Surface Length [Encoder Pulses]
+   Surface_Length_Left_10 : WORD ;	//Conveyor 10 - Surface Length Remaining [Encoder Pulses]
+   Ecoder_Wheel_Circ_C10 : INT  := 283;	//Conveyor 10 - Encoder Wheel Circumference 283 mm
+   Packet_Width_C10_mS : DWORD ;	//Conveyor 10 - Packet Width C10 [mS]
+   DB_Conveyor_33232 : REAL ;	//Conveyor 10 - Spare
+   DB_Conveyor_33233 : REAL ;	//Conveyor 10 - Spare
+  END_STRUCT ;	
+BEGIN
+   SoftWare_Gate_0 := FALSE; 
+   SoftWare_Gate_1 := FALSE; 
+   SoftWare_Gate_2 := FALSE; 
+   SoftWare_Gate_3 := FALSE; 
+   SoftWare_Gate_4 := FALSE; 
+   SoftWare_Gate_5 := FALSE; 
+   SoftWare_Gate_6 := FALSE; 
+   SoftWare_Gate_7 := FALSE; 
+   DB_VAR8 := FALSE; 
+   DB_VAR9 := FALSE; 
+   DB_VAR10 := FALSE; 
+   DB_VAR11 := FALSE; 
+   DB_VAR12 := FALSE; 
+   DB_VAR13 := FALSE; 
+   DB_VAR14 := FALSE; 
+   DB_VAR15 := FALSE; 
+   Conveyor_Length_C3 := W#16#0; 
+   Press_Length_C3 := W#16#0; 
+   DB_Conveyor_C3 := W#16#0; 
+   DB_Conveyor_34 := W#16#0; 
+   DB_Conveyor_31 := W#16#0; 
+   Any_Conveyors_mS := DW#16#0; 
+   DB_Conveyor_3321 := 0; 
+   DB_Conveyor_33211 := 0; 
+   Surface_Left_C4 := W#16#0; 
+   Frac_Packet_Length_C4 := W#16#0; 
+   PacketLength_C4 := W#16#0; 
+   Packet_Length_Frac_C4 := W#16#0; 
+   Surface_Length_C4 := W#16#0; 
+   Surface_Length_Left_C4 := W#16#0; 
+   Spare_C4 := 0; 
+   Packet_Length_C4_mS := 0; 
+   Encoder_MM_Pulse_C4 := 0.000000e+000; 
+   Encoder_MM_Pulse_C10 := 0.000000e+000; 
+   DB_Conveyor_332121 := 0; 
+   Frac_Packet_Width_C10 := W#16#0; 
+   Packet_Width_C10 := W#16#0; 
+   Packet_Width_Frac_C10 := W#16#0; 
+   Surface_Length_10 := W#16#0; 
+   Surface_Length_Left_10 := W#16#0; 
+   Ecoder_Wheel_Circ_C10 := 283; 
+   Packet_Width_C10_mS := DW#16#0; 
+   DB_Conveyor_33232 := 0.000000e+000; 
+   DB_Conveyor_33233 := 0.000000e+000; 
+END_DATA_BLOCK
+

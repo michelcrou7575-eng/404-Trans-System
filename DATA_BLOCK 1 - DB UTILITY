@@ -1,0 +1,164 @@
+DATA_BLOCK "DB UTILITY"
+TITLE = DB1 Utility
+VERSION : 0.1
+
+
+  STRUCT 	
+   DB_VAR : INT ;	//Temporary placeholder variable
+   VAL_TMP_SEC_MS_PCS : INT ;	//Temporary placeholder variable
+   RAZ_TMR_RESTART_PCS : BOOL ;	// PCS
+   VAL_CMP_RESTART_PCS_OS : BOOL ;	// PCS
+   VAL_CMP_RESTART_PCS : BOOL ;	
+   DEM_RESTART_PCS : BOOL ;	
+   DB_bool4 : BOOL ;	//Temporary placeholder variable
+   DB_bool5 : BOOL ;	//Temporary placeholder variable
+   DB_bool6 : BOOL ;	//Temporary placeholder variable
+   DB_bool7 : BOOL ;	//Temporary placeholder variable
+   DB_bool8 : BOOL ;	//Temporary placeholder variable
+   DB_bool9 : BOOL ;	//Temporary placeholder variable
+   DB_bool10 : BOOL ;	//Temporary placeholder variable
+   DB_bool11 : BOOL ;	//Temporary placeholder variable
+   DB_bool12 : BOOL ;	//Temporary placeholder variable
+   DB_bool13 : BOOL ;	//Temporary placeholder variable
+   DB_bool14 : BOOL ;	//Temporary placeholder variable
+   C4_Moving : BOOL ;	//Conveyor 4 is Moving
+   Scan_Cycle_Previous : INT ;	//Previous Scan Cycle - OB1
+   DB_VAR4 : INT ;	//Temporary placeholder variable
+   LENGTH_CONST : REAL ;	//Packet Constant - Length
+   WIDTH_CONST : REAL ;	//Packet Constant - Width
+   DB_VAR7 : INT ;	//Temporary placeholder variable
+   Pusher_0_Disable : BOOL ;	//Pusher 0 Disable
+   Elevator_Disable : BOOL ;	//Elevator Disable
+   Pusher_1_Disable : BOOL ;	//Pusher 1 Disable
+   Conveyor_1_Disable : BOOL ;	//Conveyor 1 Disable
+   Conveyor_2_Disable : BOOL ;	//Conveyor 2 Disable
+   Conveyor_3_Disable : BOOL ;	//Conveyor 3 Disable
+   Conveyor_4_Disable : BOOL ;	//Conveyor 4 Disable
+   Conveyor_5_Disable : BOOL ;	//Conveyor 5 Disable
+   Conveyor_6_Disable : BOOL ;	//Conveyor 6 Disable
+   Conveyor_7_Disable : BOOL ;	//Conveyor 7 Disable
+   Conveyor_8_Disable : BOOL ;	//Conveyor 8 Disable
+   Conveyor_9_Disable : BOOL ;	//Conveyor 9 Disable
+   Pusher_2_Disable : BOOL ;	//Pusher 2 Disable
+   Conveyor_10_Disable : BOOL ;	//Conveyor 10 Disable
+   Pivot_Disable : BOOL ;	//Pivot Disable
+   Conveyor_11_Disable : BOOL ;	//Conveyor 11 Disable
+   Conveyor_12_Disable : BOOL ;	//Conveyor 12 Disable
+   Conveyor_13_Disable : BOOL ;	//Conveyor 13 Disable
+   Conveyor_21_Disable : BOOL ;	//Conveyor 21 Disable
+   Conveyor_22_Disable : BOOL ;	//Conveyor 22 Disable
+   Conveyor_23_Disable : BOOL ;	//Conveyor 23 Disable
+   Feeder_Lift_disable : BOOL ;	//Feeder Lift Disable
+   Feeder_Fingers_disable : BOOL ;	//Feeder Fingers Disable
+   RESERVE : BOOL ;	
+   Freeze_Sequence_1 : BOOL ;	//Sequence Freezer Bit - Elevator 
+   T15_DN : BOOL ;	//Adder Done Elevator 1 Timeout Done
+   T19_DN : BOOL ;	//Adder Done Conveyor 1 Timeout Done
+   T23_DN : BOOL ;	//Adder Done Conveyor 2 Lift Fault  
+   T24_DN : BOOL ;	//Adder Done Conveyor 2 Belt Timeout
+   T25_DN : BOOL ;	//Adder Done Conveyor 2 Roller Timeout
+   T27_DN : BOOL ;	//Adder Done Conveyor 3 Slat Start Pulse 100mS
+   T28_DN : BOOL ;	//Adder Done Conveyor 3 Slat Timeout 11s
+   T29_DN : BOOL ;	//Adder Done Conveyor 4 LB obstruction alarm 10s
+   T90_DN : BOOL ;	//Adder Done Conveyor 4 Encoder-stop helper timers 500ms
+   T91_DN : BOOL ;	//Adder Done Conveyor 4 Encoder-stop helper timers 500ms
+   T31_DN : BOOL ;	//Adder Done Conveyor 4 InFeed timeout 5s
+   T32_DN : BOOL ;	//Adder Done Conveyor 4 Transfer max time 20s
+   T33_DN : BOOL ;	//Adder Done Conveyor 4 Clearing timeout 20s
+   T35_DN : BOOL ;	//Adder Done Conveyor 5 Link timeout 20s
+   Freeze_Sequence_2 : BOOL ;	//Sequence Freezer Bit - Collator
+   T15_ET : DINT ;	//Adder Count Elevator 1 Timeout Count 100mS
+   T19_ET : DINT ;	//Adder Count Conveyor 1 Timeout Count 10s
+   T23_ET : DINT ;	//Adder Count Conveyor 2 Lift Fault TimeOut 2s 
+   T24_ET : DINT ;	//Adder Count Conveyor 2 Belt Timeout 2.5s
+   T25_ET : DINT ;	//Adder Count Conveyor 2 Roller Extended RunTime 8s
+   T27_ET : DINT ;	//Adder Count Conveyor 3 Slat Start Pulse 100mS
+   T28_ET : DINT ;	//Adder Count Conveyor 3 Slat Timeout 11s
+   T29_ET : DINT ;	//Adder Count Conveyor 4 LB obstruction alarm 10s
+   T90_ET : DINT ;	//Adder Count Conveyor 4 Encoder-stop helper timers 500ms
+   T91_ET : DINT ;	//Adder Count Conveyor 4 Encoder-stop helper timers 500ms
+   T31_ET : DINT ;	//Adder Count Conveyor 4 InFeed timeout 5s
+   T32_ET : DINT ;	//Adder Count Conveyor 4 Transfer max time 20s
+   T33_ET : DINT ;	//Adder Count Conveyor 4 Clearing timeout 20s
+   T35_ET : DINT ;	//Adder Count Conveyor 5 Link timeout 20s
+  END_STRUCT ;	
+BEGIN
+   DB_VAR := 0; 
+   VAL_TMP_SEC_MS_PCS := 13886; 
+   RAZ_TMR_RESTART_PCS := FALSE; 
+   VAL_CMP_RESTART_PCS_OS := FALSE; 
+   VAL_CMP_RESTART_PCS := FALSE; 
+   DEM_RESTART_PCS := FALSE; 
+   DB_bool4 := FALSE; 
+   DB_bool5 := FALSE; 
+   DB_bool6 := FALSE; 
+   DB_bool7 := FALSE; 
+   DB_bool8 := FALSE; 
+   DB_bool9 := FALSE; 
+   DB_bool10 := FALSE; 
+   DB_bool11 := FALSE; 
+   DB_bool12 := FALSE; 
+   DB_bool13 := FALSE; 
+   DB_bool14 := FALSE; 
+   C4_Moving := FALSE; 
+   Scan_Cycle_Previous := 8; 
+   DB_VAR4 := 0; 
+   LENGTH_CONST := 0.000000e+000; 
+   WIDTH_CONST := 0.000000e+000; 
+   DB_VAR7 := 0; 
+   Pusher_0_Disable := FALSE; 
+   Elevator_Disable := FALSE; 
+   Pusher_1_Disable := FALSE; 
+   Conveyor_1_Disable := FALSE; 
+   Conveyor_2_Disable := FALSE; 
+   Conveyor_3_Disable := FALSE; 
+   Conveyor_4_Disable := FALSE; 
+   Conveyor_5_Disable := FALSE; 
+   Conveyor_6_Disable := FALSE; 
+   Conveyor_7_Disable := FALSE; 
+   Conveyor_8_Disable := FALSE; 
+   Conveyor_9_Disable := FALSE; 
+   Pusher_2_Disable := FALSE; 
+   Conveyor_10_Disable := FALSE; 
+   Pivot_Disable := FALSE; 
+   Conveyor_11_Disable := FALSE; 
+   Conveyor_12_Disable := FALSE; 
+   Conveyor_13_Disable := FALSE; 
+   Conveyor_21_Disable := FALSE; 
+   Conveyor_22_Disable := FALSE; 
+   Conveyor_23_Disable := FALSE; 
+   Feeder_Lift_disable := FALSE; 
+   Feeder_Fingers_disable := FALSE; 
+   RESERVE := FALSE; 
+   Freeze_Sequence_1 := FALSE; 
+   T15_DN := FALSE; 
+   T19_DN := FALSE; 
+   T23_DN := FALSE; 
+   T24_DN := FALSE; 
+   T25_DN := FALSE; 
+   T27_DN := FALSE; 
+   T28_DN := FALSE; 
+   T29_DN := FALSE; 
+   T90_DN := FALSE; 
+   T91_DN := FALSE; 
+   T31_DN := FALSE; 
+   T32_DN := FALSE; 
+   T33_DN := FALSE; 
+   T35_DN := FALSE; 
+   Freeze_Sequence_2 := FALSE; 
+   T15_ET := L#0; 
+   T19_ET := L#0; 
+   T23_ET := L#0; 
+   T24_ET := L#0; 
+   T25_ET := L#0; 
+   T27_ET := L#0; 
+   T28_ET := L#0; 
+   T29_ET := L#0; 
+   T90_ET := L#0; 
+   T91_ET := L#0; 
+   T31_ET := L#0; 
+   T32_ET := L#0; 
+   T33_ET := L#0; 
+   T35_ET := L#0; 
+END_DATA_BLOCK
+
