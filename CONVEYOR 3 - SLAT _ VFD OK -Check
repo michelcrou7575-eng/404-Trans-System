@@ -1,0 +1,335 @@
+FUNCTION "CONVEYOR 3 - SLAT" : VOID
+TITLE =Slat Conveyor 3  Pos.5  FC1024
+NAME : POS_5
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_1_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Service Test
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_3_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_1_STATUS; 
+      =     #MAIN_SERVICE_1_SW; 
+//;  
+      A     #MAIN_SERVICE_1_SW; 
+      O     M     26.3; 
+      JNB   CON3; 
+      A     "HMI_DB".HMI_CONVEYOR_3_TEST_SSW; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_2_Disable; 
+//;
+      AN    #MAIN_SERVICE_1_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_3_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_2_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #MAIN_SERVICE_1_SW; 
+      =     #INITIALISATION; 
+
+CON3: R     #SERVICE_RUN; 
+      FP    "FP 227.0"; 
+      =     M     26.3; 
+NETWORK
+TITLE =Packet Length Measurements [mm] - While Collating
+
+      A     "B 6.2"; // C3 InFeed Sens - New Packet
+      FP    "FP 227.1"; 
+      A     "A 44.0"; 
+      JC    PRNT; 
+      JU    RPRT; 
+
+PRNT: L     "FM350 DB".ACT_CNTV0; 
+      T     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
+
+RPRT: AN    "B 6.2"; // C3 InFeed Sens - New Packet End
+      FP    "FP 227.2"; 
+      JCN   NTKE; 
+
+      L     "FM350 DB".ACT_CNTV0; 
+      L     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
+      -I    ; 
+      T     "HOUSE_KEEPING DB".C3_Packet_Length_ep; 
+      DTR   ; 
+//;
+      L     1.300000e+000; //  Encoder Wheel 900mm / 600 PPR  [mm/pulse]
+      *R    ; 
+      RND   ; 
+      T     "HOUSE_KEEPING DB".C3_Packet_Length_mm; 
+
+NTKE: NOP   0; 
+NETWORK
+TITLE =Slat Conveyor 3 - Packets / Conveyor Length - Calculation
+
+      A     "M 27.1"; 
+      FP    "FP 227.3"; 
+      JNB   M271; 
+      L     "COLLATORS DB".Conveyor_Length_C3; 
+      ITD   ; 
+      DTR   ; 
+      L     5.000000e+000; 
+      /R    ; 
+      RND   ; 
+      T     "COLLATORS DB".Press_Length_C3; 
+      T     "MW 212"; 
+
+M271: NOP   0; 
+NETWORK
+TITLE =Slat Conveyor 3 - Surface Length Manager (PulseUnit)
+
+      A     "M 27.1"; 
+      O     "M 26.6"; 
+      S     "M 166.0"; 
+//;
+      A     "M 166.0"; 
+      O(    ; 
+      AN    "M 10.0"; 
+      FP    "FP 227.4"; 
+      )     ; 
+      =     "FM350 DB".CONTROL_SIGNALS.SW_GATE0; // C3 Surface Count
+//;
+
+
+
+////////////////////////////////////////
+
+
+      A     "M 166.0"; // Start Count (100mS Pulse)
+      A(    ; 
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     "MW 212"; 
+      >=I   ; 
+      )     ; 
+      A     "M 0.3"; 
+      JCN   R291; 
+      JU    E291; 
+
+R291: L     L#0; 
+      T     "DB UTILITY".T27_ET; 
+      R     "DB UTILITY".T27_DN; 
+
+E291: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 27 Add - FM350 needs a 100mS Pulse !
+
+      A     "M 166.0"; 
+      A(    ; 
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     "MW 212"; 
+      >=I   ; 
+      )     ; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T27_DN; 
+      JCN   E292; 
+
+      L     "DB UTILITY".T27_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T27_ET; 
+
+E292: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 27 Done 100mS  // Start Count (100mS Pulse)
+
+      L     "DB UTILITY".T27_ET; 
+      L     L#100; 
+      >=D   ; 
+      =     "DB UTILITY".T27_DN; 
+
+NETWORK
+TITLE =Slat Conveyor 3 - Surface Length Manager
+
+      A     "M 166.0"; 
+      A(    ; 
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     "MW 212"; 
+      >=I   ; 
+      )     ; 
+      S     "M 27.5"; 
+//;
+      A     "DB UTILITY".T27_DN; 
+      AN    "M 26.6"; 
+      R     "M 166.0"; 
+
+
+
+
+////////////////////////////////////////
+
+
+
+
+NETWORK
+TITLE =Slat Conveyor - Press Enable
+//Slat Conveyor - Press Enable
+      A     "M 50.0"; 
+      =     "M 26.2"; 
+NETWORK
+TITLE =Slat Conveyor - Clearing Start
+
+      A     "M 10.1"; 
+      A     "M 0.3"; 
+      S     "M 9.6"; 
+NETWORK
+TITLE =Slat Conveyor - Clearing
+//Counting 9K Pulses Should Suffice !
+      A     "M 10.1"; 
+      AN    "M 10.2"; 
+      AN    "A 44.0"; 
+      S     "M 26.6"; 
+//;
+      A     "M 26.6"; 
+      JNB   M266; 
+      A(    ; 
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     10000; 
+      >I    ; 
+      )     ; 
+      =     "M 26.7"; 
+
+M266: NOP   0; 
+
+      A     "M 26.7"; 
+      ON    "M 10.0"; 
+      R     "M 26.6"; 
+NETWORK
+TITLE =Slat Conveyor Steps
+//Slat Conveyor Steps
+
+
+NETWORK
+TITLE =Step 4N1 - Power ON
+
+      A     "M 0.3"; 
+      S     "M 27.0"; 
+NETWORK
+TITLE =Step 4N2 - Slat Conveyor - Collating Start
+
+      A     "M 26.2"; 
+      A(    ; 
+      O     "B 6.1"; 
+      O(    ; 
+      A     #SERVICE_RUN; 
+      AN    "B 6.4"; 
+      )     ; 
+      )     ; 
+      A     "M 31.0"; 
+      AN    "M 31.1"; 
+      AN    "M 33.7"; // If No Obstruction Slat End
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      A     "M 0.3"; 
+      A     "M 27.0"; 
+      S     "M 27.1"; 
+
+
+
+////////////////////////////////////////
+
+
+
+NETWORK
+TITLE =Soft Timer 28 Reset - Collating TimeOut + Freeze Option
+
+      A     "M 27.1"; 
+      AN    "M 27.4"; 
+      A     "M 0.3"; 
+      JCN   R271; 
+      JU    E271; 
+
+R271: L     L#0; 
+      T     "DB UTILITY".T28_ET; 
+      R     "DB UTILITY".T28_DN; 
+
+E271: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 28 Add
+
+      A     "M 27.1"; 
+      AN    "M 27.4"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T28_DN; 
+      JCN   E272; 
+
+      L     "DB UTILITY".T28_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T28_ET; 
+
+E272: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 27 Done 11s
+
+      L     "DB UTILITY".T28_ET; 
+      L     L#11000; 
+      >=D   ; 
+      =     "DB UTILITY".T28_DN; 
+
+NETWORK
+TITLE =Slat Conveyor - Collating TimeOut Done
+
+      A     "DB UTILITY".T28_DN; 
+      S     "M 27.4"; 
+
+
+
+////////////////////////////////////////
+
+
+
+
+NETWORK
+TITLE =Step 4N6 - Slat Conveyor - Steps Reset
+
+      O     "M 27.4"; 
+      O     "M 27.5"; 
+      A     "M 0.3"; 
+      S     "M 27.6"; 
+NETWORK
+TITLE =Slat Conveyor - Steps Register - Reset
+
+      A(    ; 
+      O     "M 27.6"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_3_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MB 27"; 
+      R     "M 26.7"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Slat Conveyor - VFD Release
+
+      A(    ; 
+      O     "M 27.1"; 
+      O     "M 26.6"; 
+      )     ; 
+      AN(   ; 
+      A     "M 26.6"; 
+      A     "M 31.5"; 
+      )     ; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      A     "M 0.3"; 
+      =     "A 44.0"; 
+      =     "A 44.1"; 
+END_FUNCTION
+

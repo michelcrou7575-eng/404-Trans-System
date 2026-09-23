@@ -1,0 +1,150 @@
+FUNCTION "CONVEYOR 21 - LINK 1 HI" : VOID
+TITLE =Conveyor 21 - Link 1H  Pos. 13 High Level  FC1078
+//
+NAME : POS_13_H
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  BARRIER_BLINKER : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 21 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_21_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 78.7"; 
+      JNB   CO21; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_21_TEST_SSW; 
+      AN    "A 48.0"; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_10_Disable; 
+      S     "DB UTILITY".Pivot_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_21_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_10_Disable; 
+      R     "DB UTILITY".Pivot_Disable; 
+
+CO21: R     #SERVICE_RUN; 
+      FP    "FP 148.3"; 
+      =     "M 78.7"; 
+NETWORK
+TITLE =Power Enable
+
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Conveyor_21_Disable; 
+      =     "M 78.0"; 
+NETWORK
+TITLE =Conveyor 21- Running TimeOut  30s
+
+      A(    ; 
+      A     "M 79.1"; 
+      AN    "M 79.2"; 
+      O     ; 
+      A     "M 79.3"; 
+      AN    "M 79.4"; 
+      A     "A 53.4"; 
+      )     ; 
+      A     "M 78.0"; 
+      L     S5T#30S; 
+      SD    "Timer 79"; // C21 TimeOut
+NETWORK
+TITLE =Steps Register - Reset
+
+      A(    ; 
+      A     "M 79.1"; // Filling Step
+      AN    "M 79.2"; // Filling Step - Done
+      A     "Timer 79"; // C21 TimeOut
+      O     "M 79.4"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_21_Disable; 
+      )     ; 
+      A     "M 78.0"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 79"; // Step Register - Reset
+      T     "MB 81"; // Step Register - Reset
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 22N1 - Power ON
+
+      A     "M 78.0"; 
+      S     "M 79.0"; 
+NETWORK
+TITLE =Step 22N2 - Conveyor 21 - Packet Filling & Trig Conveyor 10
+//Flag M 8.4 Holds the Conveyor 21 Belt until New Order Confirm
+      A(    ; 
+      A     "P 15.0"; // Pivot Position HIGH OK
+      A(    ; 
+      O     "M 55.4"; // C10 Collator Full - Step - C21 Trigger
+      O     "M 58.2"; // C10 Clearing - UpStream Cleared - C21 Trigger
+      )     ; 
+      AN    "M 55.5"; // C10 Not Tranfering
+      AN    "M 8.4"; // Not Wait After Clearing
+      O     ; 
+      A     "B 15.4"; // Re-Trigger...
+      AN    "M 79.1"; // If Not Filling
+      O     ; 
+      A     "M 9.3"; // C10 Clearing - Transfer Trigger 
+      )     ; 
+      O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
+      A     "M 78.0"; 
+      A     "M 79.0"; 
+      S     "M 79.1"; // C21 Filling Step - Set
+NETWORK
+TITLE =Step 22N3 - Conveyor 21 - Stop Filling
+
+      A     "B 15.4"; // C21 Exit Sens
+      A     "M 78.0"; 
+      A     "M 79.1"; // C21 Filling Step
+      S     "M 79.2"; // Filling Stop Step - Set
+NETWORK
+TITLE =Step 22N4 - Conveyor 21 - Transfering
+
+      A     "M 83.1"; // Called by C22
+      AN    "M 83.2"; // C22 Not Full Yet!
+      A     "M 78.0"; 
+      A     "M 79.2"; // C21 Filling Stop Step - Done
+      S     "M 79.3"; // C21 Transfering Step - Set
+NETWORK
+TITLE =Step 22N5 - Conveyor 21 - Steps Register - Reset
+
+      A(    ; 
+      O     "B 15.5"; // C22 Full -> Stop C21
+      O     "Timer 79"; // C21 TimeOut
+      )     ; 
+      A     "M 78.0"; 
+      A     "M 79.3"; // Transfering Step 
+      S     "M 79.4"; // Register Reset - Trigger Set
+NETWORK
+TITLE =Conveyor  21 VFD - Release
+
+      A(    ; 
+      A     "M 79.1"; // Filling Step 
+      AN    "M 79.2"; // Filling Step - Done
+      O     ; 
+      A     "M 79.3"; // Transfering Step
+      AN    "M 79.4"; // Transfering Done - Register Reset
+      )     ; 
+      A     "M 78.0"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      =     "A 53.4"; 
+      =     "A 53.5"; 
+END_FUNCTION
+

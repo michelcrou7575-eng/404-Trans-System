@@ -1,0 +1,224 @@
+FUNCTION "CONVEYOR 1 - BELT" : VOID
+TITLE =Conveyor 1  Pos. 1 FC1018
+//
+NAME : POS_3
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_1_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  SENSOR_TEST : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Service Test
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_1_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_1_STATUS; 
+      =     #MAIN_SERVICE_1_SW; 
+//;
+      A     #MAIN_SERVICE_1_SW; 
+      O     "M 18.1"; 
+      JNB   CON1; 
+      A     "HMI_DB".HMI_CONVEYOR_1_TEST_SSW; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Elevator_Disable; 
+      S     "DB UTILITY".Pusher_1_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_1_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_1_TEST_SSW; 
+      R     "DB UTILITY".Elevator_Disable; 
+      R     "DB UTILITY".Pusher_1_Disable; 
+
+CON1: R     #SERVICE_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 158.2"; 
+      =     "M 18.1"; 
+NETWORK
+TITLE =Step 2N1 - Power ON
+
+      A     "M 0.3"; 
+      S     "M 19.0"; 
+NETWORK
+TITLE =Step 2N2 - Conveyor 1 - Ready
+
+      AN    "B 5.4"; 
+      A     "M 0.3"; 
+      A     "M 19.0"; 
+      S     "M 19.1"; 
+NETWORK
+TITLE =Step 2N3 - Conveyor 1 - Packet Runs IN
+
+      A     "M 16.2"; 
+      AN    "M 16.3"; 
+      A     "M 0.3"; 
+      A     "M 19.1"; 
+      S     "M 19.2"; 
+NETWORK
+TITLE =Step 2N4 - Conveyor 1 - Packet IN
+
+      A     "B 5.4"; 
+      A     "M 0.3"; 
+      A     "M 19.2"; 
+      S     "M 19.3"; 
+NETWORK
+TITLE =Step 2N5 - Conveyor 1 - Packet Exits
+
+      A     "M 23.0"; 
+      AN    "M 23.1"; 
+      A     "M 0.3"; 
+      A     "M 19.3"; 
+      S     "M 19.4"; 
+NETWORK
+TITLE =Step 2N6 - Conveyor 1 - Packet Out
+
+      AN    "B 5.4"; 
+      A     "M 0.3"; 
+      A     "M 19.4"; 
+      S     "M 19.5"; 
+NETWORK
+TITLE =Step 2N7 - Conveyor 1 - Done
+
+      A     "B 5.5"; 
+      A     "M 0.3"; 
+      A     "M 19.5"; 
+      S     "M 19.6"; 
+NETWORK
+TITLE =Step 2N8 - Conveyor 1 - Steps Register - Reset
+
+      AN    "B 5.5"; 
+      A     "M 0.3"; 
+      A     "M 19.6"; 
+      S     "M 19.7"; 
+NETWORK
+TITLE =Conveyor 1 - Steps Register - Reset
+
+      A(    ; 
+      O     "M 19.7"; 
+      O     "DB UTILITY".T19_DN; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_1_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JNB   INIT; 
+      L     W#16#0; 
+      T     "MW 19"; 
+
+INIT: CLR   ; 
+NETWORK
+TITLE =Soft Timer 19 Reset
+
+      A     "M 19.2"; 
+      AN    "M 19.3"; 
+      A     "M 0.3"; 
+      JCN   R191; 
+      JU    E191; 
+
+R191: L     L#0; 
+      T     "DB UTILITY".T19_ET; 
+      R     "DB UTILITY".T19_DN; 
+
+E191: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 19 Add
+
+      A     "M 19.2"; 
+      AN    "M 19.3"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "DB UTILITY".T19_DN; 
+      JCN   E192; 
+
+      L     "DB UTILITY".T19_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T19_ET; 
+
+E192: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 19 Done 10s
+
+      L     "DB UTILITY".T19_ET; 
+      L     L#10000; 
+      >=D   ; 
+      =     "DB UTILITY".T19_DN; 
+NETWORK
+TITLE =Cross Conveyor - Fast (Always)
+
+      A(    ; 
+      A     "M 19.2"; 
+      AN    "M 19.3"; 
+      O     ; 
+      A     "M 19.4"; 
+      AN    "M 19.7"; 
+      )     ; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #SERVICE_RUN; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      A     "M 0.3"; 
+      =     "A 43.1"; 
+
+NETWORK
+TITLE =Cross Conveyor - VFD Release
+
+      A(    ; 
+      A     "M 19.2"; 
+      AN    "M 19.3"; 
+      O     ; 
+      A     "M 19.4"; 
+      AN    "M 19.7"; 
+      )     ; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O(    ; 
+      A     #SERVICE_RUN; 
+      AN    "B 5.4"; 
+      )     ; 
+      A     "A 43.1"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      A     "M 0.3"; 
+      =     "A 43.0"; 
+NETWORK
+TITLE =Any Conveyors Packet mS Test
+
+//    A     "B 10.7"
+//    A     "A 48.6"
+
+
+      A     "B 10.6"; 
+      A     "A 48.3"; 
+
+
+
+
+
+
+      =     #SENSOR_TEST; 
+//;
+      A     #SENSOR_TEST; 
+      FP    "FP 147.7"; 
+      JNB   NRST; 
+      L     0; 
+      T     "COLLATORS DB".Any_Conveyors_mS; 
+
+NRST: A     #SENSOR_TEST; 
+      JNB   NCNT; 
+      L     "COLLATORS DB".Any_Conveyors_mS; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "COLLATORS DB".Any_Conveyors_mS; 
+
+NCNT: CLR   ; 
+
+END_FUNCTION
+

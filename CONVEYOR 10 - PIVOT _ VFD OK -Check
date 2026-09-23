@@ -1,0 +1,681 @@
+FUNCTION "CONVEYOR 10 - PIVOT" : VOID
+TITLE =Pivot Conveyor 10 - Collator  FC1054
+NAME : POS_12
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  PIVOT_SERVICE_SW : BOOL ;	
+  PIVOT_UP : BOOL ;	
+  PIVOT_DN : BOOL ;	
+  CONVEYOR_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  BARRIER_BLINKER : BOOL ;	//Feeder Safety Light Barrier
+  PACKET_WIDTH_10 : WORD ;	//Collator Conveyor 10 - Packet Width
+  FRAC_PACKET_WIDTH_10 : WORD ;	//Collator Conveyor 10 - Fraction of Packet Width
+  PACKET_WIDTH_FRAC_10 : WORD ;	//Collator Conveyor 10 - Packet Width + Fraction
+  SURFACE_LENGTH_LEFT_10 : WORD ;	//Collator Conveyor 10 - Surface Length Left
+  QTY_MAX_10 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Pivot Service 
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_10_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 54.3"; 
+      JNB   PIVO; 
+
+      A     "HMI_DB".HMI_PIVOT_SERVICE_SSW; 
+      =     #PIVOT_SERVICE_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_10_TEST_SSW; 
+//;  
+      A     "HMI_DB".HMI_CONVEYOR_10_TEST_SSW; 
+      =     #CONVEYOR_RUN; 
+      R     "HMI_DB".HMI_PIVOT_SERVICE_SSW; 
+//;
+      A(    ; 
+      O     #PIVOT_SERVICE_SW; 
+      O     #CONVEYOR_RUN; 
+      )     ; 
+      S     "DB UTILITY".Pusher_2_Disable; 
+//;
+      A     #PIVOT_SERVICE_SW; 
+      A     "HMI_DB".HMI_PIVOT_TEST_DN_SSW; 
+      =     #PIVOT_DN; 
+//;
+      A     #PIVOT_SERVICE_SW; 
+      A     "HMI_DB".HMI_PIVOT_TEST_UP_SSW; 
+      =     #PIVOT_UP; 
+//;
+      AN(   ; 
+      O     "P 15.0"; 
+      O     "P 15.1"; 
+      )     ; 
+      R     #CONVEYOR_RUN; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_PIVOT_SERVICE_SSW; 
+      R     "HMI_DB".HMI_CONVEYOR_10_TEST_SSW; 
+      R     "HMI_DB".HMI_PIVOT_TEST_DN_SSW; 
+      R     "HMI_DB".HMI_PIVOT_TEST_UP_SSW; 
+      R     "DB UTILITY".Pusher_2_Disable; 
+
+PIVO: R     #PIVOT_SERVICE_SW; 
+      R     #CONVEYOR_RUN; 
+      R     #INITIALISATION; 
+      R     #PIVOT_DN; 
+      R     #PIVOT_UP; 
+      FP    "FP 169.2"; 
+      =     "M 54.3"; 
+NETWORK
+TITLE =Conveyor 10 - Packet Width - Measurements [mS]
+
+      A     "B 10.4"; // C10 InFeed Sens
+      A     "M 55.1"; // Collator Trigger - Step
+      S     "M 166.4"; 
+//;
+      A     "M 166.4"; 
+      =     "FM350 DB".CONTROL_SIGNALS.SW_GATE4; 
+//;
+      A     "M 166.4"; 
+      FP    "FP 149.7"; 
+      JNB   NRAZ; 
+      L     0; 
+      T     "COLLATORS DB".Packet_Width_C10_mS; 
+
+NRAZ: A     "M 166.4"; 
+      JNB   NCNT; 
+      L     "COLLATORS DB".Packet_Width_C10_mS; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "COLLATORS DB".Packet_Width_C10_mS; 
+
+NCNT: A     "M 166.4"; 
+      AN    "B 10.4"; 
+      JNB   M104; 
+      L     "FM350 DB".ACT_CNTV4; // C10 Encoder Counter
+      T     #PACKET_WIDTH_10; 
+      T     "COLLATORS DB".Packet_Width_C10; 
+//;
+      L     #PACKET_WIDTH_10; 
+      ITD   ; 
+      DTR   ; 
+      L     2.000000e-001; 
+      *R    ; 
+      RND   ; 
+
+      T     "COLLATORS DB".Frac_Packet_Width_C10; 
+
+      T     #FRAC_PACKET_WIDTH_10; 
+      L     #PACKET_WIDTH_10; 
+      +I    ; 
+      T     "COLLATORS DB".Packet_Width_Frac_C10; 
+      T     #PACKET_WIDTH_FRAC_10; 
+      R     "M 166.4"; 
+      S     "M 167.2"; 
+
+M104: NOP   0; 
+NETWORK
+TITLE =Conveyor 10 - Packet Width Measurements [mm] - While Collating
+
+      A     "B 10.4"; // C10 InFeed Sens - New Packet
+      FP    "M 188.5"; 
+      A     "A 48.0"; 
+      JCN   NPRT; 
+
+      L     "FM350 DB".ACT_CNTV5; // C10 Encoder Counter
+      T     "HOUSE_KEEPING DB".C10_Encoder_READ_Mem; 
+
+NPRT: AN    "B 10.4"; // C10 InFeed Sens - New Packet End
+      FP    "M 188.6"; 
+      JCN   NTKE; 
+
+      L     "FM350 DB".ACT_CNTV5; // C10 Encoder Counter
+      L     "HOUSE_KEEPING DB".C10_Encoder_READ_Mem; 
+      -I    ; 
+      T     "HOUSE_KEEPING DB".C10_Packet_Width_ep; // C4 Packet Length [ep] 
+      DTR   ; 
+//;
+      L     3.100000e-001; //  Encoder Wheel 283mm / 600 PPR  [mm/pulse]
+      *R    ; 
+      RND   ; 
+      T     "HOUSE_KEEPING DB".C10_Packet_Width_mm; 
+
+NTKE: NOP   0; 
+NETWORK
+TITLE =Conveyor 10 - Packet Width Measurements [mS]
+
+
+
+NETWORK
+TITLE =Conveyor 10 - Surface Length Left (PulseUnit) - Measurements
+
+      A     "M 166.5"; 
+      =     "FM350 DB".CONTROL_SIGNALS.SW_GATE5; 
+//;
+      A     "M 166.5"; 
+      JNB   M665; 
+      L     "COLLATORS DB".Surface_Length_10; 
+      L     "FM350 DB".ACT_CNTV5; 
+      -D    ; 
+      T     #SURFACE_LENGTH_LEFT_10; 
+      L     0; 
+      >=I   ; 
+      JNB   T010; 
+      L     #SURFACE_LENGTH_LEFT_10; 
+      T     "COLLATORS DB".Surface_Length_Left_10; 
+
+T010: NOP   0; 
+
+M665: NOP   0; 
+
+      A     "M 55.1"; // Collator Trigger
+      FP    "FP 154.6"; 
+      S     "M 166.5"; 
+NETWORK
+TITLE =Conveyor 10 - Space Between Packet - Calculator
+
+      A     "M 167.2"; 
+      FP    "FP 154.5"; 
+      JNB   M582; 
+      L     #SURFACE_LENGTH_LEFT_10; 
+      L     "COLLATORS DB".Frac_Packet_Width_C10; 
+      -I    ; 
+      T     "MW 216"; 
+
+M582: NOP   0; 
+
+      A     "M 167.2"; 
+      A(    ; 
+      L     #SURFACE_LENGTH_LEFT_10; 
+      L     "MW 216"; 
+      <=I   ; 
+      )     ; 
+      R     "M 167.2"; 
+NETWORK
+TITLE =Conveyor 10 - Collating Surface Manager
+
+      A     "M 166.5"; 
+      AN    "M 55.4"; 
+      AN    "M 54.4"; // Collator Full - Count Flag Off
+      A     "M 55.3"; 
+      JNB   M554; 
+
+      A(    ; 
+      L     #SURFACE_LENGTH_LEFT_10; 
+      L     "COLLATORS DB".Packet_Width_Frac_C10; 
+      <I    ; 
+      )     ; 
+      S     "M 54.4"; // Collator Full - Count - Set
+
+M554: NOP   0; 
+
+      A     "M 167.3"; // C10 Step Reset - Mem
+      R     "M 54.4"; // Collator Full - Count - Reset
+NETWORK
+TITLE =Conveyor 10 - Surface Length Reset
+
+      ON(   ; 
+      O     "P 15.0"; // While C10 Pivoting...
+      O     "P 15.1"; 
+      )     ; 
+      L     S5T#200MS; 
+      SD    "Timer 104"; 
+//;
+      A     "Timer 104"; // C10 Surface Length Reset 
+      R     "M 166.4"; 
+      R     "M 166.5"; 
+NETWORK
+TITLE =Clearing - C10 Counters Reset
+
+      A     "M 10.5"; // UpStream Cleared
+      A     "M 55.1"; // Collator Trigger
+      AN    "M 55.4"; 
+      A     "M 54.0"; 
+      =     "M 54.5"; // 10 Clearing Command
+//;
+      A     "M 54.5"; // 10 Clearing Command
+      A     "M 6.3"; 
+      S     "M 166.4"; // Keep Setting / Reseting 
+      S     "M 166.5"; 
+//;
+      A     "M 54.5"; // 10 Clearing Command
+      A     "M 6.3"; 
+      FN    "FN 155.2"; 
+      R     "M 166.4"; 
+      R     "M 166.5"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Power Enable
+
+      A     "M 0.3"; 
+      =     "M 54.0"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Power On - Empty on Initiate
+
+      A     "M 54.0"; 
+      FP    "FP 154.1"; // Empty on Power ON
+      A     "B 10.5"; 
+      S     "M 55.1"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Full Status Sensing
+
+      A(    ; 
+      O     "B 10.5"; // Collator Full - Sens
+      O     "M 54.4"; // Collator Full - Count Flag
+      )     ; 
+      A     "M 55.1"; // Collator Trigger
+      AN    "M 55.4"; // Collator Not Full - Step
+      A     "M 54.0"; 
+      S     "M 54.6"; // Collator Full - Flag Set
+//;
+      A     "M 55.4"; // Collator Full - Step
+      R     "M 54.6"; // Collator Full - Flag Reset 2
+NETWORK
+TITLE =Pivot Conveyor 10 - Exit Monitor TimeOut  3s
+
+      A     "B 10.6"; // Exit Sensor - Only Pass-By
+      L     S5T#3S; 
+      SD    "Timer 116"; // Packet is Stuck !
+NETWORK
+TITLE =Pivot Conveyor 10 - Infeed TimeOut  6s
+
+      A     "M 55.2"; 
+      AN    "M 55.3"; // Collating Stop
+      A     "M 54.0"; 
+      L     S5T#6S; // Collating TimeOut 6s
+      SD    "Timer 54"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Fault
+
+      A(    ; 
+      A(    ; 
+      A     "M 56.2"; 
+      AN    "M 56.3"; 
+      O     ; 
+      A     "M 56.5"; 
+      AN    "M 56.6"; 
+      )     ; 
+      A     "Timer 116"; // Something is Stuck !
+      O     "Timer 54"; // Collating Packet Stuck !
+      )     ; 
+      S     "M 54.7"; 
+//;
+      A     "M 9.1"; 
+      AN    "B 10.4"; 
+      AN    "B 10.6"; 
+      A     "M 54.0"; 
+      R     "M 54.7"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - InFeed Time Too Long ? - Fault
+
+      A     "Timer 54"; 
+      S     "M 54.1"; // C10 has Stopped!? - Set
+//;
+      A     "M 9.1"; 
+      AN    "B 10.4"; 
+      AN    "B 10.6"; 
+      A     "M 54.0"; 
+      R     "M 54.1"; // C10 has Stopped - Reset
+NETWORK
+TITLE =Pivot Conveyor 10 - Conveyor TimeOut  30s
+
+      A     "M 55.1"; 
+      A     "A 48.0"; 
+      A     "M 54.0"; 
+//    O     "M 10.0"
+      L     S5T#30S; 
+      SD    "Timer 57"; 
+NETWORK
+TITLE =Collating
+//Collating
+
+
+NETWORK
+TITLE =Pivot Conveyor 10 - Emptying Recovery Delay
+
+      A     "M 55.6"; // C10 Steps Reset
+      S     "M 167.3"; // C10 Step Reset - Mem Set
+//;
+      A     "M 167.3"; // C10 Step Reset - Mem
+      L     S5T#5S; 
+      SD    "Timer 82"; 
+      R     "M 166.5"; 
+//;
+      A     "Timer 82"; 
+      R     "M 167.3"; // C10 Step Reset - Mem Reset
+NETWORK
+TITLE =Pivot Conveyor 10 - Byte Register - Reset
+
+      A(    ; 
+      O     "M 55.6"; // C10 Step Register - Reset
+      O     "Timer 57"; 
+      O     #INITIALISATION; 
+      )     ; 
+      A     "M 54.0"; 
+      JNB   M001; 
+      L     W#16#0; 
+      T     "MB 55"; 
+      T     "HMI_DB".CONV_10_COUNT; 
+
+M001: NOP   0; 
+NETWORK
+TITLE =Step 11N1 - Power ON
+
+      A     "M 54.0"; 
+      S     "M 55.0"; 
+NETWORK
+TITLE =Step 11N2 - Conveyor 10 - Run
+
+      A     "B 10.3"; // C10 Start - Sens Trigger
+      A     "M 51.7"; // Pusher 2 FWD
+      AN    "M 52.1"; // Pusher 2 Not Done
+      A     "M 54.0"; 
+      A     "M 55.0"; 
+      S     "M 55.1"; // C10 Start - Step Set
+//;
+      A(    ; 
+      AN    "M 54.4"; // Collator Full - Count Flag Off
+      A     "M 55.3"; // Collating Stop
+      AN    "M 55.4"; // Not Full - Collating
+      AN    "M 54.6"; // Not Full Yet
+      ON    "M 55.0"; 
+      )     ; 
+      R     "M 55.1"; // Collating Stop - Step 1 Reset
+NETWORK
+TITLE =Step 11N3 - Conveyor 10 - Collating Start
+
+      A     "B 10.4"; // Collating Start - Sens Trigger
+      A     "M 54.0"; 
+      A     "M 55.1"; // C10 Started - Step 
+      S     "M 55.2"; // Collating Start - Step Set
+//;
+      AN    "M 55.1"; // Collating Stopped - Step 
+      R     "M 55.2"; // Collating Done - Step Reset
+NETWORK
+TITLE =Step 11N4 - Conveyor 10 - Collating Stop
+
+      A(    ; 
+      ON    "B 10.4"; // Collating Start - Sens Trigger Done
+      O     "M 54.7"; // Fault Flag
+      )     ; 
+      A     "M 54.0"; 
+      A     "M 55.2"; // Collating Started - Step 
+      S     "M 55.3"; // Collating Done - Step Set
+//;
+      AN    "M 55.2"; // Collating Stopped - Step 
+      R     "M 55.3"; // Collating Done - Step Reset
+NETWORK
+TITLE =Step 11N5 - Conveyor 10 - Conveyor Full - Start Transfer
+
+      A(    ; 
+      O     "B 10.5"; // Collator Full - Sens
+      O     "M 54.4"; // Collator Full - Count
+      )     ; 
+      A     "M 54.0"; 
+      A     "M 55.3"; // Collating Done - Step
+      O     #CONVEYOR_RUN; // SERVICE - Triggers C11 or C21
+      S     "M 55.4"; // Collator Full - Step
+      R     "M 54.6"; // Collator Full - Flag Reset
+NETWORK
+TITLE =Step 11N6 - Conveyor 10 - Transfering 
+//Called by Empty Conveyors 11, 21 ...
+//On Clearing Mode, Flag M 8.4 Holds the Pivot Conveyor 10 Belt from Emptying 
+//until New Order Confirm !
+      A(    ; 
+      A     "P 15.0"; // Pivot Position OK
+      A     "M 79.1"; // Called by C21
+      AN    "M 79.2"; 
+      O     ; 
+      A     "P 15.1"; // Pivot Position OK
+      A     "M 59.1"; // Called by C11
+      AN    "M 59.2"; 
+      )     ; 
+      AN    "M 54.7"; 
+      A     "M 54.0"; 
+      AN    "M 8.4"; // Hold After Clearing - Not Yet!
+      AN    "P 10.0"; // Pusher 2 Home - Confirm
+      S     "M 55.5"; // C10 Transfer Step - Set
+      R     "M 58.2"; // C10 Clearing - UpStream Cleared - Trigger Reset
+NETWORK
+TITLE =Pivot Conveyor 10 - Transfer Max Time 20s
+
+      A     "M 55.5"; // Transfer Step
+      A     "A 48.0"; 
+      A     "M 54.0"; 
+      L     S5T#20S; 
+      SD    "Timer 55"; // Transfer TimeOut
+NETWORK
+TITLE =Step 11N7 - Conveyor 10 - Steps Register - Reset
+
+      A(    ; 
+      A     "P 15.0"; 
+      A     "M 79.2"; 
+      O     ; 
+      A     "P 15.1"; 
+      A     "M 59.2"; 
+      O     "Timer 55"; 
+      )     ; 
+      A     "M 54.0"; 
+      A     "M 55.5"; // Transfer Step
+      S     "M 55.6"; // C10 Step Register Reset - Set
+      S     "M 58.3"; // C10 All Steps - Reset Memory - Set
+NETWORK
+TITLE =Pivot Conveyor 10 - VFD Release
+
+      A(    ; 
+      A     "M 55.1"; // Collating Start
+      AN    "M 55.3"; // Collating Stop
+      O     ; 
+      A     "M 55.5"; // Transfer Step
+      AN    "M 55.6"; // C10 Step Register - Not Yet Reset
+      A     "A 48.1"; 
+      )     ; 
+      A     "M 54.0"; 
+      A(    ; 
+      O     "P 15.0"; // High or ...
+      O     "P 15.1"; // Low Position !
+      )     ; 
+      AN    "M 98.2"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      =     "A 48.0"; // C10 Belt VFD - Release
+      R     "M 58.3"; // C10 All Steps - Reset Memory - Reset
+NETWORK
+TITLE =Pivot Conveyor VFD - Fast
+
+      A     "M 55.5"; // Transfer Step - Trigger
+      AN    "M 55.6"; // C10 Step Register - Not Yet Reset
+      A     "M 54.0"; 
+      AN    "M 98.2"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      =     "A 48.1"; // C10 Belt VFD - Fast
+NETWORK
+TITLE =Pivot Conveyor VFD - Master TimeOut
+
+      A     "A 48.0"; // Conveyor Running
+      L     S5T#1M; 
+      SD    "Timer 109"; // Master TimeOut
+//;
+      A     "Timer 109"; // Master TimeOut
+      S     "M 55.6"; // Step Register - Reset Flag Set
+      R     "M 10.0"; // Clearing CMD - Reset
+      R     "M 12.1"; // Packet ON - Reset
+NETWORK
+TITLE =Pivot Action
+//Pivot Action
+
+
+NETWORK
+TITLE =Step 11N10 - Conveyor 10 - Pivot Down Ready
+
+      A     "P 15.0"; 
+      A     "M 55.5"; 
+      A     "M 54.0"; 
+      S     "M 56.1"; 
+//;
+      A     "M 56.3"; 
+      O     "M 54.3"; 
+      R     "M 56.1"; 
+NETWORK
+TITLE =Step 11N11 - Conveyor 10 - Pivot Down
+
+      A     "P 15.0"; 
+      AN    "M 56.0"; 
+      A     "M 79.2"; 
+      A     "M 56.1"; 
+      A     "M 54.0"; 
+      S     "M 56.2"; 
+//;
+      AN    "M 56.1"; 
+      O     "M 54.3"; 
+      R     "M 56.2"; 
+NETWORK
+TITLE =Step 11N12 - Conveyor 10 - Move Dn Stop
+
+      A     "P 15.1"; 
+      A     "M 54.0"; 
+      A     "M 56.2"; 
+      S     "M 56.3"; 
+//;
+      AN    "M 56.2"; 
+      R     "M 56.3"; 
+NETWORK
+TITLE =Step 11N13 - Conveyor 10 - Pivot Up - Ready
+
+      A     "P 15.1"; 
+      A     "M 55.5"; 
+      A     "M 54.0"; 
+      S     "M 56.4"; 
+//;
+      A     "M 56.6"; 
+      O     "M 54.3"; 
+      R     "M 56.4"; 
+NETWORK
+TITLE =Step 11N14 - Conveyor 10 - Pivot Up
+
+      A     "P 15.1"; 
+      AN    "M 56.0"; 
+      A     "M 59.2"; 
+      A     "M 56.4"; 
+      A     "M 54.0"; 
+      S     "M 56.5"; 
+//;
+      AN    "M 56.4"; 
+      O     "M 54.3"; 
+      R     "M 56.5"; 
+NETWORK
+TITLE =Step 11N15 - Conveyor 10 - Move Up Stop
+
+      A     "P 15.0"; 
+      A     "M 54.0"; 
+      A     "M 56.5"; 
+      S     "M 56.6"; 
+//;
+      AN    "M 56.5"; 
+      R     "M 56.6"; 
+NETWORK
+TITLE =Conveyor 10 - Pivot Down - Actuator
+
+      A(    ; 
+      A     "M 56.2"; 
+      AN    "M 56.3"; 
+      AN    "M 54.7"; 
+      A     "M 54.0"; 
+      AN    #PIVOT_SERVICE_SW; 
+      O     ; 
+      A     "M 190.6"; 
+      A     "M 161.1"; 
+      )     ; 
+      O     #PIVOT_DN; 
+      AN    "P 15.1"; 
+      AN    "A 48.0"; 
+      =     "K 53.0"; 
+NETWORK
+TITLE =Conveyor 10 - Pivot Up - Actuator
+
+      A(    ; 
+      A     "M 56.5"; 
+      AN    "M 56.6"; 
+      AN    "M 54.7"; 
+      A     "M 54.0"; 
+      AN    #PIVOT_SERVICE_SW; 
+      O     ; 
+      A     "M 190.6"; 
+      A     "M 161.0"; 
+      )     ; 
+      O     #PIVOT_UP; 
+      AN    "P 15.0"; 
+      AN    "A 48.0"; 
+      =     "K 53.1"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Go Down - TimeOut 10s
+
+      A(    ; 
+      A     "K 53.0"; 
+      AN    "P 15.1"; 
+      O     ; 
+      A     "K 53.1"; 
+      AN    "P 15.0"; 
+      O     ; 
+      AN    "P 15.0"; 
+      AN    "P 15.1"; 
+      )     ; 
+      A     "M 0.3"; 
+      L     S5T#5S; 
+      SD    "Timer 53"; 
+NETWORK
+TITLE =Pivot Conveyor 10 - Pivot Alarm
+
+      A(    ; 
+      A     "M 55.5"; 
+      AN    "M 55.6"; 
+      A     "A 48.1"; 
+      )     ; 
+      A(    ; 
+      O     "K 53.0"; // Pivot Moving !
+      O     "K 53.1"; // Pivot Moving !
+      )     ; 
+      AN    "M 10.5"; // UpStream Not Cleared
+      S     "M 98.2"; 
+//;
+      A     "M 171.5"; 
+      R     "M 98.2"; 
+NETWORK
+TITLE =Pivot Conveyor 10 Alarm
+
+      A     "Timer 53"; 
+      S     "M 98.1"; 
+//;
+      A     "M 9.1"; 
+      R     "M 98.1"; 
+NETWORK
+TITLE =DBW  236 - Conveyor 10 - Position Transfer
+
+      OPN   "DB LAUER"; 
+
+      O     "P 15.0"; 
+      O     "P 15.1"; 
+      JC    M003; 
+      L     W#16#0; 
+      T     DBW  236; 
+      BEC   ; 
+
+M003: AN    "P 15.1"; 
+      JC    M004; 
+      L     W#16#1; 
+      T     DBW  236; 
+      BEC   ; 
+
+M004: L     W#16#2; 
+      T     DBW  236; 
+END_FUNCTION
+

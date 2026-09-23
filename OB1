@@ -1,0 +1,140 @@
+ORGANIZATION_BLOCK "CYCLIC"
+TITLE =Main Cycle  OB1
+VERSION : 0.0
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//1 (Priority of 1 is lowest)
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =Scan Time
+
+      L     #OB1_PREV_CYCLE; 
+      T     "DB UTILITY".Scan_Cycle_Previous; 
+NETWORK
+TITLE =Scan Triggers
+
+      A     "M 6.0"; 
+      FP    "M 188.0"; 
+      =     "M 13.0"; 
+//;
+      A     "M 6.1"; 
+      FP    "M 188.1"; 
+      =     "M 13.1"; 
+//;
+      A     "M 6.3"; 
+      FP    "M 188.2"; 
+      =     "M 13.2"; 
+//;
+      A     "M 6.5"; 
+      FP    "M 188.3"; 
+      =     "M 13.3"; 
+NETWORK
+TITLE =Packet Counters
+
+
+      CALL "HMI PACKET COUNTER OLD" ;
+
+      A     M    333.3; 
+      JCN   NOOP; 
+
+      CALL "HMI PACKET COUNTER  NEW" ;
+
+NOOP: NOP   0; 
+
+//  CALL  "ELEVATOR TEST FUNCTION"
+
+NETWORK
+TITLE =Lauer Comms
+
+      CALL "LAUER_RE-START_PUP" ;
+
+NETWORK
+TITLE =Utility Blocks
+
+      CALL "CONTROL" ;
+      CALL "FM350 COUNTERS" ;
+      CALL "BLINKER" ;
+      CALL "LIGHT CURTAIN - SAFETY" ;
+
+NETWORK
+TITLE =Program Blocks
+
+
+      CALL "CONVEYORS CLEARING" ;
+
+      CALL "CONVEYOR 0 + PUSHER 0" ;
+      CALL "ELEVATOR + PUSHER 1" ;
+      CALL "CONVEYOR 1 - BELT" ;
+      CALL "CONVEYOR 2 - ANGLE B+R" ;
+      CALL "CONVEYOR 3 - SLAT" ;
+      CALL "CONVEYOR 4 - COLLATOR" ;
+      CALL "CONVEYOR 5 - LINK" ;
+
+      CALL "CONVEYOR 6 - FLIP DELIV." ;
+      CALL "CONVEYOR 7 - FLIPPER" ;
+
+      CALL "CONVEYOR 8 - TURNTABLE" ;
+
+      CALL "CONVEYOR 9 - PUSHER 2" ;
+      CALL "CONVEYOR 10 - PIVOT" ;
+      CALL "CONVEYOR 11 - LINK 1 LO" ;
+      CALL "CONVEYOR 12 - LINK 2 LO" ;
+      CALL "CONVEYOR 13 - DELIV. LO" ;
+      CALL "FEEDER FINGERS" ;
+      CALL "FEEDER LIFT" ;
+      CALL "CONVEYOR 21 - LINK 1 HI" ;
+      CALL "CONVEYOR 22 - LINK 2 HI" ;
+      CALL "CONVEYOR 23 - DELIV. HI" ;
+
+NETWORK
+TITLE =Program Init - Switch ON
+
+      A     "M 0.3"; 
+      A     "S 2.2"; 
+      JNB   M022; 
+      CALL "SETUP" ;
+
+M022: NOP   0; 
+NETWORK
+TITLE =Faults Monitor
+
+      A     "M 0.4"; 
+      A     "M 0.5"; 
+      A     "M 0.6"; 
+      A(    ; 
+      L     "MD 1"; 
+      L     0; 
+      >I    ; 
+      )     ; 
+      =     "M 5.1"; 
+NETWORK
+TITLE =Blinker
+
+      A(    ; 
+      A     "M 6.3"; 
+      A     "M 6.7"; 
+      AN    "M 5.1"; 
+      O     ; 
+      A     "M 5.1"; 
+      A     "M 6.1"; 
+      )     ; 
+      A     "M 0.3"; 
+      =     "M 5.7"; 
+NETWORK
+TITLE =Always ON
+
+      AN    "M 50.0"; 
+      S     "M 50.0"; 
+END_ORGANIZATION_BLOCK
+

@@ -1,0 +1,186 @@
+DATA_BLOCK "DEBOUNCER COUNTER DB"
+TITLE = DB8
+VERSION : 0.1
+
+
+  STRUCT 	
+   Conveyor_C3_Slat : "Debouncer Counter Struct";	//C3 Struct
+   Conveyor_C4_Collator : "Debouncer Counter Struct";	//C4 Struct
+   Conveyor_C5_Link : "Debouncer Counter Struct";	//C5 Struct
+   Conveyor_C6_Delivery : "Debouncer Counter Struct";	//C6 Struct
+   Conveyor_C10_Collator : "Debouncer Counter Struct";	//C10 Struct
+   Conveyor_C11_Link : "Debouncer Counter Struct";	//C11 Struct
+   Conveyor_C12_Link : "Debouncer Counter Struct";	//C12 Struct
+   Conveyor_C13_Delivery : "Debouncer Counter Struct";	//C13 Struct
+   Conveyor_C21_Link : "Debouncer Counter Struct";	//C21 Struct
+   Conveyor_C22_Link : "Debouncer Counter Struct";	//C22 Struct
+   Conveyor_C23_Delivery : "Debouncer Counter Struct";	//C23 Struct
+  END_STRUCT ;	
+BEGIN
+   Conveyor_C3_Slat.Bit0_ON_Latch := FALSE; 
+   Conveyor_C3_Slat.Bit1_ON_Latch := FALSE; 
+   Conveyor_C3_Slat.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C3_Slat.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C3_Slat.Transfer_Active := FALSE; 
+   Conveyor_C3_Slat.Error := FALSE; 
+   Conveyor_C3_Slat.Spare := FALSE; 
+   Conveyor_C3_Slat.FirstScan_Done := FALSE; 
+   Conveyor_C3_Slat.Bit0_Entry_mS := 0; 
+   Conveyor_C3_Slat.Bit1_Exit_mS := 0; 
+   Conveyor_C3_Slat.Space_Between := 0; 
+   Conveyor_C3_Slat.InFeed_Window_mS := 0; 
+   Conveyor_C3_Slat.Exit_Window_mS := 0; 
+   Conveyor_C3_Slat.Maximum_Count := 0; 
+   Conveyor_C3_Slat.Count_Result := 0; 
+   Conveyor_C4_Collator.Bit0_ON_Latch := FALSE; 
+   Conveyor_C4_Collator.Bit1_ON_Latch := FALSE; 
+   Conveyor_C4_Collator.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C4_Collator.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C4_Collator.Transfer_Active := FALSE; 
+   Conveyor_C4_Collator.Error := FALSE; 
+   Conveyor_C4_Collator.Spare := FALSE; 
+   Conveyor_C4_Collator.FirstScan_Done := FALSE; 
+   Conveyor_C4_Collator.Bit0_Entry_mS := 0; 
+   Conveyor_C4_Collator.Bit1_Exit_mS := 0; 
+   Conveyor_C4_Collator.Space_Between := 0; 
+   Conveyor_C4_Collator.InFeed_Window_mS := 1163; 
+   Conveyor_C4_Collator.Exit_Window_mS := 0; 
+   Conveyor_C4_Collator.Maximum_Count := 0; 
+   Conveyor_C4_Collator.Count_Result := 0; 
+   Conveyor_C5_Link.Bit0_ON_Latch := FALSE; 
+   Conveyor_C5_Link.Bit1_ON_Latch := FALSE; 
+   Conveyor_C5_Link.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C5_Link.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C5_Link.Transfer_Active := FALSE; 
+   Conveyor_C5_Link.Error := FALSE; 
+   Conveyor_C5_Link.Spare := FALSE; 
+   Conveyor_C5_Link.FirstScan_Done := FALSE; 
+   Conveyor_C5_Link.Bit0_Entry_mS := 0; 
+   Conveyor_C5_Link.Bit1_Exit_mS := 0; 
+   Conveyor_C5_Link.Space_Between := 0; 
+   Conveyor_C5_Link.InFeed_Window_mS := 0; 
+   Conveyor_C5_Link.Exit_Window_mS := 0; 
+   Conveyor_C5_Link.Maximum_Count := 0; 
+   Conveyor_C5_Link.Count_Result := 0; 
+   Conveyor_C6_Delivery.Bit0_ON_Latch := FALSE; 
+   Conveyor_C6_Delivery.Bit1_ON_Latch := FALSE; 
+   Conveyor_C6_Delivery.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C6_Delivery.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C6_Delivery.Transfer_Active := FALSE; 
+   Conveyor_C6_Delivery.Error := FALSE; 
+   Conveyor_C6_Delivery.Spare := FALSE; 
+   Conveyor_C6_Delivery.FirstScan_Done := FALSE; 
+   Conveyor_C6_Delivery.Bit0_Entry_mS := 0; 
+   Conveyor_C6_Delivery.Bit1_Exit_mS := 0; 
+   Conveyor_C6_Delivery.Space_Between := 0; 
+   Conveyor_C6_Delivery.InFeed_Window_mS := 0; 
+   Conveyor_C6_Delivery.Exit_Window_mS := 0; 
+   Conveyor_C6_Delivery.Maximum_Count := 0; 
+   Conveyor_C6_Delivery.Count_Result := 0; 
+   Conveyor_C10_Collator.Bit0_ON_Latch := FALSE; 
+   Conveyor_C10_Collator.Bit1_ON_Latch := FALSE; 
+   Conveyor_C10_Collator.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C10_Collator.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C10_Collator.Transfer_Active := FALSE; 
+   Conveyor_C10_Collator.Error := FALSE; 
+   Conveyor_C10_Collator.Spare := FALSE; 
+   Conveyor_C10_Collator.FirstScan_Done := FALSE; 
+   Conveyor_C10_Collator.Bit0_Entry_mS := 0; 
+   Conveyor_C10_Collator.Bit1_Exit_mS := 0; 
+   Conveyor_C10_Collator.Space_Between := 0; 
+   Conveyor_C10_Collator.InFeed_Window_mS := 0; 
+   Conveyor_C10_Collator.Exit_Window_mS := 0; 
+   Conveyor_C10_Collator.Maximum_Count := 0; 
+   Conveyor_C10_Collator.Count_Result := 0; 
+   Conveyor_C11_Link.Bit0_ON_Latch := FALSE; 
+   Conveyor_C11_Link.Bit1_ON_Latch := FALSE; 
+   Conveyor_C11_Link.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C11_Link.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C11_Link.Transfer_Active := FALSE; 
+   Conveyor_C11_Link.Error := FALSE; 
+   Conveyor_C11_Link.Spare := FALSE; 
+   Conveyor_C11_Link.FirstScan_Done := FALSE; 
+   Conveyor_C11_Link.Bit0_Entry_mS := 0; 
+   Conveyor_C11_Link.Bit1_Exit_mS := 0; 
+   Conveyor_C11_Link.Space_Between := 0; 
+   Conveyor_C11_Link.InFeed_Window_mS := 0; 
+   Conveyor_C11_Link.Exit_Window_mS := 0; 
+   Conveyor_C11_Link.Maximum_Count := 0; 
+   Conveyor_C11_Link.Count_Result := 0; 
+   Conveyor_C12_Link.Bit0_ON_Latch := FALSE; 
+   Conveyor_C12_Link.Bit1_ON_Latch := FALSE; 
+   Conveyor_C12_Link.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C12_Link.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C12_Link.Transfer_Active := FALSE; 
+   Conveyor_C12_Link.Error := FALSE; 
+   Conveyor_C12_Link.Spare := FALSE; 
+   Conveyor_C12_Link.FirstScan_Done := FALSE; 
+   Conveyor_C12_Link.Bit0_Entry_mS := 0; 
+   Conveyor_C12_Link.Bit1_Exit_mS := 0; 
+   Conveyor_C12_Link.Space_Between := 0; 
+   Conveyor_C12_Link.InFeed_Window_mS := 0; 
+   Conveyor_C12_Link.Exit_Window_mS := 0; 
+   Conveyor_C12_Link.Maximum_Count := 0; 
+   Conveyor_C12_Link.Count_Result := 0; 
+   Conveyor_C13_Delivery.Bit0_ON_Latch := FALSE; 
+   Conveyor_C13_Delivery.Bit1_ON_Latch := FALSE; 
+   Conveyor_C13_Delivery.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C13_Delivery.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C13_Delivery.Transfer_Active := FALSE; 
+   Conveyor_C13_Delivery.Error := FALSE; 
+   Conveyor_C13_Delivery.Spare := FALSE; 
+   Conveyor_C13_Delivery.FirstScan_Done := FALSE; 
+   Conveyor_C13_Delivery.Bit0_Entry_mS := 0; 
+   Conveyor_C13_Delivery.Bit1_Exit_mS := 0; 
+   Conveyor_C13_Delivery.Space_Between := 0; 
+   Conveyor_C13_Delivery.InFeed_Window_mS := 0; 
+   Conveyor_C13_Delivery.Exit_Window_mS := 0; 
+   Conveyor_C13_Delivery.Maximum_Count := 0; 
+   Conveyor_C13_Delivery.Count_Result := 0; 
+   Conveyor_C21_Link.Bit0_ON_Latch := FALSE; 
+   Conveyor_C21_Link.Bit1_ON_Latch := FALSE; 
+   Conveyor_C21_Link.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C21_Link.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C21_Link.Transfer_Active := FALSE; 
+   Conveyor_C21_Link.Error := FALSE; 
+   Conveyor_C21_Link.Spare := FALSE; 
+   Conveyor_C21_Link.FirstScan_Done := FALSE; 
+   Conveyor_C21_Link.Bit0_Entry_mS := 0; 
+   Conveyor_C21_Link.Bit1_Exit_mS := 0; 
+   Conveyor_C21_Link.Space_Between := 0; 
+   Conveyor_C21_Link.InFeed_Window_mS := 0; 
+   Conveyor_C21_Link.Exit_Window_mS := 0; 
+   Conveyor_C21_Link.Maximum_Count := 0; 
+   Conveyor_C21_Link.Count_Result := 0; 
+   Conveyor_C22_Link.Bit0_ON_Latch := FALSE; 
+   Conveyor_C22_Link.Bit1_ON_Latch := FALSE; 
+   Conveyor_C22_Link.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C22_Link.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C22_Link.Transfer_Active := FALSE; 
+   Conveyor_C22_Link.Error := FALSE; 
+   Conveyor_C22_Link.Spare := FALSE; 
+   Conveyor_C22_Link.FirstScan_Done := FALSE; 
+   Conveyor_C22_Link.Bit0_Entry_mS := 0; 
+   Conveyor_C22_Link.Bit1_Exit_mS := 0; 
+   Conveyor_C22_Link.Space_Between := 0; 
+   Conveyor_C22_Link.InFeed_Window_mS := 0; 
+   Conveyor_C22_Link.Exit_Window_mS := 0; 
+   Conveyor_C22_Link.Maximum_Count := 0; 
+   Conveyor_C22_Link.Count_Result := 0; 
+   Conveyor_C23_Delivery.Bit0_ON_Latch := FALSE; 
+   Conveyor_C23_Delivery.Bit1_ON_Latch := FALSE; 
+   Conveyor_C23_Delivery.Count_Done_Latch_0 := FALSE; 
+   Conveyor_C23_Delivery.Count_Done_Latch_1 := FALSE; 
+   Conveyor_C23_Delivery.Transfer_Active := FALSE; 
+   Conveyor_C23_Delivery.Error := FALSE; 
+   Conveyor_C23_Delivery.Spare := FALSE; 
+   Conveyor_C23_Delivery.FirstScan_Done := FALSE; 
+   Conveyor_C23_Delivery.Bit0_Entry_mS := 0; 
+   Conveyor_C23_Delivery.Bit1_Exit_mS := 0; 
+   Conveyor_C23_Delivery.Space_Between := 0; 
+   Conveyor_C23_Delivery.InFeed_Window_mS := 0; 
+   Conveyor_C23_Delivery.Exit_Window_mS := 0; 
+   Conveyor_C23_Delivery.Maximum_Count := 0; 
+   Conveyor_C23_Delivery.Count_Result := 0; 
+END_DATA_BLOCK
+

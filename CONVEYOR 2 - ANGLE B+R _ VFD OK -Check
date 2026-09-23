@@ -1,0 +1,434 @@
+FUNCTION "CONVEYOR 2 - ANGLE B+R" : VOID
+TITLE =Angle Conveyor 2  Pos. 4 FC1022
+NAME : POS_4
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_1_SW : BOOL ;	
+  SERVICE_BELT_RUN : BOOL ;	
+  SERVICE_ROLLER_LIFT : BOOL ;	
+  SERVICE_ROLLER_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  PACKET_MEASURE_FLAG : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Service Test
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_2_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_1_STATUS; 
+      =     #MAIN_SERVICE_1_SW; 
+//;
+      A     #MAIN_SERVICE_1_SW; 
+      O     "M 22.1"; 
+      JNB   CON2; 
+      A     "HMI_DB".HMI_CONVEYOR_2B_TEST_SSW; 
+      =     #SERVICE_BELT_RUN; 
+      S     "DB UTILITY".Conveyor_1_Disable; 
+//;
+      A     "HMI_DB".HMI_CONVEYOR_2L_TEST_SSW; 
+      =     #SERVICE_ROLLER_LIFT; 
+      S     "DB UTILITY".Conveyor_1_Disable; 
+//;
+      A     "HMI_DB".HMI_CONVEYOR_2R_TEST_SSW; 
+      =     #SERVICE_ROLLER_RUN; 
+      S     "DB UTILITY".Conveyor_1_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_1_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_2B_TEST_SSW; 
+      R     "HMI_DB".HMI_CONVEYOR_2L_TEST_SSW; 
+      R     "HMI_DB".HMI_CONVEYOR_2R_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_1_Disable; 
+
+CON2: R     #SERVICE_BELT_RUN; 
+      R     #SERVICE_ROLLER_LIFT; 
+      R     #SERVICE_ROLLER_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 158.3"; 
+      =     "M 22.1"; 
+
+NETWORK
+TITLE =Angle Conveyor - Fault / Ready
+
+      A     "M 23.3"; // Packet in Position - Memory
+      AN    "E 5.7"; // Conv 2 NOT High Position
+      A     "DB UTILITY".T23_DN; // Lift Fault TimeOut 2s
+      A     "M 0.3"; 
+      S     "M 22.7"; // Angle Conv 2 - Fault Set
+//;
+      A     "M 171.5"; // Lauer Clr PB
+      AN    "B 5.5"; // NO Packet Entering -> Conv 2
+      A     "M 0.3"; 
+      R     "M 22.7"; // Angle Conv 2 - Fault ReSet
+
+NETWORK
+TITLE =Step 3N1 - Power ON
+
+      A     "M 0.3"; 
+      S     "M 23.0"; 
+
+NETWORK
+TITLE =Step 3N2 - Angle Belt 2 - Packet Exits Conveyor 1
+
+      A     "B 5.4"; // Packet exits Conv 1
+      AN    "B 6.0"; // Conv 2 Free
+      A     "E 5.6"; // Conv 2 Low Position
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      A     "M 0.3"; 
+      A     "M 23.0"; 
+      S     "M 23.1"; // Packet Loading -> Conv 2
+NETWORK
+TITLE =Step 3N3 - Angle Belt 2 - Packet Runs IN
+
+      A     "B 5.5"; // Packet Entering -> Conv 2
+      A     "M 0.3"; 
+      A     "M 23.1"; // Packet Loading -> Conv 2
+      S     "M 23.2"; // Packet Runs IN - Mem Set
+//;
+      ON    "M 23.1"; // NO Packet Loading -> Conv 2
+      R     "M 23.2"; // Packet Runs IN - Mem ReSet
+
+NETWORK
+TITLE =Step 3N4 - Angle Belt 2 - Packet in Position
+
+      A     "B 6.0"; // Packet in Position - Sens
+      A     "M 0.3"; 
+      A     "M 23.2"; // Packet Runs IN - Memory
+      S     "M 23.3"; // Packet in Position - Mem
+NETWORK
+TITLE =Packet Width Measure Bit - Conv 2 Effective
+
+      A     "B 5.4"; // Upstream Conveyor End Sensor
+      A     "M 23.1"; // Packet Loading -> Conv 2
+      A     "K 43.4"; // Belt Running
+      AN    "M 23.4"; // NO Lift Up Command
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      =     #PACKET_MEASURE_FLAG; 
+
+NETWORK
+TITLE =Packet Width Time Reset - Freeze Safe
+
+      A     "M 23.1"; // Packet Loading -> Conv 2
+      O     "DB UTILITY".Freeze_Sequence_1; 
+      JC    NRS1; 
+
+      L     L#0; 
+      T     "MD 260"; // Width [mS]
+
+NRS1: NOP   0; 
+NETWORK
+TITLE =Packet Width Time Count Up From Sensor "B 5.4" 
+
+      A     #PACKET_MEASURE_FLAG; 
+      JCN   NMES; 
+
+      L     "MD 260"; // Width [mS]
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "MD 260"; // Width [mS]
+
+NMES: NOP   0; 
+NETWORK
+TITLE =Middle Travel Time Reset - Freeze Safe
+
+      A     "M 23.3"; // Packet in Position - Mem
+      O     "DB UTILITY".Freeze_Sequence_1; 
+      JC    NRS2; 
+
+      L     L#0; 
+      T     "MD 264"; // Half Width [mS] - Zeroed
+
+NRS2: NOP   0; 
+NETWORK
+TITLE =Middle Travel Time Count Up From B 6.0
+
+      ON    "M 23.3"; // NO Packet in Position - Mem
+      O     "M 23.4"; // Lift Up Command
+      ON    "K 43.4"; // Belt Stopped
+      ON    "M 0.3"; // No Power
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      JC    NCNT; 
+
+      L     "MD 264"; // Half Width [mS]
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "MD 264"; // Half Width [mS] - Add
+
+NCNT: NOP   0; 
+NETWORK
+TITLE =Middle Travel Time Clamp Zero
+
+      L     "MD 264"; // Half Width [mS]
+      L     L#0; 
+      >=D   ; 
+      JC    NMID; 
+
+      L     L#0; 
+      T     "MD 264"; // Half Width [mS] - Reset
+
+NMID: NOP   0; 
+NETWORK
+TITLE =Soft Timer 23 Reset - Lift Fault TimeOut 2s + Freeze Option
+
+      A     "M 23.3"; // Packet in Position - Memory
+      AN    "M 23.4"; // NO Lift Up Command
+      A     "M 0.3"; 
+      JCN   R231; 
+      JU    E231; 
+
+R231: L     L#0; 
+      T     "DB UTILITY".T23_ET; 
+      R     "DB UTILITY".T23_DN; 
+
+E231: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 23 Add
+
+      A     "M 23.3"; // Packet in Position - Memory
+      AN    "M 23.4"; // NO Lift Up Command
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; // Sequence Freezer Bit
+      AN    "DB UTILITY".T23_DN; 
+      JCN   E232; 
+
+      L     "DB UTILITY".T23_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T23_ET; 
+
+E232: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 23 Done 2s
+
+      L     "DB UTILITY".T23_ET; 
+      L     L#2500; // [mS]
+      >=D   ; 
+      =     "DB UTILITY".T23_DN; 
+NETWORK
+TITLE =Soft Timer 24 Reset - Belt TimeOut 8s + Freeze Option
+
+      A     "M 23.1"; 
+      AN    "M 23.3"; 
+      A     "K 43.4"; 
+      A     "M 0.3"; 
+      JCN   R241; 
+      JU    E241; 
+
+R241: L     L#0; 
+      T     "DB UTILITY".T24_ET; 
+      R     "DB UTILITY".T24_DN; 
+
+E241: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 24 Add
+
+      A     "M 23.1"; 
+      AN    "M 23.3"; 
+      A     "K 43.4"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "DB UTILITY".T24_DN; 
+      JCN   E242; 
+
+      L     "DB UTILITY".T24_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T24_ET; 
+
+E242: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 24 Done 8s
+
+      L     "DB UTILITY".T24_ET; 
+      L     L#8000; 
+      >=D   ; 
+      =     "DB UTILITY".T24_DN; 
+      S     "M 24.4"; 
+NETWORK
+TITLE =Step 3N5 - Angle Belt - Lift ("MD 264" to Center the Packet)
+
+      A(    ; 
+      A(    ; 
+      L     "MD 264"; 
+      L     L#2; 
+      *D    ; 
+      L     "MD 260"; 
+      >=D   ; 
+      )     ; 
+      AN    #PACKET_MEASURE_FLAG; 
+      AN    "B 5.5"; 
+      O     "DB UTILITY".T23_DN; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 23.3"; 
+      S     "M 23.4"; 
+NETWORK
+TITLE =Step 3N6 - Angle Rollers - Up
+
+      AN    "B 5.5"; 
+      A     "M 0.3"; 
+      A     "M 23.4"; 
+      S     "M 23.5"; 
+
+NETWORK
+TITLE =Step 3N7 - Angle Rollers - Rollers Up
+
+      A     "E 5.7"; 
+      A     "M 0.3"; 
+      A     "M 23.5"; 
+      S     "M 23.6"; 
+
+NETWORK
+TITLE =Step 3N8 - Angle Rollers - Rollers Run
+
+      A     "M 31.0"; 
+      AN    "M 31.1"; 
+      AN    "M 33.7"; // If No Obstruction Slat End
+      AN    "A 44.3"; // If Conv 4 Not Running 
+      A     "M 27.0"; 
+      AN    "M 27.1"; 
+      AN    "M 22.7"; 
+      A     "M 0.3"; 
+      A     "M 23.6"; 
+      S     "M 23.7"; 
+
+NETWORK
+TITLE =Step 3N9 - Angle Rollers - Packet Exits
+
+      A     "B 6.1"; 
+      A     "M 0.3"; 
+      A     "M 23.7"; 
+      S     "M 24.0"; 
+
+NETWORK
+TITLE =Angle Rollers Done - Delay (Helps Uneven Packets to reach Slat)
+
+      AN    "B 6.0"; // Packet just left 
+      FP    "FP 147.5"; 
+      L     S5T#3S; 
+      SF    "Timer 65"; // Time Extension 3s
+NETWORK
+TITLE =Step 3N10 - Angle Rollers - Steps Register - Reset
+
+      AN    "B 6.1"; // Packet just freed sensor
+      AN    "Timer 65"; // Wait for Time Extension 3s
+      A     "M 0.3"; 
+      A     "M 24.0"; // Packet Exiting
+      S     "M 24.1"; // Conv 2 - Reset
+NETWORK
+TITLE =Conveyor 2 - Steps Register - Reset
+
+      A(    ; 
+      O     "M 24.1"; 
+      O     "DB UTILITY".T24_DN; 
+      O     "DB UTILITY".T25_DN; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_1_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 23"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Soft Timer 25 Reset - Roller TimeOut 8s + Freeze Option
+
+      A     "M 23.7"; 
+      AN    "M 24.1"; 
+      A     "M 0.3"; 
+      JCN   R251; 
+      JU    E251; 
+
+R251: L     L#0; 
+      T     "DB UTILITY".T25_ET; 
+      R     "DB UTILITY".T25_DN; 
+
+E251: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 25 Add
+
+      A     "M 23.7"; 
+      AN    "M 24.1"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T25_DN; 
+      JCN   E252; 
+
+      L     "DB UTILITY".T25_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T25_ET; 
+
+E252: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 25 Done 8s
+
+      L     "DB UTILITY".T25_ET; 
+      L     L#8000; 
+      >=D   ; 
+      =     "DB UTILITY".T25_DN; 
+NETWORK
+TITLE =Angle Conveyor Belt - Run
+
+      A     "M 23.1"; 
+      AN    "M 23.4"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O(    ; 
+      A     #SERVICE_BELT_RUN; 
+      A(    ; 
+      A     "B 6.0"; 
+      L     S5T#200MS; 
+      SD    "Timer 21"; 
+//;
+      AN    "Timer 21"; 
+      )     ; 
+      )     ; 
+      AN    "M 22.7"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      A     "M 0.3"; 
+      =     "K 43.4"; 
+
+NETWORK
+TITLE =Angle Conveyor Rollers - Run
+
+      A     "M 23.7"; 
+      AN    "M 24.1"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #SERVICE_ROLLER_RUN; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      A     "M 0.3"; 
+      =     "K 43.5"; 
+
+NETWORK
+TITLE =Angle Conveyor Rollers - Up
+
+      A     "M 23.5"; 
+      AN    "M 24.1"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #SERVICE_ROLLER_LIFT; 
+      AN    "M 22.7"; 
+      A     "M 0.3"; 
+      =     "Y 43.6"; 
+END_FUNCTION
+
