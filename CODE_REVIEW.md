@@ -296,3 +296,39 @@ FC212 is not called from OB1, so it is presumably called from `"CONTROL"`. Confi
 The `M11.0` ready list includes C5 (`E7.6`), C6 (`E7.7`) and the TurnTable turn (`E9.5`). Their outputs (`A45.0`, `A45.3`, `A47.x`) are still not gated by `M11.1` (§7.2 item 2). A fault on any of those drives stops everything else, but not the drive's own sequence, which keeps running its timeouts.
 
 F1, F2, F3 and F5 were applied afterwards, along with the OB1 Faults Monitor (`<>D`). After these fixes, E-stops and `M2.x` faults also light lamp X120 and set `M5.1` (the fast blink in OB1). F4 and F6–F10 are still open.
+
+---
+
+## 9. FC1208 "DE-BOUNCER / COUNTER" (WIP v0.6), the replacement for FC1206 "DE-BOUNCER OLD"
+
+**Which file:** there is no file named FC1208 or FC1206 in the repo. This section reviews `DE-BOUNCER-COUNTER-WIP` (`FUNCTION "DE-BOUNCER / COUNTER"`, instance data in DB8 `"DEBOUNCER COUNTER DB"`) and its caller `HMI PACKET COUNTER  NEW`. The FC1206 source (`"DE-BOUNCER OLD"`, DB6) and both UDTs are not in the repo, so feature parity was judged from the FC1206 call interface in `HMI PACKET COUNTER OLD`.
+
+### 9.1 Is it ready to replace FC1206?
+**Not yet.** The Collator path (C3, C4) and the Link path (C5) run, but items P1–P4 below miscount in normal production, and resetting the counts from the HMI or the conveyor FCs does not work (P5). The Delivery type is an empty stub, so C6, C13 and C23 can't be switched over at all.
+
+### 9.2 Findings
+Line numbers refer to `DE-BOUNCER-COUNTER-WIP`.
+
+| # | Sev | Line | Finding |
+|---|---|---|---|
+| P1 | 🟠 | 218–229, 266–286, 318–338, 370–376 | **Only one count-down per exit-sensor blockage.** A decrement happens once per `Bit1_ON_Latch`, and the latch only clears when `Bit_1` goes OFF. On Link conveyors, packets queue nose-to-tail against the end sensor ("End Sensor On When Full"), so `Bit_1` can stay ON while several packets leave, and only **one** is subtracted. The same applies to count-up when packets arrive nose-to-tail. **Fix:** after a decrement, if `Bit_1` is still ON, clear `Bit1_Exit_mS` and `Count_Done_Latch_1` so another packet is subtracted each `Exit_Window_mS`. |
+| P2 | 🟠 | 189 | **Spurious extra decrement.** The Bit_0 start resets `Count_Done_Latch_1`. Scenario: a transfer ends with the next packet already sitting on the exit sensor, so `Bit1_ON_Latch` is still set and `Bit1_Exit_mS` is already past the window. The next infeed packet then clears `Done_1`, and the count drops by 1 immediately with no packet leaving. **Fix:** delete line 189. Bit_0 should only touch the Bit_0 latches. |
+| P3 | 🟠 | 243–258, 295–310, 402–411 | **The `Bit0_Entry_mS` timer has no end, and the 5 s "stuck" error is backwards.** `Bit0_Entry_mS` stops counting once the packet is counted (about 500 ms). So a sensor that is really blocked **never** reaches 5000, and the error can't trigger. The opposite case does trigger it: a short blip on `Bit_0` sets the latch, `Bit0_Entry_mS` keeps counting with nothing there, and the next real packet more than 5 s later raises a **false** error. After 32.7 s the INT wraps negative, so a packet arriving 33–65 s after a blip is **not counted**. **Fix:** (a) use a separate "Bit_0 ON time" that counts only while `Bit_0` = 1 and resets when it is 0, and use it for the 5 s error; (b) drop the latch if `Bit_0` has been OFF for longer than a gap timeout (for example `Space_Between`), or clamp `Bit0_Entry_mS` at 30000. |
+| P4 | 🟠 | caller, NEW line 35 | **C3 can't count in and out at the same time.** C3 is called with `Transfer_Start = B6.4 AND M27.1`, which is the exit sensor itself. Count-up (line 181) needs `Transfer_Start` = 0, so a packet that passes the infeed sensor `B6.2` completely while another packet is on `B6.4` is **never counted**. That is normal on a slat conveyor that fills and empties at the same time. **Fix:** count in and count out independently, or pass the real "transfer to C4" step instead of the sensor. |
+| P5 | 🟠 | caller, NEW 519+ / CONVEYOR 5 line 72 / CONVEYOR 6 line 103 | **Count resets don't work.** Every reset writes `0` to `"HMI DB NEW".CONV_x_COUNT`, but none of them clears `DB8.Conveyor_Cx.Count_Result`. The next time the counter FC runs, it copies the old `Count_Result` back to the HMI. **Fix:** give FC1208 a `Reset` input that clears `Count_Result` and all latches, or reset `DB8.….Count_Result` wherever the HMI count is reset. |
+| P6 | 🟡 | 411 | `IO_DB.Error` / `Q_Error` can only be cleared by the first-scan init. FC1206 cleared `Count_Error` on the falling edge of the conveyor run signal (see OLD, e.g. `AN "A 44.0"; FP …; R …Count_Error`). Add an `Error_Reset` input and wire it to `M9.1` or the conveyor stop. |
+| P7 | 🟡 | 192–212 | `Exit_Window_mS` and `InFeed_Window_mS` are only computed on a Bit_0 start. After a download or restart, the first count-down uses the DB start value: 0 for every conveyor except C4 `InFeed_Window_mS` = 1163. That means an immediate decrement. Compute both windows on every call. The cost is trivial. |
+| P8 | 🟡 | 342–360 | Delivery type (`Conveyor_Type = 2`) is empty. `LowSpd_Dimension_mS`, `COUNT_PLUS`, `COUNT_MINUS`, `COUNT_UP_VALUE`, `EXIT_VALUE`, `SPACE_HALF` and `Transfer_Active` are unused. The comments at 232–239 say Link count-up uses `Preset_MIN_mS`, and Collator uses the "Last_Valid_mm" learning; the code does neither (Link uses `InFeed_Window_mS`, and there is no learning). |
+| P9 | 🟡 | caller | The FC is only called while the conveyor output is ON. C5 has a 1 s off-delay (`Timer 120`), but **C3 and C4 have none**, although the FC header says one is required. A sensor change right at stop is missed, and a count-down whose window hasn't elapsed yet fires only on the next run. |
+| P10 | 🟡 | caller | `Maximum_Count` is written from `HMI_DB.CONVEYOR_MAXCOUNT_L/W` on every call, and the clamp at 390–396 forces the count to `Maximum_Count`. If the HMI value is 0, every count reads 0. Check the HMI default. |
+| P11 | 🟡 | caller | FC1206 read **and wrote back** `HMI_DB.CONV_x_COUNT` (`Word_Count` in/out), so an operator could correct a count on the HMI. FC1208 only writes, so any HMI correction is overwritten. Decide whether that feature has to stay. |
+
+### 9.3 What is good
+* A single UDT per conveyor instead of 20+ in/out parameters: much cleaner than FC1206.
+* Every accumulator uses the real scan time (`OB1_PREV_CYCLE`), so timing is independent of scan time.
+* Clamps at 0 and `Maximum_Count`, and a clear header explaining the principle.
+
+### 9.4 Suggested order before commissioning
+P5 (reset) → P2 (delete one line) → P3 (stuck timer and latch timeout) → P1 (repeat count-down while blocked) → P6/P7. Then test on C4 alone (`TESTM 400.0`), comparing against FC1206 on the HMI, before moving C3/C5 over. Implement the Delivery type last.
+
+No code was changed for FC1208.
