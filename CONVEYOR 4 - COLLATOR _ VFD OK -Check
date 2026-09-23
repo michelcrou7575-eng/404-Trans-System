@@ -1,0 +1,773 @@
+FUNCTION "CONVEYOR 4 - COLLATOR" : VOID
+TITLE =Collator Conveyor 4  Pos.6  FC1031
+//Collator Conveyor 4 - Is On Both Service Pages 1 & 2
+NAME : POS_6
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_1_2_SW : BOOL ;	//Collator Conveyor 4 - On Service 1 & 2
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  COUNTER_TRIGGER : BOOL ;	
+  PACKET_LENGTH_4 : WORD ;	//Collator Conveyor 4 - Packet Length 
+  W_TUBE_mm : WORD ;	
+  W_TUBE_PERCENT : WORD ;	//Tube 5 % Value
+  R_TUBE_PERCENT : REAL ;	//Tube 5 % Value
+  R_TUBE_mm : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 4 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_4_SERVICE_SW; 
+      A(    ; 
+      O     "HMI_DB".SERVICE_SW_1_STATUS; 
+      O     "HMI_DB".SERVICE_SW_2_STATUS; 
+      )     ; 
+      =     "HMI_DB".SERVICE_SW_1_2_STATUS; 
+      =     #MAIN_SERVICE_1_2_SW; 
+//;
+      A     #MAIN_SERVICE_1_2_SW; 
+      O     "M 26.1"; 
+      JNB   CON4; 
+      A     "HMI_DB".HMI_CONVEYOR_4_TEST_SSW; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_3_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #MAIN_SERVICE_1_2_SW; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_1_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_4_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_3_Disable; 
+
+CON4: R     #SERVICE_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 158.4"; 
+      =     "M 26.1"; 
+NETWORK
+TITLE =Soft Timer 90 Reset Conveyor 4 - Encoder has Stop L - Timer  500
+
+      AN    "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      JCN   R900; 
+      JU    E900; 
+
+R900: L     L#0; 
+      T     "DB UTILITY".T90_ET; 
+      R     "DB UTILITY".T90_DN; 
+
+E900: NOP   0; 
+NETWORK
+TITLE =Soft Timer 90 Add Conveyor 4 - Encoder has Stop H - Timer  500mS
+
+      AN    "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T90_DN; 
+      JCN   E901; 
+
+      L     "DB UTILITY".T90_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T90_ET; 
+
+E901: NOP   0; 
+NETWORK
+TITLE =Soft Timer 90 Done 500mS
+
+      L     "DB UTILITY".T90_ET; 
+      L     L#500; 
+      >=D   ; 
+      =     "DB UTILITY".T90_DN; 
+NETWORK
+TITLE =Soft Timer 91 Reset
+
+      A     "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      JCN   R910; 
+      JU    E910; 
+
+R910: L     L#0; 
+      T     "DB UTILITY".T91_ET; 
+      R     "DB UTILITY".T91_DN; 
+
+E910: NOP   0; 
+NETWORK
+TITLE =Soft Timer 91 Add
+
+      A     "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T91_DN; 
+      JCN   E911; 
+
+      L     "DB UTILITY".T91_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T91_ET; 
+
+E911: NOP   0; 
+NETWORK
+TITLE =Soft Timer 91 Done 500mS
+
+      L     "DB UTILITY".T91_ET; 
+      L     L#500; 
+      >=D   ; 
+      =     "DB UTILITY".T91_DN; 
+NETWORK
+TITLE =Conveyor 4 - Encoder Stopped & Reset
+
+      A     "M 167.0"; 
+      A(    ; 
+      O     "DB UTILITY".T90_DN; 
+      O     "DB UTILITY".T91_DN; 
+      )     ; 
+      R     "M 166.3"; 
+      R     "M 167.0"; 
+NETWORK
+TITLE =Conveyor 4 - Packet Length - Measurements
+
+      A     "B 6.7"; 
+      A     "M 31.1"; 
+      S     "M 166.2"; // Counter 2 Gate - Set
+      =     #COUNTER_TRIGGER; 
+//;
+      A     "M 166.2"; // Counter 2 
+      =     "FM350 DB".CONTROL_SIGNALS.SW_GATE2; // C4 Length Count
+//;
+      A     "M 166.2"; // Counter 2 
+      O     "B 6.4"; 
+      FP    "FP 149.4"; 
+      JNB   NRAZ; 
+      L     0; // Reset First
+      T     "COLLATORS DB".Packet_Length_C4_mS; 
+
+NRAZ: A     "M 166.2"; // Counter 2
+      JNB   NCNT; 
+      L     "COLLATORS DB".Packet_Length_C4_mS; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      +I    ; 
+      T     "COLLATORS DB".Packet_Length_C4_mS; // Added ScanCycles  
+
+NCNT: A     "M 166.2"; // Counter 2
+      AN    "B 6.4"; 
+      AN    "B 6.7"; 
+      JNB   B067; 
+      L     "FM350 DB".ACT_CNTV2; // C4 Length Count
+      T     "COLLATORS DB".PacketLength_C4; // Encoder Pulses - Length
+      T     #PACKET_LENGTH_4; 
+//;
+      L     #PACKET_LENGTH_4; 
+      ITD   ; 
+      DTR   ; 
+      L     2.000000e-001; 
+      *R    ; 
+      RND   ; 
+
+
+      T     "COLLATORS DB".Frac_Packet_Length_C4; 
+
+
+      L     #PACKET_LENGTH_4; 
+      +I    ; 
+      T     "COLLATORS DB".Packet_Length_Frac_C4; 
+      R     "M 166.2"; // Counter 2 Gate - Reset
+      S     "M 167.1"; 
+      S     "M 167.4"; 
+
+B067: NOP   0; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NETWORK
+TITLE =Packet Length Measurements [mm] - While Collating
+
+//    A     "HOUSE_KEEPING DB".C4_First_Collating
+      A     "B 6.7"; // C4 InFeed Sens - New Packet
+      FP    "FP 226.1"; 
+      A     "A 44.3"; 
+      JCN   NPRT; 
+
+      L     "FM350 DB".ACT_CNTV3; 
+      T     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
+
+//NPRT: A     "HOUSE_KEEPING DB".C4_First_Collating
+NPRT: AN    "B 6.7"; // C4 InFeed Sens - New Packet End
+      FP    "FP 226.2"; 
+      JCN   NTKE; 
+
+      L     "FM350 DB".ACT_CNTV3; 
+      L     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
+      -I    ; 
+      T     "HOUSE_KEEPING DB".C4_Packet_Length_ep; // C4 Packet Length [ep] 
+      DTR   ; 
+//;
+      L     6.350000e+000; //  Encoder Wheel 635mm / 100 PPR  [mm/pulse]
+      *R    ; 
+      RND   ; 
+      T     "HOUSE_KEEPING DB".C4_Packet_Length_mm; 
+
+NTKE: NOP   0; 
+NETWORK
+TITLE =Packet Length Measurements [mS] - While Transfering to C5
+
+      A     "M 31.6"; // C4 Transfer Step
+      A     "B 7.0"; // C4 This Packet Exiting
+      JCN   NMSR; 
+      L     "HOUSE_KEEPING DB".C4_Added_Scans_mS; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      +I    ; 
+      T     "HOUSE_KEEPING DB".C4_Added_Scans_mS; // Adding mS
+
+NMSR: A     "M 31.6"; // C4 Transfer Step
+      AN    "B 7.0"; // C4 This Packet Exiting Done
+      FP    "FP 226.3"; 
+      JCN   NLNT; 
+
+      L     "HOUSE_KEEPING DB".C4_Added_Scans_mS; 
+      T     "HOUSE_KEEPING DB".C4_Packet_Length_mS; // Packet Length mS @ 31 m/min
+//;
+      L     0; 
+      T     "HOUSE_KEEPING DB".C4_Added_Scans_mS; // Packet Length mS - Zeroed
+
+NLNT: NOP   0; 
+NETWORK
+TITLE =Between Packets Spaces - Measurements [mm]
+
+      A     #COUNTER_TRIGGER; 
+      AN    "HOUSE_KEEPING DB".C4_First_Collating_Done; 
+      S     "HOUSE_KEEPING DB".C4_First_Collating; // First Collating - Set
+      S     "HOUSE_KEEPING DB".C4_First_Collating_Done; 
+//;
+      A     "M 31.4"; // Collating Stop
+      AN    "M 31.5"; // Collator Not Full
+      FP    "FP 226.4"; 
+      R     "HOUSE_KEEPING DB".C4_First_Collating; // First Collating - Reset
+//;
+      AN    "HOUSE_KEEPING DB".C4_First_Collating; // Reading Info
+      FP    "FP 226.5"; 
+      JCN   N1ST; 
+
+      L     "FM350 DB".ACT_CNTV3; 
+      L     "FM350 DB".ACT_CNTV2; 
+      -I    ; 
+      T     "HOUSE_KEEPING DB".C4_RampDown_Dx_ep; 
+
+N1ST: NOP   0; 
+
+      AN    "M 31.6"; // Register Reset - Transfer End
+      FP    "FP 226.6"; 
+      R     "HOUSE_KEEPING DB".C4_First_Collating_Done; 
+NETWORK
+TITLE =Conveyor 4 - Surface Length Left (PulseUnit) - Measurements
+
+      A     "M 31.1"; 
+      S     "M 166.3"; 
+//;
+      A     "M 166.3"; 
+      AN    "M 31.7"; 
+      =     "FM350 DB".CONTROL_SIGNALS.SW_GATE3; 
+//;
+      A     "M 166.3"; 
+      A     "M 31.1"; 
+      JNB   M663; 
+      L     "COLLATORS DB".Surface_Length_C4; 
+      L     "FM350 DB".ACT_CNTV3; 
+      -D    ; 
+      T     "COLLATORS DB".Surface_Left_C4; 
+      L     0; 
+      >=I   ; 
+      JNB   T004; 
+      L     "COLLATORS DB".Surface_Left_C4; 
+      T     "COLLATORS DB".Surface_Length_Left_C4; 
+
+T004: CLR   ; 
+
+M663: CLR   ; 
+NETWORK
+TITLE =Conveyor 4 - Space Between - Calculator
+
+      A     "M 167.1"; 
+      FP    "FP 154.2"; 
+      JNB   M581; 
+      L     "COLLATORS DB".Surface_Left_C4; 
+      L     "COLLATORS DB".Frac_Packet_Length_C4; 
+      -I    ; 
+      T     "MW 214"; 
+
+M581: CLR   ; 
+
+      A     "M 167.1"; 
+      JNB   M671; 
+      A(    ; 
+      L     "COLLATORS DB".Surface_Left_C4; 
+      L     "MW 214"; 
+      <=I   ; 
+      )     ; 
+      R     "M 167.1"; 
+
+M671: CLR   ; 
+NETWORK
+TITLE =Conveyor 4 - Collating Length Manager
+
+      A     "M 166.3"; 
+      AN    "M 30.4"; 
+      A     "M 31.4"; 
+      JNB   M304; 
+      L     "COLLATORS DB".Surface_Left_C4; 
+      L     "COLLATORS DB".Packet_Length_Frac_C4; 
+      <I    ; 
+      S     "M 30.4"; 
+
+M304: CLR   ; 
+
+      A     "M 10.1"; 
+      FP    "FP 154.7"; 
+      O     "M 31.7"; 
+      R     "M 30.4"; 
+NETWORK
+TITLE =Packet Length to HMI + Hysteresis
+
+      A     "M 167.4"; 
+      JNB   C167; 
+      A(    ; 
+      A(    ; 
+      L     "MW 202"; 
+      L     "MW 204"; 
+      >I    ; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      L     "MW 202"; 
+      L     "MW 206"; 
+      <I    ; 
+      )     ; 
+      )     ; 
+      JNB   BYP5; 
+      L     "MW 202"; 
+      T     "HMI_DB".WORD_PACKET_LENGTH; 
+
+BYP5: CLR   ; 
+
+      L     "MW 202"; 
+      L     3.000000e+000; 
+      *R    ; 
+      L     1.000000e+002; 
+      /R    ; 
+      T     #R_TUBE_PERCENT; 
+      TRUNC ; 
+//     T     "COLLATORS DB".Ecoder_Wheel_Circ_C4
+      T     #W_TUBE_PERCENT; 
+//;
+      L     #W_TUBE_PERCENT; 
+      L     "MW 202"; 
+      +I    ; 
+      T     "MW 204"; 
+//;
+      L     #W_TUBE_PERCENT; 
+      L     "MW 202"; 
+      -I    ; 
+      T     "MW 206"; 
+//;
+      CLR   ; 
+      =     "M 167.4"; 
+
+C167: CLR   ; 
+NETWORK
+TITLE =Collator
+//Collator House Keeping
+
+
+NETWORK
+TITLE =Collator Conveyor 4 - Clearing
+
+      A     "M 10.2"; 
+      A     "M 31.4"; 
+      AN    "M 31.5"; 
+      A     "M 0.3"; 
+      =     "M 30.5"; 
+NETWORK
+TITLE =Soft Timer 33 Reset - Clearing TimeOut 20s + Freeze Option
+
+      A     "M 30.5"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      JCN   R331; 
+      JU    E331; 
+
+R331: L     L#0; 
+      T     "DB UTILITY".T33_ET; 
+      R     "DB UTILITY".T33_DN; 
+
+E331: NOP   0; 
+NETWORK
+TITLE =Soft Timer 33 Add
+
+      A     "M 30.5"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T33_DN; 
+      JCN   E332; 
+
+      L     "DB UTILITY".T33_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T33_ET; 
+
+E332: NOP   0; 
+NETWORK
+TITLE =Soft Timer 33 Done 20s
+
+      L     "DB UTILITY".T33_ET; 
+      L     L#20000; 
+      >=D   ; 
+      =     "DB UTILITY".T33_DN; 
+NETWORK
+TITLE =Collator Conveyor 4 - Clearing Surface - Run 2K Encoder Counts
+
+      A     "M 30.5"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      JNB   M305; 
+      A(    ; 
+      L     "FM350 DB".ACT_CNTV2; 
+      L     2000; 
+      >I    ; 
+      )     ; 
+      =     "M 30.3"; 
+
+M305: CLR   ; 
+NETWORK
+TITLE =Collator Conveyor 4 - Packet at the End !
+
+      A     "B 7.0"; 
+      A     "A 44.3"; 
+      O     #SERVICE_RUN; 
+      A     "M 0.3"; 
+      S     "M 30.6"; 
+//;
+      A     "M 31.5"; 
+      R     "M 30.6"; 
+NETWORK
+TITLE =Soft Timer 31 Reset - InFeed TimeOut 5s With Freeze Option
+
+      A     "M 31.2"; 
+      AN    "M 31.4"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      JCN   R311; 
+      JU    E311; 
+
+R311: L     L#0; 
+      T     "DB UTILITY".T31_ET; 
+      R     "DB UTILITY".T31_DN; 
+
+E311: NOP   0; 
+NETWORK
+TITLE =Soft Timer 31 Add
+
+      A     "M 31.2"; 
+      AN    "M 31.4"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T31_DN; 
+      JCN   E312; 
+
+      L     "DB UTILITY".T31_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T31_ET; 
+
+E312: NOP   0; 
+NETWORK
+TITLE =Soft Timer 31 Done 5s
+
+      L     "DB UTILITY".T31_ET; 
+      L     L#5000; 
+      >=D   ; 
+      =     "DB UTILITY".T31_DN; 
+NETWORK
+TITLE =Collator Conveyor 4 - InFeed  TimeOut Stop - Fault
+
+      A     "DB UTILITY".T31_DN; 
+      A     "M 0.3"; 
+      S     "M 30.7"; 
+//;
+      AN    "B 6.7"; 
+      A     "M 0.3"; 
+      R     "M 30.7"; 
+NETWORK
+TITLE =Collator
+//Collator Steps
+
+
+NETWORK
+TITLE =Collator Conveyor 4 - Steps Register - Reset
+
+      A(    ; 
+      O     "M 31.7"; 
+      O     "DB UTILITY".T33_DN; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_4_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JNB   INIT; 
+      L     W#16#0; 
+      T     "MW 31"; 
+      S     "M 167.0"; 
+
+INIT: CLR   ; 
+NETWORK
+TITLE =Step 5N1  - Power ON
+
+      A     "M 0.3"; 
+      S     "M 31.0"; 
+NETWORK
+TITLE =Events UpDate - Collator Conveyor 4 - Collating Run - Start
+
+      A(    ; 
+      A(    ; 
+      O     "B 6.4"; 
+      O     "B 6.7"; 
+      )     ; 
+      A     "A 44.0"; 
+      FP    "FP 157.1"; 
+      O     ; 
+      A     "M 10.2"; 
+      AN    "M 10.3"; 
+      )     ; 
+      AN    "M 33.7"; // If No Obstruction Slat End
+      A     "M 0.3"; 
+      A     "M 31.0"; 
+      S     "M 31.1"; 
+NETWORK
+TITLE =Soft Timer 29 Reset - LB Obstruction Alarm 10s + Freeze Option
+
+      A(    ; 
+      O     "B 6.4"; 
+      O     "B 6.7"; 
+      )     ; 
+      AN    "A 44.0"; 
+      JCN   R281; 
+      JU    E281; 
+
+R281: L     L#0; 
+      T     "DB UTILITY".T29_ET; 
+      R     "DB UTILITY".T29_DN; 
+
+E281: NOP   0; 
+NETWORK
+TITLE =Soft Timer 29 Add
+
+      A(    ; 
+      O     "B 6.4"; 
+      O     "B 6.7"; 
+      )     ; 
+      AN    "A 44.0"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T29_DN; 
+      JCN   E282; 
+
+      L     "DB UTILITY".T29_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T29_ET; 
+
+E282: NOP   0; 
+NETWORK
+TITLE =Soft Timer 29 Done 10s
+
+      L     "DB UTILITY".T29_ET; 
+      L     L#10000; 
+      >=D   ; 
+      =     "DB UTILITY".T29_DN; 
+NETWORK
+TITLE =Collator Conveyor 4 - LB Obstruction Alarm
+
+      A     "DB UTILITY".T29_DN; 
+      S     "M 33.7"; 
+//;
+      A(    ; 
+      O     "M 9.1"; 
+      O     "S 2.2"; 
+      )     ; 
+      R     "M 33.7"; 
+NETWORK
+TITLE =Step 5N2  - Collator Conveyor 4 - Collating Run - Stop
+
+      A(    ; 
+      AN    "M 30.4"; 
+      AN    "M 10.2"; 
+      AN    "M 30.6"; 
+      A     "M 31.4"; 
+      AN    "M 31.5"; 
+      ON    "M 31.0"; 
+      O     "DB UTILITY".T29_DN; 
+      )     ; 
+      R     "M 31.1"; 
+NETWORK
+TITLE =Step 5N3  - Collator Conveyor 4 - Packet Runs In
+
+      A(    ; 
+      O     "B 6.7"; 
+      O     "M 10.2"; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 31.1"; 
+      S     "M 31.2"; 
+//;
+      AN    "M 31.1"; 
+      R     "M 31.2"; 
+NETWORK
+TITLE =Step 5N4  - Collator Conveyor 4 - Collating Start
+
+      A(    ; 
+      ON    "B 6.4"; 
+      O     "M 30.7"; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 31.2"; 
+      S     "M 31.3"; 
+//;
+      AN    "M 31.2"; 
+      R     "M 31.3"; 
+NETWORK
+TITLE =Step 5N5  - Collator Conveyor 4 - Collating Stop 
+
+      A(    ; 
+      AN    "B 6.7"; 
+      AN(   ; 
+      AN    "M 10.2"; 
+      A     "M 167.1"; 
+      )     ; 
+      O     "M 30.7"; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 31.3"; 
+      S     "M 31.4"; 
+//;
+      AN    "M 31.3"; 
+      R     "M 31.4"; 
+NETWORK
+TITLE =Step 5N6  - Collator Conveyor 4 - Full - Start Transfer
+
+      A(    ; 
+      A     "M 30.4"; 
+      AN    "M 10.2"; 
+      A     "M 31.4"; 
+      O     "M 30.6"; 
+      )     ; 
+      A     "M 0.3"; 
+      S     "M 31.5"; 
+NETWORK
+TITLE =Step 5N7  - Collator Conveyor 4 - Transfering
+
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      AN    "M 37.2"; // Not Auto Resync ON
+      A     "M 0.3"; 
+      A     "M 31.5"; 
+      S     "M 31.6"; 
+NETWORK
+TITLE =Soft Timer 32 Reset - Transfer TimeOut 20s + Freeze Option
+
+      A     "M 31.6"; 
+      AN    "M 31.7"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      JCN   R321; 
+      JU    E321; 
+
+R321: L     L#0; 
+      T     "DB UTILITY".T32_ET; 
+      R     "DB UTILITY".T32_DN; 
+
+E321: NOP   0; 
+NETWORK
+TITLE =Soft Timer 32 Add
+
+      A     "M 31.6"; 
+      AN    "M 31.7"; 
+      A     "A 44.3"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "DB UTILITY".T32_DN; 
+      JCN   E322; 
+
+      L     "DB UTILITY".T32_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T32_ET; 
+
+E322: NOP   0; 
+NETWORK
+TITLE =Soft Timer 32 Done 20s
+
+      L     "DB UTILITY".T32_ET; 
+      L     L#20000; 
+      >=D   ; 
+      =     "DB UTILITY".T32_DN; 
+NETWORK
+TITLE =Step 5N8 - Conveyor 4 - Stop & Reset - Transfer Done !
+
+      A(    ; 
+      O     "B 7.1"; 
+      O     "DB UTILITY".T32_DN; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 31.6"; 
+      S     "M 31.7"; 
+NETWORK
+TITLE =Conveyor 4 - VFD Release
+
+      A(    ; 
+      A     "M 31.1"; 
+      AN    "M 31.4"; 
+      A     "A 44.5"; 
+      O     ; 
+      A     "M 31.6"; 
+      AN    "M 31.7"; 
+      O     "M 30.5"; 
+      )     ; 
+      AN    "DB UTILITY".Conveyor_4_Disable; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      A     "M 0.3"; 
+      =     "A 44.3"; 
+      =     "A 44.4"; 
+NETWORK
+TITLE =Conveyor 4 - Slow
+
+      A     "M 31.1"; 
+      AN    "M 31.4"; 
+      A     "M 0.3"; 
+      =     "A 44.5"; 
+END_FUNCTION
+

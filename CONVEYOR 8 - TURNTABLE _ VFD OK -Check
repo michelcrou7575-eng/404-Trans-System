@@ -1,0 +1,650 @@
+FUNCTION "CONVEYOR 8 - TURNTABLE" : VOID
+TITLE =Turn Table  Pos.10 FC1048
+//
+NAME : POS_10
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  TURNTABLE_SERVICE_SW : BOOL ;	
+  CONVEYOR_SERVICE_SW : BOOL ;	
+  TURNTABLE_ROUNDTRIP : BOOL ;	
+  TURN_CW : BOOL ;	
+  TURN_CCW : BOOL ;	
+  AUTO_HOME_SERVICE : BOOL ;	
+  CONV_FWD : BOOL ;	
+  CONV_REV : BOOL ;	
+  INITIALISATION : BOOL ;	
+  ZOOLOO : TIME ;	
+  PACKET_LENGTH : REAL ;	
+  RUN_TIME : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Service Test
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_8_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 46.7"; 
+      JNB   TURN; 
+      A     "HMI_DB".HMI_CONVEYOR_8_TEST_SSW; 
+      =     #CONVEYOR_SERVICE_SW; 
+      R     "HMI_DB".TURNTABLE_SERVICE_SSW; 
+//;
+      A     "HMI_DB".TURNTABLE_SERVICE_SSW; 
+      =     #TURNTABLE_SERVICE_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_8_TEST_SSW; 
+//;
+      A(    ; 
+      O     #CONVEYOR_SERVICE_SW; 
+      O     #TURNTABLE_SERVICE_SW; 
+      )     ; 
+      =     "HMI_DB".TURNTABLE_SERVICE_PBSHOW; 
+      S     "DB UTILITY".Conveyor_7_Disable; 
+//;
+      A     "HMI_DB".TURNTABLE_RNDTRIP; 
+      S     "DB UTILITY".Conveyor_7_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #AUTO_HOME_SERVICE; 
+//;
+      A     #TURNTABLE_SERVICE_SW; 
+      A     "HMI_DB".HMI_TURNTABLE_CCW_SSW; 
+      AN    #TURN_CW; 
+      =     #TURN_CCW; 
+//;
+      A     #TURNTABLE_SERVICE_SW; 
+      A     "HMI_DB".HMI_TURNTABLE_CW_SSW; 
+      AN    #TURN_CCW; 
+      =     #TURN_CW; 
+//;
+      AN    #TURNTABLE_SERVICE_SW; 
+      =     "HMI_DB".RNDTRIP_PB_VISIBLE; 
+//;
+      AN    #TURNTABLE_SERVICE_SW; 
+      A     "HMI_DB".TURNTABLE_RNDTRIP; 
+      =     #TURNTABLE_ROUNDTRIP; 
+//;
+      A     #CONVEYOR_SERVICE_SW; 
+      A     "HMI_DB".HMI_TURNTABLE_CCW_SSW; 
+      AN    #CONV_FWD; 
+      =     #CONV_REV; 
+//;
+      A     #CONVEYOR_SERVICE_SW; 
+      A     "HMI_DB".HMI_TURNTABLE_CW_SSW; 
+      AN    #CONV_REV; 
+      =     #CONV_FWD; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #TURNTABLE_SERVICE_SW; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".TURNTABLE_SERVICE_SSW; 
+      R     "DB UTILITY".Conveyor_7_Disable; 
+      R     "HMI_DB".HMI_CONVEYOR_8_TEST_SSW; 
+      R     "HMI_DB".TURNTABLE_SERVICE_PBSHOW; 
+      R     "HMI_DB".HMI_TURNTABLE_CCW_SSW; 
+      R     "HMI_DB".HMI_TURNTABLE_CW_SSW; 
+      R     "HMI_DB".TURNTABLE_RNDTRIP; 
+      R     "HMI_DB".RNDTRIP_PB_VISIBLE; 
+
+TURN: R     #TURNTABLE_SERVICE_SW; 
+      R     #CONVEYOR_SERVICE_SW; 
+      R     #AUTO_HOME_SERVICE; 
+      R     #TURNTABLE_ROUNDTRIP; 
+      R     #INITIALISATION; 
+      R     #TURN_CW; 
+      R     #TURN_CCW; 
+      R     #CONV_FWD; 
+      R     #CONV_REV; 
+      FP    "FP 169.0"; 
+      =     "M 46.7"; 
+NETWORK
+TITLE =Turn Direction - Turn Table Turn SW  1:CCW - 0:CW
+
+      A(    ; 
+      A(    ; 
+      AN    "M 140.3"; 
+      A     "M 152.2"; 
+      O     ; 
+      A     "M 140.3"; 
+      A     "HMI_DB".TURNTABLE_SSW_MAIN; // Turn 0:CW  1:CCW
+      )     ; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      )     ; 
+      A     "M 47.0"; 
+      AN    "M 47.3"; 
+      AN    "P 8.6"; 
+      S     "M 46.2"; // 1: Packet Sens - Inverted 
+//;
+      A(    ; 
+      A(    ; 
+      AN    "M 140.3"; 
+      AN    "M 152.2"; 
+      O     ; 
+      A     "M 140.3"; 
+      AN    "HMI_DB".TURNTABLE_SSW_MAIN; 
+      )     ; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      )     ; 
+      A     "M 47.0"; 
+      AN    "M 47.3"; 
+      AN    "P 8.6"; 
+      R     "M 46.2"; // 0: Packet Sens - Not Inverted 
+NETWORK
+TITLE =TurnTable Turn - Direction Memory
+
+      A     "M 46.2"; 
+      FP    "FP 169.3"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      A     "M 0.3"; 
+      S     "M 7.3"; 
+//;
+      AN    "M 46.2"; 
+      FP    "FP 169.4"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      A     "M 0.3"; 
+      R     "M 7.3"; 
+//;
+      A     "M 7.3"; 
+      =     "HMI_DB".CONV_8_INVERT_SELECT; 
+NETWORK
+TITLE =TurnTable Turn - Enable
+
+      A     "M 0.3"; 
+      AN    "M 3.6"; 
+      A     "E 0.4"; 
+      A     "E 9.0"; // Door Closed
+      AN    "M 46.6"; // Entry Jam Bit
+      AN    "DB UTILITY".Conveyor_8_Disable; 
+      =     "M 46.3"; 
+NETWORK
+TITLE =TurnTable + Belt Entry Jam Bit - Reset
+
+      A     "E 9.0"; // Door Closing Reset
+      FP    "FP 144.0"; 
+      AN    "B 8.2"; // Only reset if entry sensor is clear
+      R     "M 46.6"; // Entry Jam Bit - Reset
+NETWORK
+TITLE =TurnTable Turn - Service Mode (LAUER)
+
+      A(    ; 
+      A     "M 47.0"; 
+      AN    "M 47.3"; 
+      O     ; 
+      A     "M 47.5"; 
+      AN    "M 47.7"; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 190.2"; 
+      =     "M 46.4"; 
+NETWORK
+TITLE =Steps
+//TurnTable Steps
+
+
+NETWORK
+TITLE =Step 9N0 - TurnTable Steps Register - Reset
+
+      A(    ; 
+      A     "M 190.2"; 
+      A     "M 171.4"; 
+      A     "M 171.5"; 
+      O     "M 48.4"; 
+      O     #INITIALISATION; 
+      )     ; 
+      A     "M 46.3"; 
+      O     "M 46.6"; // Entry Jam Fault - Reset
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 47"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 9N1 - Power ON
+
+      A     "M 46.3"; 
+      S     "M 47.0"; 
+NETWORK
+TITLE =Step 9N2 - TurnTable Turn - Slow
+
+      A(    ; 
+      ON    "P 8.5"; 
+      ON    "P 8.6"; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 47.0"; 
+      S     "M 47.1"; 
+NETWORK
+TITLE =Step 9N3 - TurnTable Turn - Stop
+
+      AN    "P 8.6"; 
+      A     "M 46.3"; 
+      A     "M 47.1"; 
+      S     "M 47.2"; 
+NETWORK
+TITLE =Step 9N4 - TurnTable Belt - Packet Runs IN
+
+      A(    ; 
+      O     "B 8.2"; 
+      O     #TURNTABLE_ROUNDTRIP; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 47.2"; 
+      S     "M 47.3"; 
+NETWORK
+TITLE =Step 9N5 - TurnTable Belt 8 - Packet IN
+
+      AN(   ; 
+      O     "B 8.2"; 
+      O     #TURNTABLE_ROUNDTRIP; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 47.3"; 
+      S     "M 47.4"; 
+NETWORK
+TITLE =TurnTable Belt Entry Jam Timeout
+
+      A     "M 47.3"; // Packet Runs IN
+      A     "B 8.2"; // Entry sensor still blocked
+      A     "M 46.3"; // Enable
+      L     S5T#8S; // Adjust as 8s
+      SD    "Timer 84"; 
+NETWORK
+TITLE =TurnTable Belt Entry Jam Stop
+
+      A     "Timer 84"; 
+      S     "M 46.6"; // Entry Jam Bit
+NETWORK
+TITLE =Length Convertion - TurnTable Belt  
+
+      A     "M 31.4"; 
+      FP    "FP 157.3"; 
+      JNB   M317; 
+      L     "COLLATORS DB".PacketLength_C4; 
+      ITD   ; 
+      DTR   ; 
+      T     #PACKET_LENGTH; 
+
+      CALL "SCALER" (
+           X                        := #PACKET_LENGTH,
+           X1                       := 5.500000e+001,
+           Y1                       := 2.000000e+003,
+           X2                       := 1.600000e+002,
+           Y2                       := 1.000000e+003,
+           RET_VAL                  := #RUN_TIME);
+
+      L     #RUN_TIME; 
+      RND   ; 
+      T     "MW 196"; 
+
+M317: NOP   0; 
+NETWORK
+TITLE =Time Convertion - TurnTable Belt  
+//- Packet Forward : - Run Time   (~1500mS)
+//- Packet Reverse : - Run Time   (~300mS)
+//950mm Packet : 1300 mS
+//Collator 4 - 950 mm = 143 Count  6.6mm per pulse
+//
+//- Packet Inverting on TurnTable - Belt RunTime at Packet End: Always 300mS to 
+//Stay Close to REV Exit Side !
+//
+//- Packet Non-Inverting on TurnTable - Belt RunTime at Packet End: 500 to 1600mS 
+//(Depend on Packet Length) to get Close to FWD Exit Side !...
+//
+//404 Tube Limit 350 - 1050mm
+      AN    "M 7.3"; 
+      AN    "M 6.7"; 
+      FP    "FP 157.6"; 
+      JNB   END; 
+      L     "HMI_DB".CONV_8_POS_REV_mS; // Integer contains MILLISECOND seconds
+      L     10; 
+      *I    ; 
+      ITD   ; 
+      T     #ZOOLOO; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #ZOOLOO,
+           RET_VAL                  := "MW 234");
+
+END:  NOP   0; 
+NETWORK
+TITLE =TurnTable Belt  - Run Time FWD & REV  300mS
+
+      A     "M 47.4"; 
+      AN    "M 47.5"; 
+      A     "M 0.3"; 
+      L     S5T#300MS; 
+      SD    "Timer 47"; 
+//;
+      A     "M 140.3"; 
+      AN    "M 7.3"; 
+      A     "M 47.4"; 
+      AN    "M 47.5"; 
+      A     "M 0.3"; 
+      A     "Timer 47"; 
+      FP    "FP 168.7"; 
+      L     "MW 234"; 
+      SF    "Timer 49"; 
+NETWORK
+TITLE =Step 9N6 - TurnTable Belt 8 - Stop
+
+      A     "Timer 47"; 
+      A     "M 46.3"; 
+      A     "M 47.4"; 
+      S     "M 47.5"; 
+NETWORK
+TITLE =Step 9N7 - TurnTable Turn - Slow
+
+      A(    ; 
+      ON    "P 9.2"; 
+      ON    "P 9.3"; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 47.5"; 
+      S     "M 47.6"; 
+NETWORK
+TITLE =Step 9N8 - TurnTable Turn - Stop
+
+      AN    "P 9.3"; 
+      A     "M 46.3"; 
+      A     "M 47.6"; 
+      S     "M 47.7"; 
+NETWORK
+TITLE =Step 9N9 - TurnTable Belt - Delivery
+
+      A     "M 51.2"; 
+      AN    "M 51.3"; 
+      A     "M 46.3"; 
+      A     "M 47.7"; 
+      S     "M 48.0"; 
+NETWORK
+TITLE =TurnTable Belt  - Max Run Time  5s
+
+      A     "M 48.0"; 
+      AN    "M 48.1"; 
+      A     "M 0.3"; 
+      A     "M 46.3"; 
+      L     S5T#5S; 
+      SD    "Timer 48"; 
+NETWORK
+TITLE =Step 9N10 - TurnTable Belt - Delivering
+
+      A(    ; 
+      O     "B 9.6"; 
+      O     "Timer 48"; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 48.0"; 
+      S     "M 48.1"; 
+NETWORK
+TITLE =Step 9N11 - TurnTable Return - Home
+
+      AN    "B 9.6"; 
+      A     "M 46.3"; 
+      A     "M 48.1"; 
+      S     "M 48.2"; 
+NETWORK
+TITLE =Step 9N12 - TurnTable Return - Slow
+
+      A(    ; 
+      ON    "P 8.5"; 
+      ON    "P 8.6"; 
+      )     ; 
+      A     "M 46.3"; 
+      A     "M 48.2"; 
+      S     "M 48.3"; 
+NETWORK
+TITLE =Step 9N13 - TurnTable Steps Register - Reset
+
+      AN    "P 8.6"; 
+      A     "M 46.3"; 
+      A     "M 48.2"; 
+      S     "M 48.4"; 
+NETWORK
+TITLE =Service Home Position Process - Position Home Test
+
+      A     #TURNTABLE_SERVICE_SW; 
+      AN    "P 8.6"; 
+      S     "M 49.1"; 
+//;
+      AN    #TURNTABLE_SERVICE_SW; 
+      R     "M 49.1"; 
+      R     "M 49.0"; 
+NETWORK
+TITLE =Service Home Position Process - Position Delivery Test
+
+      A     #TURNTABLE_SERVICE_SW; 
+      AN    "P 9.3"; 
+      =     "M 49.2"; 
+NETWORK
+TITLE =Service Home Position Process - UnKnown Position Test
+
+      A     #TURNTABLE_SERVICE_SW; 
+      A     "P 8.5"; 
+      A     "P 8.6"; 
+      A     "P 9.2"; 
+      A     "P 9.3"; 
+      =     "M 49.3"; 
+NETWORK
+TITLE =Action from Steps Commands
+
+
+
+NETWORK
+TITLE =TurnTable Belt - VFD Release Forward
+//Comments to be kept ! It is a Modif to Come !
+      A(    ; 
+      A     "M 47.3"; 
+      AN    "M 47.5"; 
+      O     ; 
+      A     "M 48.0"; 
+      AN    "M 48.2"; 
+      AN    "M 7.3"; 
+      )     ; 
+      O     #CONV_FWD; 
+      O     "Timer 49"; 
+      A     "M 46.3"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      AN    "A 46.5"; 
+      =     "A 46.4"; 
+NETWORK
+TITLE =TurnTable Belt - VFD Release Reverse
+
+      A(    ; 
+      A     "M 48.0"; 
+      AN    "M 48.2"; 
+      A     "M 7.3"; 
+      O     #CONV_REV; 
+      )     ; 
+      A     "M 46.3"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      AN    "A 46.4"; 
+      =     "A 46.5"; 
+NETWORK
+TITLE =TurnTable Belt - Fast
+
+      A     "M 46.3"; 
+      =     "A 46.6"; 
+NETWORK
+TITLE =TurnTable Manual - Turn CW
+
+      A     "M 46.4"; 
+      A     "M 161.0"; 
+      O     #TURN_CW; 
+      =     "M 48.5"; 
+NETWORK
+TITLE =TurnTable Manual - Turn CCW
+
+      A     "M 46.4"; 
+      A     "M 161.1"; 
+      O     #TURN_CCW; 
+      =     "M 48.6"; 
+NETWORK
+TITLE =TurnTable Manual - Manual Mode Reset
+
+      AN    "M 150.5"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      R     "M 48.5"; 
+      R     "M 48.6"; 
+NETWORK
+TITLE =TurnTable Manual Mode - Auto-Home
+//TurnTable Auto-Home : SERVICE 2 SW Then TURNTABLE SW Then INIT PB !
+      A     #TURNTABLE_SERVICE_SW; 
+      A     #AUTO_HOME_SERVICE; 
+      A     "P 8.6"; 
+      S     "M 49.0"; 
+//;
+      AN    "P 8.6"; 
+      O     "Timer 52"; 
+      ON    #TURNTABLE_SERVICE_SW; 
+      O     #TURN_CW; 
+      O     #TURN_CCW; 
+      R     "M 49.0"; 
+//;
+      A(    ; 
+      O     "A 47.0"; 
+      O     "A 47.1"; 
+      )     ; 
+      A     "M 49.0"; 
+      =     "M 49.5"; 
+//;
+      A     "M 49.5"; 
+      L     S5T#20S; 
+      SD    "Timer 52"; 
+NETWORK
+TITLE =TurnTable - Turn CW
+
+      A(    ; 
+      A     "M 47.5"; 
+      AN    "M 47.7"; 
+      A     "P 9.3"; 
+      AN    "M 7.3"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      O     ; 
+      A     "M 48.2"; 
+      AN    "M 48.4"; 
+      A     "P 8.6"; 
+      A     "M 7.3"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      O     ; 
+      A     #TURNTABLE_SERVICE_SW; 
+      A     "M 49.1"; 
+      A(    ; 
+      A     "P 9.3"; 
+      AN    "M 7.3"; 
+      A     "M 48.5"; 
+      O     ; 
+      A     "P 8.6"; 
+      A     "M 7.3"; 
+      A     "M 48.5"; 
+      )     ; 
+      O     ; 
+      A     #TURNTABLE_SERVICE_SW; 
+      AN    "M 49.1"; 
+      A     "M 49.0"; 
+      A     "P 8.6"; 
+      A     "M 7.3"; 
+      )     ; 
+      A     "M 46.3"; 
+      AN    "A 47.0"; 
+      =     "A 47.1"; 
+NETWORK
+TITLE =Step 9N14 - TurnTable - Turn CW - Off
+
+      A     "M 48.5"; 
+      A(    ; 
+      ON    "P 9.3"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 48.5"; 
+NETWORK
+TITLE =Turn Table - Turn CCW
+
+      A(    ; 
+      A     "M 47.5"; 
+      AN    "M 47.7"; 
+      A     "P 9.3"; 
+      A     "M 7.3"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      O     ; 
+      A     "M 48.2"; 
+      AN    "M 48.4"; 
+      A     "P 8.6"; 
+      AN    "M 7.3"; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      O     ; 
+      A     #TURNTABLE_SERVICE_SW; 
+      A     "M 49.1"; 
+      A(    ; 
+      A     "P 9.3"; 
+      A     "M 7.3"; 
+      A     "M 48.6"; 
+      O     ; 
+      A     "P 8.6"; 
+      AN    "M 7.3"; 
+      A     "M 48.6"; 
+      )     ; 
+      O     ; 
+      A     #TURNTABLE_SERVICE_SW; 
+      AN    "M 49.1"; 
+      A     "M 49.0"; 
+      A     "P 8.6"; 
+      AN    "M 7.3"; 
+      )     ; 
+      A     "M 46.3"; 
+      AN    "A 47.1"; 
+      =     "A 47.0"; 
+NETWORK
+TITLE =Step 9N15 - TurnTable - Turn CW - Off
+
+      A     "M 48.6"; 
+      A(    ; 
+      ON    "P 8.6"; 
+      O     "M 171.5"; 
+      )     ; 
+      R     "M 48.6"; 
+NETWORK
+TITLE =TurnTable - Fast
+
+      A(    ; 
+      A     "M 47.5"; 
+      AN    "M 47.6"; 
+      A     "P 9.2"; 
+      O     ; 
+      A     "M 48.2"; 
+      AN    "M 48.3"; 
+      A     "P 8.5"; 
+      )     ; 
+      AN    #TURNTABLE_SERVICE_SW; 
+      A     "M 46.3"; 
+      =     "A 47.2"; 
+NETWORK
+TITLE =TurnTable Position : Home = DB50.238:1 / Delivery = DB50.238:2
+
+      OPN   "DB LAUER"; 
+      ON    "P 8.6"; 
+      ON    "P 9.3"; 
+      JC    M003; 
+      L     W#16#0; 
+      T     DBW  238; 
+      BEC   ; 
+
+M003: A     "P 8.6"; 
+      JC    M004; 
+      L     W#16#1; 
+      T     DBW  238; 
+      BEC   ; 
+
+M004: L     W#16#2; 
+      T     DBW  238; 
+END_FUNCTION
+

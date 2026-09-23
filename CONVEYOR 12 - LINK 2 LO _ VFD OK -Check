@@ -1,0 +1,131 @@
+FUNCTION "CONVEYOR 12 - LINK 2 LO" : VOID
+TITLE =Conveyor 12 - Link 2L  Pos. 14 Low Level FC1062
+//
+NAME : POS_14_L
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  BARRIER_BLINKER : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 12 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_11_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 62.7"; 
+      JNB   CO12; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_12_TEST_SSW; 
+      =     #SERVICE_RUN; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_12_TEST_SSW; 
+
+CO12: R     #SERVICE_RUN; 
+      FP    "FP 148.1"; 
+      =     "M 62.7"; 
+NETWORK
+TITLE =FL Power Enable
+
+      A     "M 0.3"; 
+      =     "M 62.0"; 
+NETWORK
+TITLE =Conveyor 12 - Running TimeOut  30s
+
+      A(    ; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
+      O     ; 
+      A     "M 63.3"; 
+      AN    "M 63.4"; 
+      A     "A 48.6"; 
+      )     ; 
+      A     "M 62.0"; 
+      L     S5T#30S; 
+      SD    "Timer 63"; 
+NETWORK
+TITLE =Conveyor 12 - Steps Register - Reset
+
+      A(    ; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
+      A     "Timer 63"; 
+      O     "M 63.4"; 
+      )     ; 
+      A     "M 62.0"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 63"; 
+      T     "MB 65"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 13N1 - Power On
+
+      A     "M 62.0"; 
+      S     "M 63.0"; 
+NETWORK
+TITLE =Step 13N2 - Conveyor 12 - Packet Filling
+
+      A(    ; 
+      A     "M 59.2"; 
+      AN    "M 59.3"; 
+      O     ; 
+      A     "B 11.0"; 
+      AN    "M 63.1"; 
+      )     ; 
+      O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
+      A     "M 62.0"; 
+      A     "M 63.0"; 
+      S     "M 63.1"; 
+NETWORK
+TITLE =Step 13N3 - Conveyor 12 - Stop Filling
+
+      A     "B 11.0"; 
+      A     "M 62.0"; 
+      A     "M 63.1"; 
+      S     "M 63.2"; 
+NETWORK
+TITLE =Step 13N4 - Conveyor 12 - Transfering
+
+      A     "M 67.1"; 
+      AN    "M 67.2"; 
+      A     "M 62.0"; 
+      A     "M 63.2"; 
+      S     "M 63.3"; 
+NETWORK
+TITLE =Step 13N5 - Conveyor 12 - Steps Register - Reset
+
+      A(    ; 
+      O     "B 11.1"; 
+      O     "Timer 63"; 
+      )     ; 
+      A     "M 62.0"; 
+      A     "M 63.3"; 
+      S     "M 63.4"; 
+NETWORK
+TITLE =Conveyor 12 VFD - Release
+
+      A(    ; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
+      O     ; 
+      A     "M 63.3"; 
+      AN    "M 63.4"; 
+      )     ; 
+      A     "M 62.0"; 
+      AN    "M 11.1"; // VFD NOT All Ready !
+      =     "A 48.6"; 
+      =     "A 48.7"; 
+END_FUNCTION
+

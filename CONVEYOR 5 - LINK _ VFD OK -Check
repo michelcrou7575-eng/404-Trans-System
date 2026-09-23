@@ -1,0 +1,284 @@
+FUNCTION "CONVEYOR 5 - LINK" : VOID
+TITLE =Conveyor 5 - Link   Pos.7  FC1034
+//Using "Soft Timer" cause S5T Timer cannot Pause/Freeze !...
+NAME : POS_7
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 5 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_5_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 34.1"; 
+      JNB   CON5; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_5_TEST_SSW; 
+      AN    "A 44.3"; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_4_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_5_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_4_Disable; 
+
+CON5: R     #SERVICE_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 158.5"; 
+      =     "M 34.1"; 
+
+NETWORK
+TITLE =Service Mode
+
+      A(    ; 
+      A     "M 190.5"; 
+      A     "M 161.0"; 
+      O     ; 
+      A     #SERVICE_RUN; 
+      )     ; 
+      A     "M 0.3"; 
+      =     "M 34.0"; 
+
+NETWORK
+TITLE =Conveyor 5 - Steps Register - Reset
+
+      A(    ; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      A     "DB UTILITY".T35_DN; 
+      O     "M 35.4"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_5_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 35"; 
+      T     "HMI DB NEW".CONV_5_COUNT; 
+
+M002: NOP   0; 
+
+NETWORK
+TITLE =Step 6N1 - Power ON
+
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Conveyor_5_Disable; 
+      =     "M 35.0"; 
+
+NETWORK
+TITLE =Step 6N2 - Conveyor 5 - Packet Filling
+
+      A(    ; 
+      A     "M 31.5"; 
+      AN    "M 31.6"; 
+      O     "B 7.1"; 
+      O     "M 30.5"; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 35.0"; 
+      S     "M 35.1"; 
+
+NETWORK
+TITLE =Step 6N3 - Conveyor 5 - End Reached
+
+      A     "B 7.1"; 
+      A     "M 0.3"; 
+      A     "M 35.1"; 
+      S     "M 35.2"; 
+
+NETWORK
+TITLE =Step 6N4 - Conveyor 5 - Transfer to 6
+
+      A     "M 39.1"; 
+      AN    "M 39.2"; 
+      A     "M 0.3"; 
+      A(    ; 
+      O     "M 35.2"; 
+      ON    "M 31.5"; 
+      O     "M 34.0"; 
+      )     ; 
+      S     "M 35.3"; 
+
+NETWORK
+TITLE =Soft Timer 35 Reset
+
+      A(    ; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      O     ; 
+      A     "M 35.3"; 
+      AN    "M 35.4"; 
+      A     "A 45.0"; 
+      )     ; 
+      A     "M 0.3"; 
+      JCN   R351; 
+      JU    E351; 
+
+R351: L     L#0; 
+      T     "DB UTILITY".T35_ET; 
+      R     "DB UTILITY".T35_DN; 
+
+E351: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 35 Add
+
+      A(    ; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      O     ; 
+      A     "M 35.3"; 
+      AN    "M 35.4"; 
+      A     "A 45.0"; 
+      )     ; 
+      A     "M 0.3"; 
+      JCN   E352; 
+//;
+      A     "DB UTILITY".Freeze_Sequence_2; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      JC    E352; 
+//;
+      AN    "DB UTILITY".T35_DN; 
+      JCN   E352; 
+//;
+      L     "DB UTILITY".T35_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T35_ET; 
+
+E352: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 35 Done 30s
+
+      L     "DB UTILITY".T35_ET; 
+      L     L#30000; // [mS]
+      >=D   ; 
+      =     "DB UTILITY".T35_DN; 
+
+NETWORK
+TITLE =Automatic Re-Synchronization
+//In Order to keep Synchronized,
+//if Every Conditions are there, Conveyor 5 will do a Synchro Run 13sec after 
+//every 5 runs !
+      A     "A 45.0"; // Count runs
+      FP    "FP 169.7"; 
+      JNB   ARS1; 
+
+      L     "MW 220"; // Count up
+      L     1; 
+      +I    ; 
+      T     "MW 220"; 
+//;
+      L     10; 
+      >=I   ; 
+      JNB   ARS1; 
+//;
+      S     "M 37.3"; // ARM after 5 runs
+      L     0; 
+      T     "MW 220"; 
+
+ARS1: NOP   0; 
+
+      A     "M 37.3"; // ARMED
+      AN    "M 37.2"; // NOT already running
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      AN    "A 45.0"; // wait end of run
+      A     "M 35.0"; // power ON
+      AN    "M 35.4"; // not in reset/stop
+      JNB   ARS2; 
+//;
+      L     "HMI_DB".CONV_4_COUNT; // Conveyor 4 Must be <= 2
+      L     3; 
+      <I    ; 
+      JNB   ARS2; 
+//;
+      L     "HMI_DB".CONV_5_COUNT; 
+      L     0; // Conveyor 5 Must NOT be Empty
+      >I    ; 
+      JNB   ARS2; 
+//;
+      L     "HMI_DB".CONV_6_COUNT; 
+      L     0; // Conveyor 6 Must be Empty
+      ==I   ; 
+      JNB   ARS2; 
+//;
+      AN    "B 7.2"; // Conveyor 6 Must be Empty
+      AN    "M 10.0"; // Not Clearing
+      JNB   ARS2; 
+//;
+      S     "M 37.2"; // START 13s RUN
+      R     "M 37.3"; // DISARM
+
+ARS2: NOP   0; 
+
+      A     "M 37.2"; // Re-Sync ON
+      L     S5T#13S; 
+      SD    "Timer 64"; 
+//;
+      A     "Timer 64"; // End Re-Sync if TimeOut 13s
+      O     "B 7.1"; // or if Packet at END Sensor
+      R     "M 37.2"; // Re-Sync OFF
+NETWORK
+TITLE =Automatic Re-Synchronization - Arm Timeout
+
+      A     "M 37.3"; 
+      L     S5T#1M; 
+      SD    "Timer 74"; 
+//;
+      A     "Timer 74"; 
+      R     "M 37.3"; 
+NETWORK
+TITLE =Step 6N5 - Conveyor 5 - Stop & Reset
+
+      A(    ; 
+      O     "B 7.2"; 
+      O     "DB UTILITY".T35_DN; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 35.3"; 
+      S     "M 35.4"; 
+
+NETWORK
+TITLE =Link Conveyor 5 - VFD Release
+
+
+      A(    ; 
+      A(    ; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      AN    "DB UTILITY".Freeze_Sequence_2; 
+      )     ; 
+      O     ; 
+      A     "M 35.3"; 
+      AN    "M 35.4"; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      A     "M 37.2"; // Automatic Re-Synchronization Run
+      A     "M 35.0"; // Power ON
+      AN    "M 35.4"; // Not in Stop/Reset
+      )     ; 
+      AN    "DB UTILITY".Conveyor_5_Disable; 
+      A     "M 35.0"; 
+      =     "A 45.0"; 
+      =     "A 45.1"; 
+END_FUNCTION
+
