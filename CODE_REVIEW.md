@@ -91,7 +91,7 @@ Every other conveyor (1, 2, 4, 5, 8, 9, 10, 11) has `R #INITIALISATION` after it
 
 * When `E14.4` (drive OK) drops or `#BRAKE_CONTACTOR_KO` is true, `M92.5` is set and the code jumps to `OFF`. `OFF` only resets `A63.0` **if the brake feedback says the brake is applied** (`AN #BRAKE_RELEASE_OK`). The speed outputs `A63.1..3` keep their last state as long as an up/down command is still active.
 * The brake-release output `A56.2` (line 355) is `UP_OUT OR DN_OUT`, and neither of those terms looks at `M92.5`. So after a fault the brake stays released while a move is commanded. The only other brake drop is `AN "E 15.3"` (line 359), whose comment ("Motor Stopped") doesn't match how it is used. Confirm what that input really is.
-* `M92.5` is never reset in any block in this repo.
+* ~~`M92.5` is never reset in any block in this repo.~~ **Update:** FC212 resets it with `M9.1` (fault-reset buttons), see §8.
 * The brake is released in the **same scan** as the drive enable (`A63.0`), with no wait for the drive to be magnetised or to have torque. On a vertical axis the usual order is: drive enable → torque/ready feedback → release brake → confirm → move.
 
 **Recommended:** gate `M92.0`/`M92.1` (and so `A56.2`) with `AN "M 92.5"`. On a fault, reset `A63.0..A63.3` unconditionally once the brake is confirmed applied. Add an explicit fault reset. Have the hoist sequence checked against the drive manual and the machine's risk assessment.
@@ -266,3 +266,33 @@ Issues found:
 
 ### 7.5 Still open
 Everything else in §2–§4 is unchanged, in particular: elevator `M92.5` fault handling and brake sequencing (§2.5), Clearing `M54.6` (§3.2), Conv 4 REAL math (§3.3), unread disable flags (§3.5/3.6) and guard-door restart (§3.8). Every change above must be tested on the machine before production use: service jog both directions on the flipper and the pivot, an elevator run with the VFD not ready, and a slat / C21 cycle.
+
+---
+
+## 8. Update: FC212 "GENERAL FAULTS"
+
+FC212 builds the fault registers `MB1`–`MB4` and `MB7`, the VFD-ready latch `M11.1`, the overtemp and air faults (`M0.6`, `M0.7`) and the fault lamps. It also answers several earlier "not in the repo" questions:
+* `M9.1` = fault-reset buttons `S0.7 OR S2.7 OR E34.1`.
+* `M92.5` (elevator fault) is reset by `M9.1`.
+* `M11.1` is **latched**. It is set as soon as any VFD-ready input drops (`M11.0`) and is cleared only by the reset buttons. So after a VFD trip, every conveyor stays stopped until the operator presses reset. That design is correct.
+
+FC212 is not called from OB1, so it is presumably called from `"CONTROL"`. Confirm that.
+
+### 8.1 Findings
+| # | Sev | Line | Finding |
+|---|---|---|---|
+| F1 | 🟠 | 687–870, 909+ | **`BEC` skips the fault lamps.** The overtemp and fault-code networks end the block with `BEC` as soon as one matches. The lamp networks X120 `H40.2`, X121 `H40.3`, X130 `H40.4` and X134 `H40.5` come **after** them, so they are not executed while an overtemp (`M0.6`) or an `M3.x`/`M4.x` fault is active. The outputs freeze in whatever state they had, so the red fault lamp may never light for exactly those faults. (`H57.2` in HMI CONTROL mirrors `H40.2` too.) **Fix:** move the four lamp networks above the "Elevator OverTemp" network, or replace each `BEC` with `JU` to a label placed after the fault-code networks and before the lamps. |
+| F2 | 🟠 | 594, 607, 620 | **Wrong reset input for C21/C22/C23 VFD faults.** `M4.5`, `M4.6` and `M4.7` are set by `E28.0/E28.1/E28.2` but reset by `E13.5/E13.6/E13.7`, which are the C11/C12/C13 ready inputs (copy-paste from the LO line). A C21 fault clears as soon as C11 is OK, even if the C21 VFD is still faulted. `M11.1` still stops the machine, but the HMI no longer shows which drive it is. **Fix:** `A "E 28.0"`, `A "E 28.1"`, `A "E 28.2"`. |
+| F3 | 🟠 | 28, 910 | **`L "MD 1"; L 0; <>I`** is the same bug as in OB1: it only tests `MW3` (MB3, MB4). `#FAULT_TRIGGERED` therefore ignores E-stops (`M1.x`) and the C0–C3 / elevator faults (`M2.x`). Those don't light lamp X120, and no fault code is written for them. **Fix:** `<>D`. |
+| F4 | 🟠❓ | 72–86 | **The 8 s VFD init delay does not mask power-up.** `SP "Timer 4"` only runs while all VFDs are already ready (`M11.0`). While any VFD is still booting, `T4` = 0, so `#INIT_DELAY` = 1 and every VFD fault latches immediately. It only masks the 8 s *after* all drives report ready. As a result, every power-on probably ends with latched faults that need a reset. The intent was probably to delay after `M0.3`, e.g. `A "M 0.3"; L S5T#8S; SD "Timer 4"; A "Timer 4"; = #INIT_DELAY`. |
+| F5 | 🟠❓ | LOADER LIFT line 88 | Feeder Lift "Ready" `M74.0` uses `AN "M 3.7"`, which is the **Conveyor 9** fault slot. That slot is a placeholder that is never set (`AN "M 50.0"`). The Feeder Lift VFD fault is `M7.0`. So the lift does not stop on its own VFD fault, and only `M11.1` catches it. Probably this should be `AN "M 7.0"`. |
+| F6 | 🟡 | 289 | "VFD U42.0 Elevator Fault" `M2.2` is **set by `M1.6` (elevator door open)**, not by the drive: the `AN #ELEVATOR_U42_0` line is commented out. The HMI shows "Elevator motor fault" when the door is opened. |
+| F7 | 🟡 | 383, 511 | `HMI_DB.SCREEN_CALL_2` is assigned by both register 3 and register 4, so register 4 wins. Faults in MB3 (C4–C9) never pop the screen. **Fix:** OR the two registers. |
+| F8 | 🟡 | 786, 867+ | Fault code 0 in `MB183` is used both for "no fault" and for `M3.0` (C4 VFD). The `MB182` codes are `W#16#10..14` (16..20 decimal), not 10..14. `M4.7` (C23) has no code at all. The `E14.6`/`E14.7` overtemp codes `B`/`C` can't be reached because the Pivot network (code 6) already exits on them. |
+| F9 | 🟡 | 18–114 | New faults are only latched on the `M6.7` check pulse (or while the register is already non-zero). Detection is therefore delayed by up to one clock period. That is fine for display, but these bits must never be the only stop path. The E-stop and door stops must stay hardwired (they are, since `E0.0`, `E4.6`, `E9.0` and `E12.5` are used directly). |
+| F10 | 🟡 | many | Placeholder faults (`AN "M 50.0"`, never set): C0, Pusher 0, Pusher 1, C2 belt/roller, Flipper, C9, Pusher 2, Feeder Fingers. **The C2 belt (U43.4) and C2 roller (U43.5) VFDs have no fault monitoring**, and they aren't in the `M11.0` ready list either. `E14.6`/`E14.7` appear twice in the overtemp OR (harmless). |
+
+### 8.2 Relation to the "VFD OK -Check" changes
+The `M11.0` ready list includes C5 (`E7.6`), C6 (`E7.7`) and the TurnTable turn (`E9.5`). Their outputs (`A45.0`, `A45.3`, `A47.x`) are still not gated by `M11.1` (§7.2 item 2). A fault on any of those drives stops everything else, but not the drive's own sequence, which keeps running its timeouts.
+
+No code was changed for FC212. These are findings only.
