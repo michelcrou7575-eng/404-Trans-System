@@ -420,7 +420,7 @@ Upload the live FC6 source (Export Source from the S7 project). If FC6 differs f
 
 This fixes P1–P8 from §9. It also fixes the "count-down freezes" problem (§11): the count-done flag re-arms on every gap.
 
-**UDT8 `Debouncer Counter Struct` v0.7** is a new file, `UDT8 - Debouncer Counter Struct`. It has the fields FC8 needs, and it keeps `InFeed_Window_mS`, so the DB8 source is unchanged.
+**UDT8 `Debouncer Counter Struct` v0.7:** your uploaded `UDT8` (v0.2) was extended with 4 fields at the end (`Bit0_OFF_mS`, `Bit0_Stuck_mS`, `Bit1_OFF_mS`, `HMI_Last`). The existing fields keep their order, and the DB8 source is unchanged.
 
 **FC1208 `HMI PACKET COUNTER  NEW` v0.3**, rebuilt as a **drop-in replacement for FC1206**:
 * **All 11 conveyors** are active: C3, C4, C5, C6, C10, C11, C12, C13, C21, C22, C23.
@@ -436,7 +436,7 @@ This fixes P1–P8 from §9. It also fixes the "count-down freezes" problem (§1
 
 ### 12.2 What is needed to compile
 Nothing can be compiled here: STEP 7 runs on Windows and the full project isn't in the repo. In the **S7 project** (SIMATIC Manager → S7 Program → Sources → *Insert → External Source*), compile in this order:
-1. `UDT8 - Debouncer Counter Struct`
+1. `UDT8`
 2. `DB8 WIP` (DB8, built on UDT8)
 3. `DE-BOUNCER-COUNTER-WIP` (FC8)
 4. `HMI PACKET COUNTER  NEW` (FC1208)
