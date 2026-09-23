@@ -1,0 +1,348 @@
+FUNCTION "LIGHT BAR" : VOID
+TITLE =Light Bar
+VERSION : 0.1
+
+
+VAR_TEMP
+  BARRIER_BLINKER : BOOL ;	//Feeder Safety Light Barrier
+  STATUS_BLANKER : BOOL ;	
+  CLEARING_BLINKER : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Light Barrier - Blinker
+
+      ON    "E 1.4"; 
+      L     S5T#5M; 
+      SD    "Timer 68"; // Blinker TimeOut Start
+//;
+      A(    ; 
+      AN    "Timer 68"; // Blinker TimeOut Done
+      A     "M 145.0"; 
+      )     ; 
+      AN    "E 1.4"; 
+      A     "S 2.6"; 
+      =     #BARRIER_BLINKER; 
+NETWORK
+TITLE =Clearing _Blinker
+
+      A     "M 10.0"; 
+      A     "M 6.7"; 
+      =     #CLEARING_BLINKER; 
+NETWORK
+TITLE =Light Bar - Conveyor Status Blanker
+
+      AN    "E 1.4"; 
+      AN    "Timer 68"; 
+      O     "M 10.0"; 
+      =     #STATUS_BLANKER; 
+NETWORK
+TITLE =Lamp >7< -> Collator Conveyor 4 - Transfer > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      L     "HMI_DB".CONV_4_COUNT; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      AN    "M 31.6"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A     "M 31.6"; 
+      A     "A 44.4"; 
+      AN    "M 145.4"; 
+      )     ; // Blink
+
+      )     ; 
+      A     "M 0.3"; 
+      AN    #STATUS_BLANKER; 
+      O     #BARRIER_BLINKER; 
+      O     #CLEARING_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.6"; 
+NETWORK
+TITLE =Lamp >6< -> Link Conveyor 5 - Fill/Xsfer > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      A(    ; 
+      L     "HMI_DB".CONV_5_COUNT; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "B 7.1"; 
+      )     ; 
+      O     "M 35.2"; 
+      AN    "M 35.1"; 
+      AN    "M 35.3"; 
+      AN    "A 45.1"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A(    ; 
+      A     "M 35.1"; 
+      AN    "M 35.2"; 
+      O     ; 
+      A     "M 35.3"; 
+      )     ; 
+      A     "A 45.1"; 
+      A     "M 145.4"; 
+      )     ; // Blink
+
+      )     ; 
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      O     #BARRIER_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.5"; 
+NETWORK
+TITLE =Lamp >5< -> Delivery Conveyor 6 - Fill > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      A(    ; 
+      L     "HMI_DB".CONV_6_COUNT; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "B 7.2"; 
+      )     ; 
+      O     "M 39.2"; 
+      AN(   ; 
+      A     "M 39.1"; 
+      AN    "M 39.2"; 
+      )     ; 
+      AN    "A 45.4"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A     "M 39.1"; 
+      AN    "M 39.2"; 
+      A     "A 45.4"; 
+      AN    "M 145.4"; 
+      )     ; // Blink
+
+      )     ; 
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      O     #BARRIER_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.4"; 
+NETWORK
+TITLE =Lamp >4< -> Pivot 10 -> 11L/21H - Fill > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      L     "HMI_DB".CONV_10_COUNT; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "M 55.4"; 
+      AN    "M 55.5"; 
+      AN    "A 48.1"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A     "M 55.5"; 
+      A     "A 48.1"; 
+      A     "M 145.4"; 
+      )     ; // Blink
+
+      )     ; 
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      O     #BARRIER_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.3"; 
+NETWORK
+TITLE =Lamp >3< -> Link Conveyors 11L/21H - Fill > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     "HMI_DB".CONV_11_COUNT; 
+      L     "HMI_DB".CONV_21_COUNT; 
+      +I    ; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "B 10.7"; 
+      O     "B 15.4"; 
+      )     ; 
+      O     "M 59.2"; 
+      O     "M 79.2"; 
+      )     ; 
+      AN(   ; 
+      A     "M 59.1"; 
+      AN    "M 59.2"; 
+      )     ; 
+      AN(   ; 
+      A     "M 79.1"; 
+      AN    "M 79.2"; 
+      )     ; 
+      AN    "M 59.3"; 
+      AN    "M 79.3"; 
+      AN    "A 48.3"; 
+      AN    "A 53.4"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A(    ; 
+      A(    ; 
+      A     "M 59.1"; 
+      AN    "M 59.2"; 
+      O     ; 
+      A     "M 79.1"; 
+      AN    "M 79.2"; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      A     "M 59.3"; 
+      O     "M 79.3"; 
+      )     ; 
+      )     ; 
+      A(    ; 
+      O     "A 48.3"; 
+      O     "A 53.4"; 
+      )     ; 
+      AN    "M 145.4"; 
+      )     ; // Blink    
+
+      )     ; 
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      O     #BARRIER_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.2"; 
+
+NETWORK
+TITLE =Lamp >2< -> Link Conveyors 12L/22H - Fill > Blink, Full > Solid
+
+      A(    ; 
+
+      A(    ; // Solid
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     "HMI_DB".CONV_12_COUNT; 
+      L     "HMI_DB".CONV_22_COUNT; 
+      +I    ; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "B 11.0"; 
+      O     "B 15.5"; 
+      )     ; 
+      O     "M 63.2"; 
+      O     "M 83.2"; 
+      )     ; 
+      AN(   ; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
+      )     ; 
+      AN(   ; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
+      )     ; 
+      AN    "M 63.3"; 
+      AN    "M 83.3"; 
+      AN    "A 48.6"; 
+      AN    "A 53.6"; 
+      )     ; // Solid
+
+      O     ; 
+
+      A(    ; // Blink
+      A(    ; 
+      A(    ; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
+      O     ; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      A     "M 63.3"; 
+      O     "M 83.3"; 
+      )     ; 
+      )     ; 
+      A(    ; 
+      O     "A 48.6"; 
+      O     "A 53.6"; 
+      )     ; 
+      A     "M 145.4"; 
+      )     ; // Blink
+
+      )     ; 
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      O     #BARRIER_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.1"; 
+
+NETWORK
+TITLE =Lamp >1< -> Output Conveyors 13L/23H - Fill > Blink,Full > Solid
+
+      A(    ; // Solid
+
+      A(    ; 
+      L     "HMI_DB".CONV_13_COUNT; 
+      L     "HMI_DB".CONV_23_COUNT; 
+      +I    ; 
+      L     1; 
+      >=I   ; 
+      )     ; 
+      O     "B 11.2"; 
+      O     "B 15.7"; 
+      )     ; // Solid
+
+      A(    ; 
+      A     "E 1.4"; 
+      O     "Timer 68"; // Blinker TimeOut Done
+      )     ; 
+      A     "M 0.3"; 
+      AN    #STATUS_BLANKER; 
+      O     #BARRIER_BLINKER; 
+      O     #CLEARING_BLINKER; 
+      O     "Timer 0"; 
+      =     "H 52.0"; 
+END_FUNCTION
+

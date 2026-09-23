@@ -1,0 +1,426 @@
+FUNCTION "FEEDER FINGERS" : VOID
+TITLE =Feeder Fingers
+//
+NAME : FEEDER
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_3_SW : BOOL ;	
+  FEEDER_SERVICE_SW : BOOL ;	
+  FINGERS_SERVICE_SW : BOOL ;	
+  LIGHT_BARRIER : BOOL ;	
+  FINGERS_EXTEND : BOOL ;	
+  FINGERS_RETRACT : BOOL ;	
+  FINGERS_TILT : BOOL ;	
+  BELT_ON : BOOL ;	
+  INITIALISATION : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Light Barrier Buffer
+
+      A     "E 1.4"; 
+      O     "M 90.0"; 
+      =     #LIGHT_BARRIER; 
+//;
+      A     "E 1.4"; 
+      R     "M 90.0"; 
+NETWORK
+TITLE =Feeder Service 
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".LOADER_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".SERVICE_SW_3_STATUS; 
+      =     #MAIN_SERVICE_3_SW; 
+//;
+      A     #MAIN_SERVICE_3_SW; 
+      O     "M 70.7"; 
+      JNB   FEED; 
+      A     "HMI_DB".LOADER_LIFT_SERVICE_SSW; 
+      =     #FEEDER_SERVICE_SW; 
+//;
+      A     #FEEDER_SERVICE_SW; 
+      A     "HMI_DB".LOADER_FING_SERVICE_SSW; 
+      =     #FINGERS_SERVICE_SW; 
+      =     "DB UTILITY".Conveyor_13_Disable; 
+      =     "DB UTILITY".Conveyor_23_Disable; 
+//;  
+      A     #FEEDER_SERVICE_SW; 
+      A     #FINGERS_SERVICE_SW; 
+      A     "HMI_DB".FINGER_EXTEND_TEST_PB; 
+      AN    #FINGERS_RETRACT; 
+      =     #FINGERS_EXTEND; 
+//;  
+      A     #FEEDER_SERVICE_SW; 
+      A     #FINGERS_SERVICE_SW; 
+      A     "HMI_DB".FINGER_RETRACT_TEST_PB; 
+      AN    #FINGERS_EXTEND; 
+      =     #FINGERS_RETRACT; 
+//;  
+      A     #FEEDER_SERVICE_SW; 
+      A     #FINGERS_SERVICE_SW; 
+      A     "HMI_DB".FINGER_BELT_TEST_SW; 
+      =     #BELT_ON; 
+//;
+      A     #FEEDER_SERVICE_SW; 
+      A     #FINGERS_SERVICE_SW; 
+      A     "HMI_DB".FINGER_TILT_TEST_PB; 
+      =     #FINGERS_TILT; 
+//;
+      AN    #MAIN_SERVICE_3_SW; 
+      ON    #FEEDER_SERVICE_SW; 
+      R     "HMI_DB".LOADER_FING_SERVICE_SSW; 
+      R     "HMI_DB".LOADER_LIFT_SERVICE_SSW; 
+      R     "HMI_DB".FINGER_RETRACT_TEST_PB; 
+      R     "HMI_DB".FINGER_EXTEND_TEST_PB; 
+      R     "HMI_DB".FINGER_TILT_TEST_PB; 
+      R     "HMI_DB".FINGER_BELT_TEST_SW; 
+
+FEED: R     #FEEDER_SERVICE_SW; 
+      R     #FINGERS_SERVICE_SW; 
+      R     #FINGERS_EXTEND; 
+      R     #FINGERS_RETRACT; 
+      R     #FINGERS_TILT; 
+      FP    "FP 159.7"; 
+      =     "M 70.7"; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #FEEDER_SERVICE_SW; 
+      A     #MAIN_SERVICE_3_SW; 
+      =     #INITIALISATION; 
+NETWORK
+TITLE =Feeder - Power Enable
+
+      A     "M 0.3"; 
+      A     "M 74.0"; 
+      A     "E 13.6"; 
+      =     "M 70.0"; 
+NETWORK
+TITLE =Feeder Fingers - VFD Release
+
+      A     "P 12.0"; 
+      S     "M 70.4"; 
+//;
+      A     "K 50.5"; 
+      R     "M 70.4"; 
+NETWORK
+TITLE =Feeder Fingers Belt - Run TimeOut  6s
+
+      A     "M 71.3"; 
+      AN    "M 71.4"; 
+      A     "A 51.1"; 
+      A     "M 70.0"; 
+      L     S5T#6S; 
+      SD    "Timer 70"; 
+NETWORK
+TITLE =Step 15N1 - Power On
+
+      A     "M 70.0"; 
+      S     "M 71.0"; 
+NETWORK
+TITLE =Step 15N2 - Feeder Fingers - Step Run
+
+      A     "M 70.4"; 
+      A     "M 70.0"; 
+      A     "M 71.0"; 
+      S     "M 71.1"; 
+NETWORK
+TITLE =Packets Movements - UpDate
+
+      A(    ; 
+      A     "B 11.2"; 
+      A     "M 73.6"; 
+      AN    "M 66.7"; 
+      A     "M 67.3"; 
+      AN    "M 67.4"; 
+      O     ; 
+      A     "B 15.7"; 
+      A     "M 73.7"; 
+      AN    "M 86.7"; 
+      A     "M 87.3"; 
+      AN    "M 87.4"; 
+      )     ; 
+      A     "S 2.6"; 
+      AN    "E 12.2"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Step 15N3 - Feeder Fingers Belt - Packet Loading
+
+      A     "M 9.0"; 
+      AN    "B 12.3"; 
+      A     "M 70.4"; 
+      A     "M 75.4"; 
+      AN    "M 75.5"; 
+      A     "M 70.0"; 
+      A     "M 71.1"; 
+      S     "M 71.2"; 
+NETWORK
+TITLE =Feeder - Packet Loading Delay
+
+      A(    ; 
+      AN    "B 11.2"; 
+      A     "M 73.6"; 
+      A     "M 67.3"; 
+      O     ; 
+      AN    "B 15.7"; 
+      A     "M 73.7"; 
+      A     "M 87.3"; 
+      )     ; 
+      A     "M 70.0"; 
+      A     "M 71.2"; 
+      AN    "M 71.3"; 
+      L     S5T#50MS; 
+      SD    "Timer 71"; 
+NETWORK
+TITLE =Step 15N4 - Feeder Fingers Belt - Packet Loaded
+
+      A     "Timer 71"; 
+      A     "M 70.0"; 
+      A     "M 71.2"; 
+      S     "M 71.3"; 
+NETWORK
+TITLE =Feeder - Fingers Extend - Delay
+
+      A     "B 12.3"; 
+      A     "M 70.0"; 
+      A     "M 71.3"; 
+      AN    "M 71.4"; 
+      L     S5T#500MS; 
+      SD    "Timer 72"; 
+NETWORK
+TITLE =Step 15N5 - Feeder Fingers - Extend
+
+      A     "Timer 72"; 
+      A     "M 70.0"; 
+      A     "M 71.3"; 
+      S     "M 71.4"; 
+NETWORK
+TITLE =Step 15N6 - Feeder Fingers Belt - Stop
+
+      A     "P 12.1"; 
+      A     "M 70.0"; 
+      A     "M 71.4"; 
+      S     "M 71.5"; 
+NETWORK
+TITLE =Step 15N7 - Feeder Fingers Tilt - Ready
+
+      A     "M 76.0"; 
+      AN    "M 76.1"; 
+      A     "M 70.0"; 
+      A     "M 71.5"; 
+      S     "M 71.6"; 
+//;
+      O     "M 76.1"; 
+      R     "M 71.6"; 
+NETWORK
+TITLE =Step 15N8 - Feeder Fingers Tilt - Down
+
+      A     "S 2.6"; 
+      AN    "B 13.0"; 
+      A     "M 70.0"; 
+      A     "M 71.6"; 
+      S     "M 71.7"; 
+NETWORK
+TITLE =Step 15N9 - Feeder Fingers Belt - Run
+
+      A     "E 12.2"; 
+      A     "M 70.0"; 
+      A     "M 71.7"; 
+      S     "M 72.0"; 
+NETWORK
+TITLE =Feeder Fingers - Operator's Packet Delivery Timer
+//Operator Packet Drop Timer - Deck
+      A     "M 72.0"; 
+      AN    "M 72.1"; 
+      A     "M 70.0"; 
+      =     "K 49.4"; 
+NETWORK
+TITLE =Step 15N10 - Feeder Fingers - Retract
+
+      A     "E 3.1"; 
+      A     "M 70.0"; 
+      A     "M 72.0"; 
+      S     "M 72.1"; 
+NETWORK
+TITLE =Step 15N11 - Feeder - Hold Down Devise
+
+      A     "M 70.4"; 
+      A     "M 70.0"; 
+      A     "M 72.1"; 
+      S     "M 72.2"; 
+NETWORK
+TITLE =Feeder - Hold Down Devise - ON Pulse
+
+      A     "S 3.3"; 
+      A     "M 72.2"; 
+      A     "M 70.0"; 
+      L     S5T#500MS; 
+      SF    "Timer 73"; 
+
+      A     "Timer 73"; 
+      =     "K 41.7"; 
+NETWORK
+TITLE =Feeder Fingers - Steps Chain Register Reset
+
+      A(    ; 
+      ON    "M 75.0"; 
+      O     "M 72.2"; 
+      O     "Timer 70"; 
+      O     #FEEDER_SERVICE_SW; 
+      )     ; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     2#0; 
+      T     "MW 71"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Feeder Fingers - Fingers Retract
+
+      A(    ; 
+      A(    ; 
+      A     "M 71.0"; 
+      AN    "M 71.1"; 
+      A     "M 70.0"; 
+      O     ; 
+      A     "M 72.1"; 
+      AN    "M 72.2"; 
+      A     "M 70.0"; 
+      )     ; 
+      AN    "M 70.4"; 
+      O     ; 
+      A     #FINGERS_SERVICE_SW; 
+      A     #FINGERS_RETRACT; 
+      )     ; 
+      AN    "P 12.0"; 
+      AN    "K 50.5"; 
+      =     "K 50.6"; 
+NETWORK
+TITLE =Feeder Fingers - Fingers Extend
+
+      A(    ; 
+      A     #LIGHT_BARRIER; 
+      A     "M 71.4"; 
+      AN    "M 71.5"; 
+      A     "M 70.0"; 
+      O     ; 
+      A     #FINGERS_SERVICE_SW; 
+      A     #FINGERS_EXTEND; 
+      )     ; 
+      AN    "P 12.1"; 
+      AN    "K 50.6"; 
+      =     "K 50.5"; 
+NETWORK
+TITLE =Feeder Fingers - Fingers Belt VFD Release
+
+      A(    ; 
+      A     "M 71.2"; 
+      AN    "M 71.4"; 
+      O     ; 
+      A     #LIGHT_BARRIER; 
+      A     "M 71.4"; 
+      AN    "M 71.5"; 
+      O     ; 
+      A     "M 72.0"; 
+      AN    "M 72.1"; 
+      O     ; 
+      A     #FINGERS_SERVICE_SW; 
+      A     #BELT_ON; 
+      )     ; 
+      A     "M 70.0"; 
+      =     "A 51.0"; 
+      =     "A 51.1"; 
+NETWORK
+TITLE =Feeder Fingers - Tilt Down + Tosser Open
+
+      A(    ; 
+      A     "M 71.7"; 
+      AN    "M 72.2"; 
+      O     ; 
+      A     #FINGERS_SERVICE_SW; 
+      A     #FINGERS_TILT; 
+      )     ; 
+      A     "M 70.0"; 
+      A     #LIGHT_BARRIER; 
+      =     "Y 50.7"; 
+      =     "Y 51.3"; 
+NETWORK
+TITLE =Feeder Fingers - Tilt Up
+
+      A     "M 70.0"; 
+      AN    "Y 50.7"; 
+      A(    ; 
+      O     #LIGHT_BARRIER; 
+      O     "K 50.5"; 
+      ON    "M 71.7"; 
+      AN    #FINGERS_TILT; 
+      )     ; 
+      =     "Y 50.4"; 
+NETWORK
+TITLE =Step 15N18 - Conveyor 13 - Filling Up
+
+      A     "M 67.1"; 
+      A     "M 0.3"; 
+      S     "M 73.1"; 
+//;
+      A     "M 73.2"; 
+      R     "M 73.1"; 
+NETWORK
+TITLE =Step 15N19 - Conveyor 13 - Filling Done
+
+      A(    ; 
+      O     "Timer 69"; 
+      O     "Timer 66"; 
+      )     ; 
+      A     "M 73.1"; 
+      A     "M 0.3"; 
+      S     "M 73.2"; 
+//;
+      AN    "M 73.1"; 
+      R     "M 73.2"; 
+NETWORK
+TITLE =Step 15N20 - Conveyor 23 - Filling Up
+
+      A     "M 87.1"; 
+      A     "M 0.3"; 
+      S     "M 73.3"; 
+//;
+      A     "M 73.4"; 
+      R     "M 73.3"; 
+NETWORK
+TITLE =Step 15N21 - Conveyor 23 - Filling Done
+
+      A(    ; 
+      O     "Timer 89"; 
+      O     "Timer 86"; 
+      )     ; 
+      A     "M 73.3"; 
+      A     "M 0.3"; 
+      S     "M 73.4"; 
+//;
+      AN    "M 73.3"; 
+      R     "M 73.4"; 
+NETWORK
+TITLE =Feed from Delivery 13 - First Level
+
+      A     "M 73.1"; 
+      AN    "M 73.7"; 
+      A     "M 0.3"; 
+      S     "M 73.6"; 
+//;
+      A     "M 73.2"; 
+      R     "M 73.6"; 
+NETWORK
+TITLE =Feed from Delivery 23 - Second Level
+
+      A     "M 73.3"; 
+      AN    "M 73.6"; 
+      A     "M 0.3"; 
+      S     "M 73.7"; 
+//;
+      A     "M 73.4"; 
+      R     "M 73.7"; 
+END_FUNCTION
+

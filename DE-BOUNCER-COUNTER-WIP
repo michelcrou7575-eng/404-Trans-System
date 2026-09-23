@@ -1,0 +1,421 @@
+FUNCTION "DE-BOUNCER / COUNTER" : VOID
+TITLE =Sensor Debouncer For LINK CONVEYORS 3-5-6-11-12-13-21-22-23
+//==========================================================================
+//  SENSOR DEBOUNCER / PACKET COUNTER
+//
+//  Used for conveyor packet counting on C3, C5, C6, C11, C12, C13,
+//  C21, C22, C23, and also for collator reference conveyors C4 and C10.
+//
+//--------------------------------------------------------------------------
+//  GENERAL PRINCIPLE
+//
+//  Some packet orders can be "U" shaped or have openings that may cause
+//  the photoeye to switch OFF/ON while the same packet is still passing.
+//  This FC prevents false counts by latching the first sensor detection,
+//  waiting a minimum validation time, then rechecking that the sensor is
+//  still active before accepting the packet.
+//
+//--------------------------------------------------------------------------
+//  BIT_0 - INFEED / COUNT UP
+//
+//  Bit_0 is used to ADD one packet.
+//
+//  When Bit_0 turns ON and Transfer_Start is OFF:
+//    1. Bit0_ON_Latch is set.
+//    2. Bit0_Entry_mS starts accumulating PLC scan time.
+//    3. After the validation time, Bit_0 is checked again.
+//    4. If Bit_0 is still ON, Count_Result is incremented once.
+//
+//  Current implementation:
+//    Count-up validation uses Preset_MIN_mS.
+//
+//  Intended later improvement:
+//    Count-up validation can use:
+//      max(Preset_MIN_mS, LowSpd_Dimension_mS * ReSample_DX / 100)
+//
+//--------------------------------------------------------------------------
+//  BIT_1 - EXIT / COUNT DOWN
+//
+//  Bit_1 is used to SUBTRACT one packet during transfer.
+//
+//  When Bit_1 is ON while Transfer_Start is ON:
+//    1. Bit1_ON_Latch is set.
+//    2. Bit1_Exit_mS starts accumulating PLC scan time.
+//    3. After the calculated exit window expires,
+//       Count_Result is decremented once.
+//
+//  Exit window:
+//      HighSpd_Dimension_mS + Space_Between
+//
+//  Space_Between is currently calculated as:
+//      Space_DX_mS * 30%
+//
+//--------------------------------------------------------------------------
+//  CONVEYOR TYPES
+//
+//    Conveyor_Type = 1 : Collator
+//    Conveyor_Type = 2 : Delivery conveyor
+//    Conveyor_Type = 3 : Link conveyor
+//
+//  At this version, the active counting logic is implemented for
+//  Collator Type. Delivery and Link type bits are prepared but not yet
+//  fully separated in the counting logic.
+//
+//--------------------------------------------------------------------------
+//  COLLATOR REFERENCE
+//
+//  Only conveyors C4 and C10 have encoder-based reference information.
+//
+//    C4 = packet length reference
+//    C10 = packet width reference
+//
+//  Their measured packet timing is used as a timebase for conveyors
+//  without encoders.
+//
+//--------------------------------------------------------------------------
+//  FULL CONVEYOR / TRANSFER START NOTE
+//
+//  Link conveyors may stop with the first packet already sitting on the
+//  exit sensor when the conveyor is full.
+//
+//  For that case, countdown should eventually be triggered from the
+//  rising edge of Transfer_Start while Bit_1 is already ON.
+//  This version uses Transfer_Start level logic and may need a dedicated
+//  rising-edge memory bit if repeated triggering is observed.
+//
+//--------------------------------------------------------------------------
+//  ERROR HANDLING
+//
+//  If Bit_0 remains ON for 5 seconds or more, IO_DB.Error is latched.
+//  Q_Error follows IO_DB.Error.
+//
+//--------------------------------------------------------------------------
+//  DATA STORAGE
+//
+//  This FC uses a global DB structure through IN_OUT:
+//      IO_DB : "Debouncer Counter Struct"
+//
+//  Each conveyor has its own instance inside "DEBOUNCER COUNTER DB".
+//  The FC should be called only while the related conveyor is running,
+//  plus the required off-delay time after stopping.
+//==========================================================================
+VERSION : 0.6
+
+
+VAR_INPUT
+  Bit_0 : BOOL ;	
+  Bit_1 : BOOL ;	
+  Transfer_Start : BOOL ;	
+  Space_DX_mS : INT ;	//Distance Between Packets
+  ReSample_DX : INT ;	//Percent of Packet [%]
+  Conveyor_Type : INT ;	//1: Collator, 2: Delivery, 3: Link
+  Preset_MIN_mS : INT ;	//Debouncer [mS]
+  LowSpd_Dimension_mS : INT ;	//Packet Dimension [mS] @ Low Speed
+  HighSpd_Dimension_mS : INT ;	//Packet Dimension [mS] @ High Speed
+  Plc_Scan_mS : INT ;	//PLC ScanTime [mS]
+END_VAR
+VAR_OUTPUT
+  Q_Error : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO_DB : "Debouncer Counter Struct";	
+END_VAR
+VAR_TEMP
+  COLLATOR_TYPE : BOOL ;	
+  DELIVERY_TYPE : BOOL ;	
+  LINK_TYPE : BOOL ;	
+  COUNT_PLUS : BOOL ;	
+  COUNT_MINUS : BOOL ;	
+  ERROR : BOOL ;	
+  COUNT_UP_VALUE : INT ;	
+  EXIT_VALUE : INT ;	
+  SPACE_HALF : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Init on First Call
+
+      AN    #IO_DB.FirstScan_Done; 
+      JNB   INIT; 
+
+      L     0; 
+      T     #IO_DB.Bit0_Entry_mS; 
+//;
+      R     #IO_DB.Bit0_ON_Latch; 
+      R     #IO_DB.Bit1_ON_Latch; 
+      R     #IO_DB.Transfer_Active; 
+      R     #IO_DB.Count_Done_Latch_0; 
+      R     #IO_DB.Count_Done_Latch_1; 
+      R     #IO_DB.Error; 
+
+      S     #IO_DB.FirstScan_Done; 
+
+INIT: NOP   0; 
+NETWORK
+TITLE =Conveyor Type Bits
+
+      A(    ; 
+      L     #Conveyor_Type; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      =     #COLLATOR_TYPE; 
+//;
+      A(    ; 
+      L     #Conveyor_Type; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      =     #DELIVERY_TYPE; 
+//;
+      A(    ; 
+      L     #Conveyor_Type; 
+      L     3; 
+      ==I   ; 
+      )     ; 
+      =     #LINK_TYPE; 
+NETWORK
+TITLE =Bit_0 Infeed Start
+
+      A     #Bit_0; 
+      AN    #Transfer_Start; 
+      AN    #IO_DB.Bit0_ON_Latch; 
+      JNB   NBT0; 
+
+      L     0; 
+      T     #IO_DB.Bit0_Entry_mS; 
+
+      R     #IO_DB.Count_Done_Latch_0; 
+      R     #IO_DB.Count_Done_Latch_1; 
+      S     #IO_DB.Bit0_ON_Latch; 
+//;
+      L     #Space_DX_mS; 
+      ITD   ; 
+      DTR   ; 
+      L     3.000000e-001; // 30%
+      *R    ; 
+      RND   ; 
+      T     #IO_DB.Space_Between; 
+//;
+      L     #HighSpd_Dimension_mS; // Packet Dimension  [mS]
+      ITD   ; 
+      L     #ReSample_DX; // X 85% of Packet
+      ITD   ; 
+      *D    ; 
+      L     100; 
+      /D    ; 
+      T     #IO_DB.InFeed_Window_mS; // Packet InFeed Window  [mS]
+//;
+      L     #HighSpd_Dimension_mS; // Packet Dimension  [mS]
+      L     #IO_DB.Space_Between; // + Packet 30% 
+      +I    ; 
+      T     #IO_DB.Exit_Window_mS; // Packet Exit Window  [mS]
+
+NBT0: NOP   0; 
+NETWORK
+TITLE =Bit_1 Exit Start
+
+      A     #Bit_1; // Packet Exits While Tranfer ON or ...
+      A     #Transfer_Start; // Transfer ON While Packet Present
+      AN    #IO_DB.Bit1_ON_Latch; 
+      JNB   NBT1; 
+
+      L     0; 
+      T     #IO_DB.Bit1_Exit_mS; 
+
+      R     #IO_DB.Count_Done_Latch_1; // Reset Latch               
+      S     #IO_DB.Bit1_ON_Latch; 
+
+NBT1: NOP   0; 
+NETWORK
+TITLE =Collator Type - Compute Count Up / Exit Window
+// Collator:
+// First packet uses Preset_MIN_mS.
+// After first valid packet, use Last_Valid_mm * ReSample_DX / 100.
+// Exit window uses learned HighSpd_Dimension_mS + 30% space.
+//
+// Link / Delivery:
+// Count UP uses Preset_MIN_mS only.
+// Count DOWN uses learned HighSpd_Dimension_mS + half space.
+      A     #COLLATOR_TYPE; 
+      JCN   NCOL; 
+
+      A     #IO_DB.Bit0_ON_Latch; 
+      AN    #IO_DB.Count_Done_Latch_0; // Packet Not Yet Through
+      JCN   CNT0; 
+
+      L     #IO_DB.Bit0_Entry_mS; 
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #IO_DB.Bit0_Entry_mS; // PLC Scan Count
+//;
+      A(    ; 
+      L     #IO_DB.Bit0_Entry_mS; // PLC Scan Count
+      L     #Preset_MIN_mS; // Debouncer Preset
+      >I    ; 
+      )     ; 
+      A     #Bit_0; // Packet Still There
+      JCN   CNT0; 
+
+      L     #IO_DB.Count_Result; // Add 1 Packet
+      L     1; 
+      +I    ; 
+      T     #IO_DB.Count_Result; 
+      S     #IO_DB.Count_Done_Latch_0; // Packet Count Done
+
+CNT0: A     #IO_DB.Bit1_ON_Latch; // Transfering
+      AN    #IO_DB.Count_Done_Latch_1; // Packet Not Yet Through
+      JCN   NCOL; 
+
+      L     #IO_DB.Bit1_Exit_mS; 
+      L     #Plc_Scan_mS; // PLC Scan Count
+      +I    ; 
+      T     #IO_DB.Bit1_Exit_mS; 
+//;
+      A(    ; 
+      L     #IO_DB.Bit1_Exit_mS; 
+      L     #IO_DB.Exit_Window_mS; // Packet Exit Window  [mS]              
+      >I    ; 
+      )     ; 
+      JCN   NCOL; 
+
+      L     #IO_DB.Count_Result; 
+      L     1; 
+      -I    ; 
+      T     #IO_DB.Count_Result; 
+      S     #IO_DB.Count_Done_Latch_1; // Packet Count Done         
+
+NCOL: NOP   0; 
+NETWORK
+TITLE =Link Type - Compute Count Up / Exit Window
+
+      A     #LINK_TYPE; 
+      JCN   NLNK; 
+
+      A     #IO_DB.Bit0_ON_Latch; 
+      AN    #IO_DB.Count_Done_Latch_0; // Packet Not Yet Through
+      JCN   CNT1; 
+
+      L     #IO_DB.Bit0_Entry_mS; 
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #IO_DB.Bit0_Entry_mS; // PLC Scan Count
+//;
+      A(    ; 
+      L     #IO_DB.Bit0_Entry_mS; // PLC Scan Count
+      L     #IO_DB.InFeed_Window_mS; // 85% of Packet
+      >I    ; 
+      )     ; 
+      A     #Bit_0; // Packet Still There
+      JCN   CNT1; 
+
+      L     #IO_DB.Count_Result; // Add 1 Packet
+      L     1; 
+      +I    ; 
+      T     #IO_DB.Count_Result; 
+      S     #IO_DB.Count_Done_Latch_0; // Packet Count Done
+
+CNT1: A     #IO_DB.Bit1_ON_Latch; // Transfering
+      AN    #IO_DB.Count_Done_Latch_1; // Packet Not Yet Through
+      JCN   NLNK; 
+
+      L     #IO_DB.Bit1_Exit_mS; 
+      L     #Plc_Scan_mS; // PLC Scan Count
+      +I    ; 
+      T     #IO_DB.Bit1_Exit_mS; 
+//;
+      A(    ; 
+      L     #IO_DB.Bit1_Exit_mS; 
+      L     #IO_DB.Exit_Window_mS; // Packet Exit Window  [mS]              
+      >I    ; 
+      )     ; 
+      JCN   NLNK; 
+
+      L     #IO_DB.Count_Result; 
+      L     1; 
+      -I    ; 
+      T     #IO_DB.Count_Result; 
+      S     #IO_DB.Count_Done_Latch_1; // Packet Count Done         
+
+NLNK: NOP   0; 
+NETWORK
+TITLE =Delivery Type - Compute Count Up / Exit Window
+
+      A     #DELIVERY_TYPE; 
+      JCN   NDEL; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NDEL: NOP   0; 
+NETWORK
+TITLE =Count UP Done Reset
+//Count UP Done Reset
+      A     #IO_DB.Bit0_ON_Latch; 
+      A     #IO_DB.Count_Done_Latch_0; 
+      AN    #Bit_0; // Packet Through
+      R     #IO_DB.Bit0_ON_Latch; 
+      R     #IO_DB.Count_Done_Latch_0; 
+NETWORK
+TITLE =Count DOWN Done Reset
+//Count DOWN Done Reset
+      A     #IO_DB.Bit1_ON_Latch; 
+      A     #IO_DB.Count_Done_Latch_1; 
+      AN    #Bit_1; // Packet Through
+      R     #IO_DB.Bit1_ON_Latch; 
+      R     #IO_DB.Count_Done_Latch_1; 
+NETWORK
+TITLE =Clamp Packet Qty
+//Clamp
+      A(    ; 
+      L     #IO_DB.Count_Result; 
+      L     0; 
+      <I    ; 
+      )     ; 
+      JCN   NNEG; 
+
+      L     0; 
+      T     #IO_DB.Count_Result; 
+
+NNEG: L     #IO_DB.Count_Result; 
+      L     #IO_DB.Maximum_Count; 
+      >I    ; 
+      JCN   NHER; 
+
+      L     #IO_DB.Maximum_Count; 
+      T     #IO_DB.Count_Result; 
+
+NHER: NOP   0; 
+NETWORK
+TITLE =Disable Over 5s ON
+//Packet Error !
+      A(    ; 
+      L     #IO_DB.Bit0_Entry_mS; 
+      L     5000; 
+      >=I   ; 
+      )     ; 
+      =     #ERROR; 
+//;
+      A     #Bit_0; // Packet Stuck !
+      A     #ERROR; 
+      S     #IO_DB.Error; 
+//;
+      A     #IO_DB.Error; 
+      =     #Q_Error; 
+NETWORK
+TITLE =End
+
+      BE    ; 
+
+END_FUNCTION
+

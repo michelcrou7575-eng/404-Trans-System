@@ -1,0 +1,534 @@
+FUNCTION "ELEVATOR + PUSHER 1" : VOID
+TITLE =Elevator + Pusher 1   Pos.2
+//
+NAME : POS_2
+VERSION : 0.0
+
+
+VAR_TEMP
+  ELEVATOR_UP_OUT : BOOL ;	
+  ELEVATOR_DN_OUT : BOOL ;	
+  MAIN_SERVICE_1_SW : BOOL ;	
+  ELEVATOR_SERVICE_SW : BOOL ;	
+  ELEVATOR_DN_PB : BOOL ;	
+  ELEVATOR_UP_PB : BOOL ;	
+  ELEVATOR_ROUNDTRIP : BOOL ;	
+  PUSHER_PUSH : BOOL ;	
+  INITIALISATION : BOOL ;	
+  BRAKE_RELEASE_OK : BOOL ;	
+  BRAKE_CONTACTOR_KO : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Elevator - Health OK
+
+      A     "M 0.3"; 
+      AN    "M 3.0"; 
+      A     "E 0.3"; 
+      A     "E 4.6"; 
+      =     "M 14.3"; 
+NETWORK
+TITLE =Elevator - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".ELEVATOR_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_1_STATUS; 
+      =     #MAIN_SERVICE_1_SW; 
+//;
+      A     #MAIN_SERVICE_1_SW; 
+      O     "M 14.1"; 
+      JNB   PUS1; 
+      A     "HMI_DB".HMI_ELEVATOR_SERVICE_SSW; 
+      =     #ELEVATOR_SERVICE_SW; 
+      S     "DB UTILITY".Pusher_0_Disable; 
+//;
+      A     #ELEVATOR_SERVICE_SW; 
+      A(    ; 
+      A     "HMI_DB".HMI_ELEVATOR_TEST_DN_SSW; 
+      )     ; 
+      =     #ELEVATOR_DN_PB; 
+//;
+      A     #ELEVATOR_SERVICE_SW; 
+      A(    ; 
+      A     "HMI_DB".HMI_ELEVATOR_TEST_UP_SSW; 
+      )     ; 
+      =     #ELEVATOR_UP_PB; 
+//;
+      A     #MAIN_SERVICE_1_SW; 
+      AN    #ELEVATOR_SERVICE_SW; 
+      A     "HMI_DB".ELEVATOR_ROUND_TRIP_SSW; 
+      =     #ELEVATOR_ROUNDTRIP; 
+//;
+      A     "HMI_DB".HMI_PUSHER_1_TEST_SSW; 
+      =     #PUSHER_PUSH; 
+//;
+      AN    #MAIN_SERVICE_1_SW; 
+      R     "HMI_DB".HMI_ELEVATOR_SERVICE_SSW; 
+      R     "HMI_DB".HMI_ELEVATOR_TEST_DN_SSW; 
+      R     "HMI_DB".HMI_ELEVATOR_TEST_UP_SSW; 
+      R     "DB UTILITY".Pusher_0_Disable; 
+
+PUS1: R     #ELEVATOR_SERVICE_SW; 
+      R     #ELEVATOR_DN_PB; 
+      R     #ELEVATOR_UP_PB; 
+      R     #ELEVATOR_ROUNDTRIP; 
+      R     #PUSHER_PUSH; 
+      FP    "FP 158.1"; 
+      =     "M 14.1"; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #ELEVATOR_SERVICE_SW; 
+      A     #MAIN_SERVICE_1_SW; 
+      =     #INITIALISATION; 
+NETWORK
+TITLE =Elevator - Manual Run - Conditions
+
+      A(    ; 
+      A     "M 15.0"; // Elevator Ready
+      AN    "M 15.6"; // Not Going Up
+      O     ; // or
+      A     "M 15.6"; 
+      AN    "M 16.2"; 
+      )     ; 
+      A     "M 190.0"; // LAUER Panel
+      O     #ELEVATOR_SERVICE_SW; // HMI
+      A     "M 14.3"; 
+      =     "M 14.4"; 
+NETWORK
+TITLE =Elevator - Fault - Packet not Centered on Platform !
+
+      A(    ; 
+      O     "B 5.1"; 
+      O     "B 5.2"; 
+      )     ; 
+      AN    "P 4.0"; 
+      A     "M 15.6"; 
+      AN    "M 16.1"; 
+      A     "M 0.3"; 
+      S     "M 14.7"; 
+//;
+      AN    "B 5.1"; 
+      AN    "B 5.2"; 
+      A     "S 4.7"; 
+      A     "M 14.3"; 
+      R     "M 14.7"; 
+NETWORK
+TITLE =Step 1N1 - Elevator Ready
+
+      A     "M 14.3"; 
+      S     "M 15.0"; 
+NETWORK
+TITLE =Step 1N2 - Pusher 0 - Retracted
+
+      AN    "P 35.5"; 
+      A     "P 35.6"; 
+      A     "P 35.7"; 
+      A     "M 14.3"; 
+      A     "M 15.0"; 
+      S     "M 15.1"; 
+NETWORK
+TITLE =Step 1N3 - Elevator Down Slow / Bot Position
+
+      A(    ; 
+      ON    "P 4.0"; 
+      ON    "P 4.1"; 
+      )     ; 
+      A     "M 14.3"; 
+      A     "M 15.1"; 
+      S     "M 15.2"; 
+NETWORK
+TITLE =Step 1N4 - Elevator Bot Position
+
+      AN    "P 4.0"; 
+      A     "M 14.3"; 
+      A     "M 15.2"; 
+      S     "M 15.3"; 
+NETWORK
+TITLE =Step 1N5 - Elevator - Packet Runs IN
+
+      A     "M 132.7"; 
+      A     "M 0.3"; 
+      A     "M 15.3"; 
+      S     "M 15.4"; 
+NETWORK
+TITLE =Step 1N6 - Elevator - Packet IN
+
+      A     "M 132.7"; 
+      A     "M 0.3"; 
+      A     "M 15.4"; 
+      S     "M 15.5"; 
+NETWORK
+TITLE =Step 1N7 - Elevator Going Up - Command
+
+      A     "M 0.3"; 
+      A     "M 15.5"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #ELEVATOR_ROUNDTRIP; 
+      S     "M 15.6"; 
+NETWORK
+TITLE =Step 1N8 - Elevator Going Up - Trigger
+
+      AN    "P 4.4"; 
+      A     "M 14.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "M 14.7"; 
+      A     "M 15.6"; 
+      S     "M 15.7"; 
+NETWORK
+TITLE =Step 1N9 - Elevator Going Up - Slow
+
+      A(    ; 
+      ON    "P 4.2"; 
+      ON    "P 4.3"; 
+      )     ; 
+      A     "M 14.3"; 
+      A     "M 15.7"; 
+      S     "M 16.0"; 
+NETWORK
+TITLE =Step 1N10 - Elevator Top Position - Stop
+
+      AN    "P 4.3"; 
+      A     "M 14.3"; 
+      A     "M 16.0"; 
+      S     "M 16.1"; 
+NETWORK
+TITLE =Step 1N11 - Pusher 1 - FWD
+
+      A     "M 19.1"; 
+      AN    "M 19.2"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; //  Freezes E1 + P1 + C1 + C2 Belt    
+      A     "M 0.3"; 
+      A     "M 16.1"; 
+      S     "M 16.2"; 
+NETWORK
+TITLE =Step 1N12 - Pusher 1 - End Stop
+
+      AN    "P 4.5"; 
+      A     "M 0.3"; 
+      A     "M 16.2"; 
+      S     "M 16.3"; 
+NETWORK
+TITLE =Soft Timer 15 Reset
+
+      A     "M 16.3"; 
+      AN    "M 16.4"; 
+      A     "M 14.3"; 
+      A     "M 0.3"; 
+      JCN   R151; 
+      JU    E151; 
+
+R151: L     L#0; 
+      T     "DB UTILITY".T15_ET; 
+      R     "DB UTILITY".T15_DN; 
+
+E151: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 15 Add
+
+      A     "M 16.3"; 
+      AN    "M 16.4"; 
+      A     "M 14.3"; 
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; 
+      AN    "DB UTILITY".T15_DN; 
+      JCN   E152; 
+
+      L     "DB UTILITY".T15_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T15_ET; 
+
+E152: NOP   0; 
+
+NETWORK
+TITLE =Soft Timer 15 Done 100mS
+
+      L     "DB UTILITY".T15_ET; 
+      L     L#100; 
+      >=D   ; 
+      =     "DB UTILITY".T15_DN; 
+
+NETWORK
+TITLE =Step 1N13 - Elevator Steps Register - Reset
+
+      A     "DB UTILITY".T15_DN; 
+      A     "M 0.3"; 
+      A     "M 16.3"; 
+      S     "M 16.4"; 
+NETWORK
+TITLE =Elevator Steps Register - Reset
+
+      A(    ; 
+      A     "M 190.0"; 
+      A     "M 171.4"; 
+      A     "M 171.5"; 
+      O     "M 16.4"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Elevator_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 15"; 
+
+M002: CLR   ; 
+NETWORK
+TITLE =Trans System - Ready -> Tuber 2145
+
+      AN    "M 3.0"; 
+      AN    "M 10.0"; 
+      A     "M 0.3"; 
+      =     "K 41.0"; // Trans System OK !
+NETWORK
+TITLE =Elevator - Ready -> Tuber 2145
+
+      A     "M 15.3"; 
+      AN    "M 15.5"; 
+      A     "M 0.3"; 
+      =     "K 41.1"; 
+NETWORK
+TITLE =Elevator - Brake Release Confirm
+
+      A     "E 28.4"; 
+      L     S5T#100MS; 
+      SF    "Timer 20"; 
+//;
+      A     "Timer 20"; 
+      =     #BRAKE_RELEASE_OK; 
+NETWORK
+TITLE =Elevator - VFD Release + Rise
+
+      A(    ; 
+      AN    "M 14.7"; 
+      A     "M 15.7"; 
+      AN    "M 16.1"; 
+      AN    #ELEVATOR_SERVICE_SW; 
+      O     ; 
+      A(    ; 
+      O     "M 161.0"; 
+      O     #ELEVATOR_UP_PB; 
+      )     ; 
+      A     "M 14.4"; 
+      AN    "P 35.5"; 
+      A     #ELEVATOR_SERVICE_SW; 
+      )     ; 
+      A     "P 35.6"; // Pusher 0 Cleared Platform Area
+      A     "P 4.3"; // Not if Already at Top
+      AN    "M 92.1"; // Not While Going Down
+      A     "M 14.3"; 
+      =     "M 92.0"; 
+      =     #ELEVATOR_UP_OUT; 
+NETWORK
+TITLE =Elevator - VFD Release + Fall
+
+      A(    ; 
+      A     "M 15.1"; 
+      AN    "M 15.3"; 
+      AN    #ELEVATOR_SERVICE_SW; 
+      O     ; 
+      A(    ; 
+      O     "M 161.1"; 
+      O     #ELEVATOR_DN_PB; 
+      )     ; 
+      A     "M 14.4"; 
+      AN    "P 35.5"; 
+      A     #ELEVATOR_SERVICE_SW; 
+      )     ; 
+      AN    "P 35.5"; // Pusher 0 is Home
+      A     "P 35.6"; // Pusher 0 Cleared Platform Area
+      A     "P 4.0"; // Not at Bottom Position
+      AN    "M 92.0"; // Not Drive Release
+      A     "M 14.3"; // Clear to Proceed
+      =     "M 92.1"; 
+      =     #ELEVATOR_DN_OUT; 
+NETWORK
+TITLE =Elevator - Brake
+
+      A(    ; 
+      O     #ELEVATOR_UP_OUT; 
+      O     #ELEVATOR_DN_OUT; 
+      )     ; 
+      =     "A 56.2"; // Brake Release
+NETWORK
+TITLE =Safety Brake
+
+      AN    "E 15.3"; // Motor Stopped
+      R     "A 56.2"; // Apply Brake
+NETWORK
+TITLE =Elevator - Fast Mode 
+
+      A(    ; 
+      A     "M 15.1"; 
+      AN    "M 15.2"; 
+      A     "M 92.1"; 
+      O     ; 
+      A     "M 15.7"; 
+      AN    "M 16.0"; 
+      A     "M 92.0"; 
+      )     ; 
+      A     "M 14.3"; 
+      AN    #ELEVATOR_SERVICE_SW; 
+      =     "M 92.3"; 
+NETWORK
+TITLE =Elevator - Slow
+
+      A(    ; 
+      A     "M 15.2"; 
+      AN    "M 15.3"; 
+      A     "M 92.1"; 
+      O     ; 
+      A     "M 16.0"; 
+      AN    "M 16.1"; 
+      A     "M 92.0"; 
+      O     ; 
+      A(    ; 
+      A     "M 161.0"; 
+      AN    "M 92.1"; 
+      A     "P 4.3"; 
+      O     ; 
+      A     "M 161.1"; 
+      AN    "M 92.0"; 
+      A     "P 4.0"; 
+      )     ; 
+      A     "M 14.4"; 
+      )     ; 
+      A     "M 14.3"; 
+      O     #ELEVATOR_SERVICE_SW; 
+      =     "M 92.2"; 
+NETWORK
+TITLE =Pusher 1 FWD - Contactor K42.6
+
+      A(    ; 
+      A     "M 16.2"; 
+      AN    "M 16.3"; 
+      AN    #PUSHER_PUSH; 
+      AN    "DB UTILITY".Pusher_1_Disable; 
+      O(    ; 
+      A     #MAIN_SERVICE_1_SW; 
+      A     #PUSHER_PUSH; 
+      )     ; 
+      O     ; 
+      A     "M 14.4"; 
+      A     "M 161.0"; 
+      AN    "P 4.3"; 
+      )     ; 
+      A     "P 4.5"; 
+      A     "M 14.3"; 
+      AN    "K 42.7"; 
+      =     "K 42.6"; 
+NETWORK
+TITLE =Pusher 1 REV - Contactor K42.7
+
+      A(    ; 
+      A     "M 15.1"; 
+      AN    "M 15.4"; 
+      AN    #PUSHER_PUSH; 
+      O(    ; 
+      A     #MAIN_SERVICE_1_SW; 
+      AN    #PUSHER_PUSH; 
+      )     ; 
+      O     ; 
+      A     "M 14.4"; 
+      A     "M 161.1"; 
+      )     ; 
+      A     "P 4.4"; 
+      A     "M 14.3"; 
+      AN    "K 42.6"; 
+      =     "K 42.7"; 
+NETWORK
+TITLE =Brake Contactor - Monitor
+
+      A     "A 56.2"; // Brake Release 
+      L     S5T#1S; // 1 sec Delay
+      SD    "Timer 133"; 
+//;
+      A     "Timer 133"; 
+      AN    #BRAKE_RELEASE_OK; // Release Brake - Confirm
+      =     #BRAKE_CONTACTOR_KO; // Contactor Malfunction !
+NETWORK
+TITLE =New Elevator VFD PARKER - Ready
+
+      AN    "E 14.4"; // DRIVE TEST
+      O     #BRAKE_CONTACTOR_KO; // Contactor Monitor = Contactor Malfunction !
+      JCN   NFLT; // No fault
+      S     "M 92.5"; // Set Fault Bit
+      JU    OFF; // Turn Off
+NETWORK
+TITLE =New Elevator VFD with Dynamic Resistor - Go Up
+
+NFLT: A     #ELEVATOR_UP_OUT; // VFD Release Command UP
+      A     "M 92.3"; // Fast Speed Command
+      AN    "M 92.5"; // Fault Bit
+      JCN   UPLO; 
+      S     "A 63.0"; // Release Drive - Go Up
+      S     "A 63.2"; // Speed 2 / Speed 0.0
+//;                                       
+      A     #BRAKE_RELEASE_OK; // Release Brake - Confirm
+      JCN   END; 
+      =     "A 63.1"; // Speed 1
+      =     "A 63.2"; // Speed 2 + Speed 1 = Fast
+      R     "A 63.3"; // L = Forward (Up)
+      JU    END; 
+
+UPLO: A     #ELEVATOR_UP_OUT; // VFD Release Command UP
+      A     "M 92.2"; // Slow Speed Command
+      AN    "M 92.5"; // Fault Bit
+      JCN   DNHI; 
+      S     "A 63.0"; // Release Drive - Go Up
+      S     "A 63.2"; // Speed 2 / Speed 0.0
+//;
+      A     #BRAKE_RELEASE_OK; // Release Brake - Confirm
+      JCN   END; 
+      =     "A 63.1"; // Speed 1
+      R     "A 63.2"; // Speed 2 = Off
+      R     "A 63.3"; // L = Forward (Up)
+      JU    END; 
+NETWORK
+TITLE =New Elevator VFD with Dynamic Resistor - Go Down
+
+DNHI: A     #ELEVATOR_DN_OUT; // VFD Release Command DN
+      A     "M 92.3"; // Fast Speed Command
+      AN    "M 92.5"; // Fault Bit
+      JCN   DNLO; 
+      S     "A 63.0"; // Release Drive - Go Dn
+      S     "A 63.2"; // Speed 2 / Speed 0.0
+//;
+      A     #BRAKE_RELEASE_OK; // Release Brake - Confirm
+      JCN   END; 
+      =     "A 63.1"; // Speed 1
+      =     "A 63.2"; // Speed 2 + Speed 1 = Fast
+      =     "A 63.3"; // H = Reverse (Dn)
+      JU    END; 
+
+DNLO: A     #ELEVATOR_DN_OUT; // VFD Release Command DN
+      A     "M 92.2"; // Slow Speed Command
+      AN    "M 92.5"; // Fault Bit
+      JCN   OFF; 
+      S     "A 63.0"; // Release Drive - Go Dn
+      S     "A 63.2"; // Speed 2 / Speed 0.0
+//;
+      A     #BRAKE_RELEASE_OK; // Release Brake - Confirm
+      JCN   END; 
+      =     "A 63.1"; // Speed 1
+      R     "A 63.2"; // Speed 2 = Off
+      =     "A 63.3"; // H = Reverse (Dn)
+      JU    END; 
+NETWORK
+TITLE =Drive Off
+
+OFF:  AN    #BRAKE_RELEASE_OK; // Brake ON Status
+      R     "A 63.0"; // Drive - Off
+NETWORK
+TITLE =Elevator Off
+
+END:  AN    #ELEVATOR_UP_OUT; 
+      AN    #ELEVATOR_DN_OUT; 
+      R     "A 63.1"; // Speed 1 - Off
+      S     "A 63.2"; // Speed 2 / Speed 0.0 - Off
+      R     "A 63.3"; // L = Forward (Up)
+END_FUNCTION
+

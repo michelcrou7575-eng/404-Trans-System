@@ -1,0 +1,544 @@
+FUNCTION "CONVEYOR 0 + PUSHER 0" : VOID
+TITLE =Conveyor 0 & Pusher 0
+NAME : 'Pos.1'
+VERSION : 0.1
+
+
+VAR_TEMP
+  TIMER_RESET : BOOL ;	
+  MAIN_SERVICE_1_SW : BOOL ;	
+  CONV_0_SERVICE_FWD : BOOL ;	
+  CONV_0_SERVICE_REV : BOOL ;	
+  RESET_1 : BOOL ;	
+  RESET_2 : BOOL ;	
+  PUSHER_PUSH : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 0 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_0_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_1_STATUS; 
+      =     #MAIN_SERVICE_1_SW; 
+//;
+      A     #MAIN_SERVICE_1_SW; 
+      O     "M 14.0"; 
+      JNB   PUS0; 
+      A     "HMI_DB".HMI_ROLLER_TEST_FWD_SSW; 
+      FP    "FP 168.3"; 
+      R     "HMI_DB".HMI_ROLLER_TEST_REV_SSW; 
+      =     #RESET_1; 
+//;
+      A     "HMI_DB".HMI_ROLLER_TEST_REV_SSW; 
+      FP    "FP 168.4"; 
+      R     "HMI_DB".HMI_ROLLER_TEST_FWD_SSW; 
+      =     #RESET_2; 
+//;
+      A(    ; 
+      O     #RESET_1; 
+      O     #RESET_2; 
+      )     ; 
+      L     S5T#1S; 
+      SF    "Timer 110"; 
+//;
+      A     "HMI_DB".HMI_ROLLER_TEST_FWD_SSW; 
+      AN    "Timer 110"; 
+      =     #CONV_0_SERVICE_FWD; 
+//;
+      A     "HMI_DB".HMI_ROLLER_TEST_REV_SSW; 
+      AN    "Timer 110"; 
+      =     #CONV_0_SERVICE_REV; 
+//;
+      A     "HMI_DB".HMI_PUSHER_0_TEST_SSW; 
+      =     #PUSHER_PUSH; 
+//;
+      AN    #MAIN_SERVICE_1_SW; 
+      R     "HMI_DB".HMI_ROLLER_TEST_FWD_SSW; 
+      R     "HMI_DB".HMI_ROLLER_TEST_REV_SSW; 
+
+PUS0: R     #CONV_0_SERVICE_FWD; 
+      R     #CONV_0_SERVICE_REV; 
+      R     #RESET_1; 
+      R     #RESET_2; 
+      R     #PUSHER_PUSH; 
+      FP    "FP 158.0"; 
+      =     "M 14.0"; 
+NETWORK
+TITLE =Function Keys <F5 > on HMI - Reset
+
+      A     "M 13.3"; 
+      AN    "M 153.7"; 
+      R     "M 150.3"; 
+NETWORK
+TITLE =Packet goes Through - 2145 Desk R-21 - Run / Timeout
+
+      A     "B 35.3"; 
+      FP    "FP 168.1"; 
+      =     #TIMER_RESET; // TimeOut - Reset Trigger
+//;
+      A     "S 28.3"; 
+      O     "M 111.0"; 
+      AN    #TIMER_RESET; // TimeOut - Reset Action
+      L     S5T#10M; 
+      SD    "Timer 34"; // TimeOut 10m
+//;
+      A     "S 28.3"; // R-21 Operator Switch
+      O     "M 111.0"; // New HMI SSW
+      FP    "FP 168.2"; // Turn ON - Pulse
+      S     "M 133.4"; // Goes Through - Set
+//;
+      A     "S 28.3"; // Goes Through - Refresh
+      O     "M 111.0"; 
+      A(    ; 
+      O     "E 34.7"; // Turn ON - Refresh 
+      O     "M 37.1"; 
+      O     "B 35.3"; // Turn ON - Refresh 
+      )     ; 
+      S     "M 133.4"; // Goes Through - Set
+//;
+      A(    ; 
+      O(    ; 
+      AN    "S 28.3"; 
+      FP    "FP 147.1"; // Turn OFF - Pulse
+      )     ; 
+      O(    ; 
+      AN    "M 111.0"; 
+      FP    "FP 147.3"; // Turn OFF - Pulse
+      O     "Timer 34"; // TimeOut 10m - Flag
+      )     ; 
+      )     ; 
+      R     "M 133.4"; // Goes Through
+      R     "HMI_DB".ROLLER_SSW_MAIN; 
+NETWORK
+TITLE =
+//
+//      A     "E 2.4"
+//      S     "M 33.0"                    // Solid Detected ?
+////;
+//      A     "M 33.0"                    // Delay Timer - Start
+//      L     S5T#300MS
+//      SD    "Timer 26"                  // Debouncer 300mS
+////;
+//      A     "Timer 26"                  // Delayed Test Pulse
+//      AN    "E 2.4"                     // Foul Detection
+//      R     "M 33.0"                    // Not Detected !
+////;
+//      A     "Timer 26"                  // Delayed Test Pulse
+//      A     "M 33.0"                    // Detection Comfirm !
+//      =     "M 33.1"                    // Packet Height OK
+//      R     "M 33.0"                    // Reset
+//
+
+
+NETWORK
+TITLE =Packet Height - Sensing / Debouncing
+
+      A     "B 35.2"; // B72.0 Adjustable
+      S     "M 37.0"; // Solid Detected ?
+//;
+      A     "M 37.0"; // Delay Timer - Start
+      L     S5T#200MS; 
+      SD    "Timer 76"; // Debouncer 300mS
+//;
+      A     "Timer 76"; // Delayed Test Pulse
+      AN    "B 35.2"; // Foul Detection
+      R     "M 37.0"; // Not Detected !
+//;
+      A     "Timer 76"; // Delayed Test Pulse
+      A     "M 37.0"; // Detection Comfirm !
+      =     "M 37.1"; // Packet Height OK
+      R     "M 37.0"; // Reset
+NETWORK
+TITLE =Packet Infeed / Height Eject
+
+      A     "M 134.0"; 
+      S     "M 33.6"; // Presumed too small
+//;
+      AN    "E 34.7"; // Flap Closing
+      L     S5T#5S; // TimeOut Reset 5s
+      SD    "Timer 61"; 
+//;
+      A     "M 33.6"; // Presumed too small
+//    A     "M 33.1"                    // Packet Height OK ?
+      O     "Timer 61"; // 5 Sec Delayed Reset
+      R     "M 33.6"; // Not too small
+//;
+      A     "B 35.3"; // Sliding Sensor
+      FP    "FP 147.6"; 
+      A     "M 33.6"; // Is too small ?
+      S     "M 33.3"; // Eject Action !     
+//;
+      A     "M 34.7"; // Eject Done
+      R     "M 33.3"; // Eject Action      
+      R     "M 34.7"; // Eject Done
+NETWORK
+TITLE =Eject Comfirmation
+
+      A     "M 13.0"; 
+      JNB   OUT1; 
+
+      A     "B 35.3"; 
+      AN    "M 132.6"; // Not Triggered by Pusher
+      S     "M 34.3"; // Eject Step 1
+//;
+      A     "B 35.4"; 
+      AN    "M 132.6"; // Not Triggered by Pusher
+      S     "M 34.4"; // Eject Step 2
+//;
+      A     "K 62.0"; // Conveyor 0 - Running
+      A     "M 153.7"; 
+      A     "M 34.3"; // Eject Step 1
+      A     "M 34.4"; // Eject Step 2
+      S     "M 34.5"; // Eject Step 3
+//;
+      A     "M 34.5"; // Eject Step 3
+      AN    "B 35.4"; // Eject Step 4
+      S     "M 34.7"; // Eject Done
+      R     "M 34.3"; // Eject Step 1 - Reset
+      R     "M 34.4"; // Eject Step 2 - Reset
+      R     "M 34.5"; // Eject Step 3 - Reset   
+      R     "M 33.3"; // Eject Action - Reset
+//;
+      A     "M 132.5"; // Reset with Pusher Extend
+      A     "B 35.4"; 
+      R     "M 34.3"; // Eject Step 1 - Reset
+      R     "M 34.4"; // Eject Step 2 - Reset
+      R     "M 34.5"; // Eject Step 3 - Reset   
+      R     "M 33.3"; // Eject Action - Reset
+
+OUT1: CLR   ; 
+NETWORK
+TITLE =Packet goes Through - Conveyor 0 Man Run - LAUER F5
+
+      O     "M 150.3"; 
+      O     "M 133.4"; // Goes Through - Trigger
+      O     "M 33.7"; 
+      O     "M 33.3"; 
+      =     "M 133.5"; // Goes Through - Flag
+NETWORK
+TITLE =LAUER <F18> - Link Feed by Hand - Reset
+
+      A     "M 13.3"; 
+      A     "M 133.5"; 
+      R     "M 152.0"; 
+NETWORK
+TITLE =LAUER <F18> - Link Feed by Hand - Reset by <F19> LAUER
+
+      A     "M 13.3"; 
+      A     "M 153.7"; 
+      R     "M 152.0"; 
+NETWORK
+TITLE =Packetizer Flap - Open Pulse
+
+      A     "E 34.7"; 
+      FP    "FP 169.5"; 
+      =     "M 134.0"; 
+NETWORK
+TITLE =Packetizer Flap - Close Pulse
+
+      A     "E 34.7"; 
+      FN    "FN 155.5"; 
+      =     "M 134.2"; 
+NETWORK
+TITLE =F18 Key - Reseted by Packetizer Flap Door - Delay 5s
+
+      A     "E 34.7"; // Flap Door
+      L     S5T#5S; 
+      SD    "Timer 16"; // Setup Mode Trigger
+NETWORK
+TITLE =F18 Key - Reseted by Packetizer Flap Door
+
+      A     "E 34.7"; 
+      R     "M 152.0"; 
+NETWORK
+TITLE =Events UpDate - Packet InFeed
+
+      A(    ; 
+      A     "E 34.7"; // Feed by 2145 Run
+      A     "M 0.3"; 
+      O     "M 133.5"; 
+      O     "Timer 16"; 
+      A     "M 153.7"; 
+      O     ; 
+      A     "S 34.6"; // Feed by Hand Run
+      A     "M 152.0"; 
+      A     "K 41.1"; 
+      )     ; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =SEQ InFeed Step 0 Packet InFeed
+
+      A     "M 9.0"; 
+      AN    "M 132.1"; 
+      AN    "M 132.2"; 
+      AN    "M 132.3"; 
+      AN    "M 132.4"; 
+      AN    "M 132.5"; 
+      S     "M 132.0"; 
+NETWORK
+TITLE =Process Default Trigger
+
+      A     "K 62.0"; 
+      AN    "M 37.1"; 
+      L     S5T#3S; 
+      SD    "Timer 18"; 
+NETWORK
+TITLE =Events UpDate
+
+      A     "M 132.0"; 
+      A(    ; 
+      O     "M 37.1"; 
+      O     "Timer 18"; 
+      )     ; 
+      A     "M 153.7"; 
+      A     "K 41.0"; 
+      A     "K 41.1"; 
+      AN    "M 132.4"; 
+      AN    "M 133.5"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =SEQ InFeed Step 1 Packet Height - OK
+
+      A     "M 9.0"; 
+      AN    "Timer 16"; 
+      S     "M 132.1"; 
+NETWORK
+TITLE =SEQ InFeed Step 9 Packet Height - NOT OK
+
+      AN    "M 132.1"; 
+      A     "B 35.3"; 
+      O     "M 132.4"; 
+      O     "M 133.5"; 
+      O     "Timer 16"; 
+      O     "Timer 18"; 
+      S     "M 133.1"; 
+NETWORK
+TITLE =Rollers Conveyor - Clearing Laps - Resets
+
+      A     "M 133.1"; 
+      AN    "Timer 16"; 
+      AN    "M 133.5"; 
+      L     S5T#7S; 
+      SD    "Timer 12"; 
+//;
+      A     "Timer 12"; 
+      R     "M 132.0"; 
+      R     "M 132.1"; 
+      R     "M 132.2"; 
+      R     "M 132.4"; 
+      R     "M 133.1"; 
+NETWORK
+TITLE =SEQ InFeed Packet - NOT OK - Reset
+
+      A     "M 133.1"; 
+      A(    ; 
+      A     "M 134.0"; 
+      A     "M 153.7"; 
+      AN    "M 133.5"; 
+      O     ; 
+      AN    "M 133.5"; 
+      AN    "M 153.7"; 
+      A     "M 152.0"; 
+      )     ; 
+      R     "M 132.0"; 
+      R     "M 132.1"; 
+      R     "M 132.2"; 
+      R     "M 132.4"; 
+      R     "M 133.1"; 
+NETWORK
+TITLE =SEQ InFeed Step 2 Packet Going IN 
+
+      A(    ; 
+      A     "B 35.3"; 
+      A     "M 153.7"; 
+      A     "M 132.1"; 
+      AN    "M 133.5"; // 20220720 TEST
+      O     ; 
+      A     "B 35.4"; 
+      A     "M 152.0"; 
+      )     ; 
+      A     "M 132.0"; 
+      A     "K 41.0"; 
+      A     "K 41.1"; 
+      S     "M 132.2"; 
+NETWORK
+TITLE =SEQ InFeed Step 3 Conveyor Stop
+
+      A     "M 132.2"; 
+      AN    "M 132.4"; 
+      A(    ; 
+      AN    "B 35.3"; 
+      AN    "B 35.4"; 
+      A     "M 153.7"; 
+      O     ; 
+      AN    "B 35.4"; 
+      A     "M 152.0"; 
+      )     ; 
+      S     "M 132.3"; 
+      R     "M 132.0"; 
+      R     "M 132.1"; 
+      R     "M 132.2"; 
+NETWORK
+TITLE =SEQ InFeed Step 4 Packet too Long
+
+      A     "M 132.2"; 
+      A     "B 35.3"; 
+      A     "B 35.4"; 
+      A     "M 153.7"; 
+      S     "M 132.4"; 
+NETWORK
+TITLE =SEQ Pusher 0 Extended - Acknowledge
+
+      A     "M 132.3"; 
+      AN    "P 35.5"; 
+      L     S5T#700MS; 
+      SD    "Timer 7"; 
+//;
+      A     "Timer 7"; 
+      S     "M 132.5"; 
+      R     "M 132.3"; 
+NETWORK
+TITLE =SEQ InFeed Step 6 Pusher - Home
+
+      A     "M 132.5"; 
+      AN    "P 35.6"; 
+      S     "M 132.6"; 
+      R     "M 132.5"; 
+NETWORK
+TITLE =SEQ InFeed Step 7 Link Signal
+
+      A     "M 132.6"; 
+      AN    "P 35.7"; 
+      S     "M 132.7"; 
+NETWORK
+TITLE =SEQ InFeed Step 8 End of Cycle
+
+      A     "M 132.6"; 
+      AN    "P 35.5"; 
+      S     "M 133.0"; 
+      R     "M 132.6"; 
+      R     "M 132.7"; 
+NETWORK
+TITLE =Cumul Empty - Delay
+
+      A     "M 133.0"; 
+      L     S5T#2S; 
+      SD    "Timer 8"; 
+//;
+      A     "Timer 8"; 
+      R     "M 133.0"; 
+NETWORK
+TITLE =Elevator - Conveyor 0 - FWD
+
+      A(    ; 
+      A     "M 132.0"; 
+      A     "M 153.7"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #CONV_0_SERVICE_FWD; 
+      )     ; 
+      AN    "E 35.0"; 
+      AN    "M 30.1"; 
+      AN    "K 62.1"; 
+      =     "K 62.0"; 
+NETWORK
+TITLE =Elevator - Conveyor 0 - REV
+
+      A(    ; 
+      A(    ; 
+      AN    "M 140.3"; 
+      A     "M 152.0"; 
+      O     ; 
+      A     "M 140.3"; 
+      A     "M 110.0"; 
+      )     ; 
+      A     "M 132.0"; 
+//     A     "M 152.0"
+      AN    #MAIN_SERVICE_1_SW; 
+      O     #CONV_0_SERVICE_REV; 
+      )     ; 
+      AN    "E 35.0"; 
+      AN    "M 30.1"; 
+      AN    "K 62.0"; 
+      =     "K 62.1"; 
+NETWORK
+TITLE =Elevator - Pusher 0 - FWD
+
+      A(    ; 
+      AN    "M 37.7"; 
+      AN    "DB UTILITY".Freeze_Sequence_1; //  Freezes E1 + C1 + C2 Belt    
+      A     "M 132.5"; 
+      AN    "K 62.3"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      AN    "DB UTILITY".Pusher_0_Disable; 
+      O(    ; 
+      A     #MAIN_SERVICE_1_SW; 
+      A     #PUSHER_PUSH; 
+      )     ; 
+      O     ; 
+      A     "M 161.0"; 
+      A     "M 161.1"; 
+      A     "M 14.4"; 
+      )     ; 
+      A     "P 35.6"; 
+      AN    "E 35.1"; 
+      AN    "M 30.2"; 
+      =     "K 62.2"; 
+NETWORK
+TITLE =Elevator - Pusher 0 - REV
+
+      A(    ; 
+      A     "M 132.6"; 
+      AN    #MAIN_SERVICE_1_SW; 
+      O(    ; 
+      A     #MAIN_SERVICE_1_SW; 
+      AN    #PUSHER_PUSH; 
+      )     ; 
+      O     ; 
+      A     "M 161.1"; 
+      AN    "M 161.0"; 
+      A     "M 14.4"; 
+      )     ; 
+      A     "P 35.5"; 
+      AN    "K 62.2"; 
+      AN    "E 35.1"; 
+      AN    "M 30.2"; 
+      =     "K 62.3"; 
+NETWORK
+TITLE =Conveyor 0 - Fault
+
+      A(    ; 
+      O     "K 62.0"; 
+      O     "K 62.1"; 
+      )     ; 
+      AN    "M 133.5"; 
+      AN    "E 34.7"; 
+      L     S5T#20S; 
+      SD    "Timer 13"; 
+//;
+      A     "Timer 13"; 
+      S     "M 30.1"; 
+NETWORK
+TITLE =Conveyor 0 - Fault - Reset
+
+      A     "M 171.5"; 
+      R     "M 30.1"; 
+NETWORK
+TITLE =Pusher 0 - Fault
+
+      A(    ; 
+      O     "K 62.2"; 
+      O     "K 62.3"; 
+      )     ; 
+      L     S5T#10S; 
+      SD    "Timer 14"; 
+//;
+      A     "Timer 14"; 
+      S     "M 30.2"; 
+NETWORK
+TITLE =Pusher 0 - Fault - Reset
+
+      A     "M 171.5"; 
+      R     "M 30.2"; 
+END_FUNCTION
+

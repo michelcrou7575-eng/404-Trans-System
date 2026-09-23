@@ -1,0 +1,238 @@
+FUNCTION "CONVEYOR 13 - DELIV. LO" : VOID
+TITLE =Conveyor 13 - Delivery First Level
+NAME : POS_15_L
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  BARRIER_BLINKER : BOOL ;	//Feeder Safety Light Barrier
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 13 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_11_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 66.1"; 
+      JNB   CO13; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_13_TEST_SSW; 
+      =     #SERVICE_RUN; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_13_TEST_SSW; 
+
+CO13: R     #SERVICE_RUN; 
+      FP    "FP 148.2"; 
+      =     "M 66.1"; 
+NETWORK
+TITLE =Delivery Conveyor 13 - Running TimeOut  30s
+
+      A     "M 67.1"; 
+      AN    "M 67.3"; 
+      A     "A 49.0"; 
+      A     "M 66.0"; 
+      L     S5T#30S; 
+      SD    "Timer 66"; 
+NETWORK
+TITLE =Conveyor 13 - Next Delivery
+
+      A     "B 11.2"; 
+      A     "M 67.5"; 
+      AN    "M 67.6"; 
+      A     "M 0.3"; 
+      S     "M 66.6"; 
+//;
+      A     "M 67.3"; 
+      AN    "M 67.4"; 
+      R     "M 66.6"; 
+NETWORK
+TITLE =Delivery Conveyor 13 - Empty Sens TimeOut  3s
+
+      A     "M 67.4"; 
+      AN    "M 67.5"; 
+      A     "B 11.2"; 
+      A     "M 0.3"; 
+      A     "A 49.0"; 
+      L     S5T#3S; 
+      SD    "Timer 67"; 
+NETWORK
+TITLE =Delivery Conveyor 13 - Ready
+
+      A     "Timer 67"; 
+      S     "M 66.7"; 
+//;
+      A     "M 9.1"; 
+      AN    "B 11.2"; 
+      A     "M 0.3"; 
+      R     "M 66.7"; 
+NETWORK
+TITLE =Conveyor 13 - Power Enable
+
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Conveyor_13_Disable; 
+      =     "M 66.0"; 
+NETWORK
+TITLE =Step 14N1 - Conveyor 13 - Power On
+
+      A     "M 66.0"; 
+      S     "M 67.0"; 
+NETWORK
+TITLE =Step 14N2 - Conveyor 13 - Filling
+
+      A(    ; 
+      A     "M 63.2"; 
+      AN    "M 63.3"; 
+      O     ; 
+      A(    ; 
+      O     "B 11.1"; 
+      O     "B 11.2"; 
+      )     ; 
+//      O     #SERVICE_RUN
+      AN    "M 67.1"; 
+      )     ; 
+      A     "M 66.0"; 
+      A     "M 67.0"; 
+      S     "M 67.1"; 
+NETWORK
+TITLE =Step 14N3 - Conveyor 13 - Stop
+
+      A(    ; 
+      O     "B 11.1"; 
+      O     "B 11.2"; 
+      )     ; 
+      A     "M 66.0"; 
+      A     "M 67.1"; 
+      S     "M 67.2"; 
+NETWORK
+TITLE =Step 14N4 - Conveyor 13 - Packets Present
+
+      A     "B 11.2"; 
+      A     "M 66.0"; 
+      A     "M 67.2"; 
+      S     "M 67.3"; 
+NETWORK
+TITLE =Step 14N5 - Conveyor 13 - Delivery
+
+      A(    ; 
+      AN    "P 11.4"; 
+      A     "M 71.2"; 
+      AN    "M 71.3"; 
+      A     "M 73.6"; 
+      ON    "B 11.2"; 
+      )     ; 
+      AN    "M 66.7"; 
+      A     "M 66.0"; 
+      A     "M 67.3"; 
+      S     "M 67.4"; 
+NETWORK
+TITLE =Write 1 to Steps 0-3 Byte Register MB67
+
+      A(    ; 
+      O     "M 66.6"; 
+      O     "M 66.7"; 
+      )     ; 
+      A     "M 67.4"; 
+      A     "M 66.0"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     2#1111; 
+      T     "MB 67"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 14N6 - Conveyor 13 - Delivery Done
+
+      AN    "B 11.2"; 
+      A     "M 66.0"; 
+      A     "M 67.4"; 
+      S     "M 67.5"; 
+NETWORK
+TITLE =Delivery Conveyor 13 - Next Delivery - Delay
+
+      A     "M 67.5"; 
+      AN    "M 67.6"; 
+      A     "A 49.0"; 
+      A     "M 66.0"; 
+      L     S5T#3S; 
+      SD    "Timer 69"; 
+NETWORK
+TITLE =Step 14N7 - Conveyor 13 - Next Delivery
+
+      A     "Timer 69"; 
+      A     "M 66.0"; 
+      A     "M 67.5"; 
+      S     "M 67.6"; 
+NETWORK
+TITLE =Steps Register - Reset
+
+      A(    ; 
+      O     "M 67.6"; 
+      O     "Timer 66"; 
+      )     ; 
+      A     "M 66.0"; 
+      JC    M003; 
+      JU    M004; 
+
+M003: L     2#0; 
+      T     "MW 67"; 
+
+M004: NOP   0; 
+NETWORK
+TITLE =Conveyor 13 VFD - Release
+
+      A(    ; 
+      A     "M 67.1"; 
+      AN    "M 67.3"; 
+      O     ; 
+      A     "M 67.4"; 
+      AN    "M 67.5"; 
+      A     "M 70.0"; 
+      O     ; 
+      A     "M 67.5"; 
+      AN    "M 67.6"; 
+      O     "M 66.4"; 
+      )     ; 
+      A     "M 66.0"; 
+      =     "A 49.0"; 
+NETWORK
+TITLE =Conveyor Filling
+
+      A     "M 67.1"; 
+      AN    "M 67.2"; 
+      A     "M 66.0"; 
+      =     "A 49.1"; 
+NETWORK
+TITLE =Conveyor 13 VFD - Slow
+
+      A(    ; 
+      A     "M 67.2"; 
+      AN    "M 67.3"; 
+      O     ; 
+      A     "M 67.4"; 
+      AN    "M 67.6"; 
+      O     "M 66.4"; 
+      )     ; 
+      A     "M 66.0"; 
+      =     "A 49.2"; 
+NETWORK
+TITLE =Conveyor 13 - Delivering ON
+
+      A     "M 67.2"; 
+      AN    "M 67.3"; 
+      S     "M 66.4"; 
+//;
+      A(    ; 
+      ON    "M 67.2"; 
+      O     "M 67.3"; 
+      )     ; 
+      R     "M 66.4"; 
+END_FUNCTION
+

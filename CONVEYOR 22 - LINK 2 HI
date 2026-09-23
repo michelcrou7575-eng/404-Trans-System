@@ -1,0 +1,129 @@
+FUNCTION "CONVEYOR 22 - LINK 2 HI" : VOID
+TITLE =Conveyor 22 - Link 2H  Pos. 14 High Level
+//  
+NAME : POS_14_H
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 22 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_21_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 82.7"; 
+      JNB   CO22; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_22_TEST_SSW; 
+      =     #SERVICE_RUN; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_22_TEST_SSW; 
+
+CO22: R     #SERVICE_RUN; 
+      FP    "FP 148.4"; 
+      =     "M 82.7"; 
+NETWORK
+TITLE =Power Enable
+
+      A     "M 0.3"; 
+      =     "M 82.0"; 
+NETWORK
+TITLE =Conveyor 22 - Running TimeOut  30s
+
+      A(    ; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
+      O     ; 
+      A     "M 83.3"; 
+      AN    "M 83.4"; 
+      A     "A 53.6"; 
+      )     ; 
+      A     "M 82.0"; 
+      L     S5T#30S; 
+      SD    "Timer 83"; 
+NETWORK
+TITLE =Conveyor 22 - Steps Register - Reset
+
+      A(    ; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
+      A     "Timer 83"; 
+      O     "M 83.4"; 
+      )     ; 
+      A     "M 82.0"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 83"; 
+      T     "MB 85"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 23N1 - Power On
+
+      A     "M 82.0"; 
+      S     "M 83.0"; 
+NETWORK
+TITLE =Step 23N2 - Conveyor 22 - Packet Filling
+
+      A(    ; 
+      A     "M 79.2"; 
+      AN    "M 79.3"; 
+      O     ; 
+      A     "B 15.5"; 
+      AN    "M 83.1"; 
+      )     ; 
+      O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
+      A     "M 82.0"; 
+      A     "M 83.0"; 
+      S     "M 83.1"; 
+NETWORK
+TITLE =Step 23N3 - Conveyor 22 - Stop Filling
+
+      A     "B 15.5"; 
+      A     "M 82.0"; 
+      A     "M 83.1"; 
+      S     "M 83.2"; 
+NETWORK
+TITLE =Step 23N4 - Conveyor 22 - Transfering
+
+      A     "M 87.1"; 
+      AN    "M 87.2"; 
+      A     "M 82.0"; 
+      A     "M 83.2"; 
+      S     "M 83.3"; 
+NETWORK
+TITLE =Step 23N5 - Conveyor 22 - Steps Register - Reset
+
+      A(    ; 
+      O     "B 15.7"; 
+      O     "Timer 83"; 
+      )     ; 
+      A     "M 82.0"; 
+      A     "M 83.3"; 
+      S     "M 83.4"; 
+NETWORK
+TITLE =Conveyor  22 VFD - Release
+
+      A(    ; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
+      O     ; 
+      A     "M 83.3"; 
+      AN    "M 83.4"; 
+      )     ; 
+      A     "M 82.0"; 
+      =     "A 53.6"; 
+      =     "A 53.7"; 
+END_FUNCTION
+

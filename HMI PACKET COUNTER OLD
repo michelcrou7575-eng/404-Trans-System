@@ -1,0 +1,906 @@
+FUNCTION "HMI PACKET COUNTER OLD" : VOID
+TITLE =HMI Conveyors Display Packet Counter
+VERSION : 0.2
+
+
+VAR_TEMP
+  UPDATE : BOOL ;	
+  PIVOT_HIGH : BOOL ;	//Pivot Conveyor 10 -> High Position
+  PIVOT_LOW : BOOL ;	//Pivot Conveyor 10 -> Low Position
+  INT_TO_HMIWORD : INT ;	//INT to WORD Converter
+  BIT0_5_COUNT_UP : BOOL ;	//Count Up Logic Buffer
+  BIT1_5_COUNT_DOWN : BOOL ;	//Count Down Logic Buffer
+  BIT0_6_COUNT_UP : BOOL ;	
+  BIT1_6_COUNT_DOWN : BOOL ;	
+  BIT0_11_COUNT_UP : BOOL ;	
+  BIT1_11_COUNT_DOWN : BOOL ;	
+  BIT0_12_COUNT_UP : BOOL ;	
+  BIT1_12_COUNT_DOWN : BOOL ;	
+  BIT0_13_COUNT_UP : BOOL ;	
+  BIT1_13_COUNT_DOWN : BOOL ;	
+  BIT0_21_COUNT_UP : BOOL ;	
+  BIT1_21_COUNT_DOWN : BOOL ;	
+  BIT0_22_COUNT_UP : BOOL ;	
+  BIT1_22_COUNT_DOWN : BOOL ;	
+  BIT0_23_COUNT_UP : BOOL ;	
+  BIT1_23_COUNT_DOWN : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =UpDate
+
+      A     "M 6.5"; 
+      FP    "FP 149.6"; 
+      =     #UPDATE; 
+
+NETWORK
+TITLE =Packet Measurements Converter - Length (Pulse to mS)
+
+      L     "COLLATORS DB".PacketLength_C4; 
+      ITD   ; 
+      DTR   ; 
+      L     "DB UTILITY".LENGTH_CONST; 
+      *R    ; 
+      RND   ; 
+      T     "MW 176"; 
+
+NETWORK
+TITLE =Packet Measurements - Width  (Pulse to mS)
+
+      L     "COLLATORS DB".Packet_Width_C10; 
+      ITD   ; 
+      DTR   ; 
+      L     "DB UTILITY".WIDTH_CONST; // 0.52
+      *R    ; 
+      RND   ; 
+      T     "MW 178"; 
+
+NETWORK
+TITLE =Packet Measurements - mm Conversion
+
+      A     #UPDATE; 
+      JNB   NCON; 
+      L     "COLLATORS DB".PacketLength_C4; 
+      ITD   ; 
+      DTR   ; 
+      L     6.673000e+000; 
+      *R    ; 
+      RND   ; 
+      T     "MW 202"; 
+
+NCON: CLR   ; 
+
+NETWORK
+TITLE =Packet Counter - Slat Conveyor 3 
+
+      A     "A 44.0"; 
+      JNB   M440; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_L; 
+      T     "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_3_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := "B 6.2",
+           Bit_1                    := "B 6.4",
+           Transfer_Start           := FALSE,
+           Preset_mS                := 500,
+           Debounce_mS              := 1500,
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_3_COUNT; 
+
+M440: NOP   0; 
+
+      AN    "A 44.0"; 
+      FP    "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Rising_Pulse_8; 
+      R     "DEBOUNCER OLD".B6_2_Slat_3_InFeed.Count_Error; 
+
+NETWORK
+TITLE =Packet Counter - Collator Conveyor 4
+
+      A     "A 44.3"; 
+      JNB   M443; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_L; 
+      T     "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_4_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := "B 6.7",
+           Bit_1                    := "B 7.0",
+           Transfer_Start           := "M 31.6",
+           Preset_mS                := 500,
+           Debounce_mS              := "MW 176",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_4_COUNT; 
+
+M443: NOP   0; 
+
+      AN    "A 44.3"; 
+      FP    "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_8; 
+      R     "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Count_Error; 
+      JNB   TEST; 
+
+//   L     DB4.DBD   34
+//   L     "MW 350"
+//    <>R   
+//    TAK   
+//    T     "MW 350"
+
+      L     MW   280; 
+      T     MW   282; 
+
+TEST: NOP   0; 
+
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 5
+
+      A     "A 45.0"; 
+      L     S5T#1S; 
+      SF    "Timer 90"; 
+//;
+      A     "Timer 90"; 
+      =     "M 143.0"; 
+
+NETWORK
+TITLE =Packet Counter - Conv 5 Counting Conditions
+
+      A     "B 7.0"; 
+      A     "M 35.1"; // Feeding
+      AN    "M 35.2"; // Feeding End
+      =     #BIT0_5_COUNT_UP; // Count Up
+//;
+      A     "B 7.1"; 
+      A     "M 35.3"; // Delivering
+      AN    "M 35.4"; // Delivering End
+      =     #BIT1_5_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Link Conveyor  5 (End Sensor On When Full)
+
+      A     "M 143.0"; 
+      JNB   M450; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_L; 
+      T     "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_5_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_5_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_5_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 35.3",
+           Preset_mS                := 500,
+           Debounce_mS              := "MW 176",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_5_COUNT; 
+
+M450: NOP   0; 
+
+      AN    "M 143.0"; 
+      FP    "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_8; 
+      R     "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Count_Error; 
+
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 6
+
+      A     "A 45.3"; 
+      L     S5T#1S; 
+      SF    "Timer 91"; 
+//;
+      A     "Timer 91"; 
+      =     "M 143.1"; 
+
+NETWORK
+TITLE =Packet Counter - Conv 6 Counting Conditions
+
+      A     "B 7.1"; 
+      A     "M 39.1"; // Feeding
+      AN    "M 39.2"; // Feeding End
+      =     #BIT0_6_COUNT_UP; // Count Up
+//;
+      A     "B 7.3"; 
+      A     "M 39.4"; // Delivering
+      AN    "M 39.5"; // Delivering End
+      =     #BIT1_6_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Delivery Conveyor 6 (End Sensor On When Full)
+
+      A     "M 143.1"; 
+      JNB   M453; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_L; 
+      T     "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_6_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_6_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_6_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 38.5",
+           Preset_mS                := 500,
+           Debounce_mS              := "MW 176",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_6_COUNT; 
+
+M453: NOP   0; 
+NETWORK
+TITLE =Packet Counter - Flipper
+
+      L     0; 
+      A     "M 43.4"; 
+      JCN   M434; 
+      L     1; 
+
+M434: T     "HMI_DB".FLIPPER_PACK_PRESENCE; 
+
+NETWORK
+TITLE =Packet Counter - TurnTable
+
+      L     0; 
+      A     "M 47.4"; 
+      JCN   M474; 
+      L     1; 
+
+M474: T     "HMI_DB".TURNTABLE_PACK_PRESENCE; 
+
+NETWORK
+TITLE =Packet Counter - Conveyor 9 (Pusher 2)
+
+      L     0; 
+      A     "M 51.4"; 
+      JCN   M514; 
+      L     1; 
+
+M514: T     "HMI_DB".ROLLER_PACK_PRESENCE; 
+
+NETWORK
+TITLE =Packet Counter - Pusher 2
+
+      L     0; 
+      A     "M 51.5"; 
+      JCN   M515; 
+      L     1; 
+
+M515: T     "HMI_DB".PUSHER_PACK_PRESENCE; 
+
+NETWORK
+TITLE =Packet Counter - Pivot Conveyor 10 
+
+      A     "A 48.0"; 
+      JNB   M480; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_10_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := "B 10.4",// InFeed Sens - Count UP
+           Bit_1                    := "B 10.6",// Exit Sens - Count DN
+           Transfer_Start           := "M 55.5",
+           Preset_mS                := 500,
+           Debounce_mS              := "MW 178",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_10_COUNT; 
+
+M480: NOP   0; 
+
+      AN    "A 48.0"; 
+      FP    "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_8; 
+      R     "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Count_Error; 
+
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 11
+
+      A     "A 48.3"; 
+      L     S5T#1S; 
+      SF    "Timer 92"; 
+//;
+      A     "Timer 92"; 
+      =     "M 143.2"; 
+
+NETWORK
+TITLE =Packet Counter - Conv 11 Counting Conditions
+
+      A     "B 10.6"; 
+      A     "M 59.1"; // Feeding
+      AN    "M 59.2"; // Feeding End
+      A     "P 15.1"; // Pivot Low Position
+      =     #BIT0_11_COUNT_UP; // Count Up
+//;
+      A     "B 10.7"; 
+      A     "M 59.3"; // Delivering
+      AN    "M 59.4"; // Delivering End
+      =     #BIT1_11_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Cumul Conveyor 11 (End Sensor On When Full)
+
+      A     "M 143.2"; 
+      JNB   M483; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_11_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_11_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_11_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 59.3",
+           Preset_mS                := 300,
+           Debounce_mS              := "MW 178",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_11_COUNT; 
+
+M483: NOP   0; 
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 12
+
+      A     "A 48.6"; 
+      L     S5T#1S; 
+      SF    "Timer 93"; 
+//;
+      A     "Timer 93"; 
+      =     "M 143.3"; 
+
+NETWORK
+TITLE =Packet Counter - Conv 12 Counting Conditions
+
+      A     "B 10.7"; 
+      A     "M 63.1"; // Feeding
+      AN    "M 63.2"; // Feeding End
+      =     #BIT0_12_COUNT_UP; // Count Up
+//;
+      A     "B 11.0"; 
+      A     "M 63.3"; // Delivering
+      AN    "M 63.4"; // Delivering End
+      =     #BIT1_12_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Cumul Conveyor 12 (End Sensor On When Full)
+
+      A     "M 143.3"; 
+      JNB   M486; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_12_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_12_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_12_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 63.3",
+           Preset_mS                := 300,
+           Debounce_mS              := "MW 178",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_12_COUNT; 
+
+M486: NOP   0; 
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 13
+
+      A     "A 49.0"; 
+      L     S5T#1S; 
+      SF    "Timer 94"; 
+//;
+      A     "Timer 94"; 
+      =     "M 143.4"; 
+NETWORK
+TITLE =Packet Counter - Conv 13 Counting Conditions
+
+      A     "B 11.0"; 
+      A     "M 67.1"; // Feeding
+      AN    "M 67.2"; // Feeding End
+      =     #BIT0_13_COUNT_UP; // Count Up
+//;
+      A     "B 11.2"; 
+      A     "M 67.4"; // Delivering
+      AN    "M 67.5"; // Delivering End
+      =     #BIT1_13_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Delivery Conveyor 13 (End Sensor On When Full)
+
+      A     "M 143.4"; 
+      JNB   M490; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_13_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_13_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_13_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 67.4",
+           Preset_mS                := 300,
+           Debounce_mS              := 400,
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_13_COUNT; 
+
+M490: NOP   0; 
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 21
+
+      A     "A 53.4"; 
+      L     S5T#1S; 
+      SF    "Timer 95"; 
+//;
+      A     "Timer 95"; 
+      =     "M 143.5"; 
+
+NETWORK
+TITLE =Packet Counter - Conv 21 Counting Conditions
+
+      A     "B 10.6"; 
+      A     "M 79.1"; // Feeding
+      AN    "M 79.2"; // Feeding End
+      A     "P 15.0"; // Pivot High Position
+      =     #BIT0_21_COUNT_UP; // Count Up
+//;
+      A     "B 15.4"; 
+      A     "M 79.3"; // Delivering
+      AN    "M 79.4"; // Delivering End
+      =     #BIT1_21_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Cumul Conveyor 21 (End Sensor On When Full)
+
+      A     "M 143.5"; 
+      JNB   M534; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_21_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_21_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_21_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 79.3",
+           Preset_mS                := 300,
+           Debounce_mS              := "MW 178",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_21_COUNT; 
+
+M534: NOP   0; 
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 22
+
+      A     "A 53.6"; 
+      L     S5T#1S; 
+      SF    "Timer 96"; 
+//;
+      A     "Timer 96"; 
+      =     "M 143.6"; 
+NETWORK
+TITLE =Packet Counter - Conv 22 Counting Conditions
+
+      A     "B 15.4"; 
+      A     "M 83.1"; // Feeding
+      AN    "M 83.2"; // Feeding End
+      =     #BIT0_22_COUNT_UP; // Count Up
+//;
+      A     "B 15.5"; 
+      A     "M 83.3"; // Delivering
+      AN    "M 83.4"; // Delivering End
+      =     #BIT1_22_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Cumul Conveyor 22 (End Sensor On When Full)
+
+      A     "M 143.6"; 
+      JNB   M536; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_22_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_22_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_22_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 83.3",
+           Preset_mS                := 300,
+           Debounce_mS              := "MW 178",
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_22_COUNT; 
+
+M536: NOP   0; 
+NETWORK
+TITLE =Packet Counter Call Hold - Conveyor 23
+
+      A     "A 54.0"; 
+      L     S5T#1S; 
+      SF    "Timer 97"; 
+//;
+      A     "Timer 97"; 
+      =     "M 143.7"; 
+NETWORK
+TITLE =Packet Counter - Conv 23 Counting Conditions
+
+      A     "B 15.5"; 
+      A     "M 87.1"; // Feeding
+      AN    "M 87.2"; // Feeding End
+      =     #BIT0_23_COUNT_UP; // Count Up
+//;
+      A     "B 15.7"; 
+      A     "M 87.4"; // Delivering
+      AN    "M 87.5"; // Delivering End
+      =     #BIT1_23_COUNT_DOWN; // Count Down
+NETWORK
+TITLE =Packet Counter - Delivery Conveyor 23 (End Sensor On When Full)
+
+      A     "M 143.7"; 
+      JNB   M540; 
+
+      L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
+      T     "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Word_Count_Limit; 
+//;
+      L     "HMI_DB".CONV_23_COUNT; 
+      T     #INT_TO_HMIWORD; 
+
+      CALL "DE-BOUNCER OLD" (
+           Bit_0                    := #BIT0_23_COUNT_UP,// Count Up
+           Bit_1                    := #BIT1_23_COUNT_DOWN,// Count Down
+           Transfer_Start           := "M 87.4",
+           Preset_mS                := 300,
+           Debounce_mS              := 400,
+           Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_1,
+           Rising_Pulse_2           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_2,
+           Rising_Pulse_3           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_3,
+           Rising_Pulse_4           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_4,
+           Rising_Pulse_5           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_5,
+           Rising_Pulse_6           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_6,
+           Rising_Pulse_7           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_7,
+           Rising_Pulse_8           := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Rising_Pulse_8,
+           Memory_Bit_1             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_0_FrontEnd,
+           Memory_Bit_2             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_1_FrontEnd,
+           Memory_Bit_3             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_0_RearEnd,
+           Memory_Bit_4             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_1_RearEnd,
+           Memory_Bit_5             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Packet_Exiting,
+           Memory_Bit_6             := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Count_Error,
+           Spare_1                  := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Sens_Error,
+           Spare_2                  := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.FirstScan_Init_Done,
+           Word_Buffer_1            := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_0_ON_Time,
+           Word_Buffer_2            := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Bit_1_ON_Time,
+           Word_Result              := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Word_Count_Result,
+           Word_Count_Limit         := "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Word_Count_Limit,
+           Word_Count               := #INT_TO_HMIWORD);
+
+      L     #INT_TO_HMIWORD; 
+      T     "HMI_DB".CONV_23_COUNT; 
+
+M540: NOP   0; 
+NETWORK
+TITLE =HMI Packet Counters Reset
+
+      A     "M 10.2"; 
+      JNB   F102; 
+      L     0; 
+      T     "HMI_DB".CONV_3_COUNT; 
+
+F102: NOP   0; 
+
+      A     "M 31.7"; 
+      JNB   F317; 
+      L     0; 
+      T     "HMI_DB".CONV_4_COUNT; 
+
+F317: NOP   0; 
+
+      A     "M 35.4"; 
+      JNB   F354; 
+      L     0; 
+      T     "HMI_DB".CONV_5_COUNT; 
+
+F354: NOP   0; 
+
+      A     "M 35.3"; 
+      FP    "FP 154.3"; 
+      JNB   F396; 
+      L     0; 
+      T     "HMI_DB".CONV_6_COUNT; 
+
+F396: NOP   0; 
+
+      A     "M 55.6"; 
+      JNB   F556; 
+      L     0; 
+      T     "HMI_DB".CONV_10_COUNT; 
+
+F556: NOP   0; 
+
+      A     "M 59.4"; 
+      JNB   F594; 
+      L     0; 
+      T     "HMI_DB".CONV_11_COUNT; 
+
+F594: NOP   0; 
+
+      A     "M 63.4"; 
+      JNB   F634; 
+      L     0; 
+      T     "HMI_DB".CONV_12_COUNT; 
+
+F634: NOP   0; 
+
+      AN    "B 11.1"; 
+      L     S5T#30S; 
+      SD    "Timer 80"; 
+//;
+      A     "Timer 80"; 
+      FP    "HMI_DB".FP131; 
+      JNB   F676; 
+      L     0; 
+      T     "HMI_DB".CONV_13_COUNT; 
+
+F676: NOP   0; 
+
+      A     "M 79.4"; 
+      JNB   F794; 
+      L     0; 
+      T     "HMI_DB".CONV_21_COUNT; 
+
+F794: NOP   0; 
+
+      A     "M 83.4"; 
+      JNB   F834; 
+      L     0; 
+      T     "HMI_DB".CONV_22_COUNT; 
+
+F834: NOP   0; 
+
+      AN    "B 15.6"; 
+      L     S5T#30S; 
+      SD    "Timer 81"; 
+//;
+      A     "Timer 81"; 
+      FP    "HMI_DB".FP132; 
+      JNB   F876; 
+      L     0; 
+      T     "HMI_DB".CONV_23_COUNT; 
+
+F876: NOP   0; 
+END_FUNCTION
+

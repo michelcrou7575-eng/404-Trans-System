@@ -1,0 +1,291 @@
+FUNCTION "CONVEYOR 9 - PUSHER 2" : VOID
+TITLE =Conveyor 9 / Pusher 2  Pos.11
+// 
+NAME : POS_11
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  CONVEYOR_9_RUN : BOOL ;	
+  PUSHER_PUSH : BOOL ;	
+  INITIALISATION : BOOL ;	
+  POSITION_TIME : S5TIME ;	
+  ZOOLOO : TIME ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Pusher 2 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_9_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;    
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 50.1"; 
+      JNB   CON9; 
+      A     "HMI_DB".HMI_CONVEYOR_9_TEST_SSW; 
+      =     #CONVEYOR_9_RUN; 
+//;
+      A     "HMI_DB".HMI_PUSHER_2_TEST_SSW; 
+      =     #PUSHER_PUSH; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      A     #CONVEYOR_9_RUN; 
+      S     "DB UTILITY".Conveyor_8_Disable; 
+//;
+      A     #PUSHER_PUSH; 
+      S     "DB UTILITY".Conveyor_9_Disable; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_9_TEST_SSW; 
+      R     "HMI_DB".HMI_PUSHER_2_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_8_Disable; 
+      R     "DB UTILITY".Conveyor_9_Disable; 
+
+CON9: R     #CONVEYOR_9_RUN; 
+      R     #PUSHER_PUSH; 
+      R     #INITIALISATION; 
+      FP    "FP 169.1"; 
+      =     "M 50.1"; 
+NETWORK
+TITLE =Pusher Rollers - Max Run Time
+
+      A     "M 51.2"; 
+      AN    "M 51.3"; 
+      A     "M 0.3"; 
+      L     S5T#5S; 
+      SD    "Timer 51"; 
+NETWORK
+TITLE =Conveyor 9 - Pusher Steps Register - Reset
+
+      A(    ; 
+      A     "M 52.1"; 
+      O     "Timer 51"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_9_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 51"; 
+      T     "MB 53"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 10N1 - Power ON
+
+      A     "M 0.3"; 
+      S     "M 51.0"; 
+NETWORK
+TITLE =Step 10N2 - Conveyor 9 - Ready for InFeed
+
+      AN    "P 10.0"; 
+      A     "M 0.3"; 
+      A     "M 51.0"; 
+      S     "M 51.1"; 
+NETWORK
+TITLE =Step 10N3 - Conveyor 9 - Start Run
+
+      A     "M 47.7"; 
+      AN    "M 48.0"; 
+      A     "M 0.3"; 
+      A     "M 51.1"; 
+      S     "M 51.2"; 
+NETWORK
+TITLE =Step 10N4 - Conveyor 9 - Packet Runs IN
+
+      A     "B 9.6"; 
+      A     "M 0.3"; 
+      A     "M 51.2"; 
+      S     "M 51.3"; 
+NETWORK
+TITLE =Step 10N5 - Conveyor 9 - Packet IN
+
+      AN    "B 9.6"; 
+      A     "M 0.3"; 
+      A     "M 51.3"; 
+      S     "M 51.4"; 
+NETWORK
+TITLE =Step 10N6 - Conveyor 9 - Packet Edge Sens
+
+      A     "B 9.7"; 
+      A     "M 0.3"; 
+      A     "M 51.4"; 
+      S     "M 51.5"; 
+NETWORK
+TITLE =Time Convertion - Lateral Packet Position to Feeder - Adj.(HMI)
+
+      A     "M 140.3"; 
+      AN    "M 6.7"; 
+      FP    "FP 147.2"; 
+      JNB   BYP1; 
+      L     "HMI_DB".CONV_9_POS_mS; // Integer contains MILLISECOND seconds
+      L     10; 
+      *I    ; 
+      ITD   ; 
+      T     #ZOOLOO; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #ZOOLOO,
+           RET_VAL                  := #POSITION_TIME);
+
+      L     #POSITION_TIME; 
+      T     "MW 184"; 
+BYP1: CLR   ; 
+
+      A     "M 140.3"; 
+      A     "M 51.5"; 
+      AN    "M 51.6"; 
+      A     "M 0.3"; 
+      L     "MW 184"; 
+      SD    "Timer 62"; // OMRON HMI
+NETWORK
+TITLE =Conveyor 9 - Lateral Packet Position to Feeder - Adj.(HMI)
+
+      AN    "M 140.3"; 
+      AN    "M 6.7"; 
+      FP    "FP 149.5"; 
+      JNB   BYP2; 
+      OPN   "DB LAUER"; 
+      CALL "LAUER TIME" (
+           QUEL                     := DBW  248,
+           _TIME                    := MW   124);
+
+BYP2: NOP   0; 
+
+      AN    "M 140.3"; 
+      A     "M 51.5"; 
+      AN    "M 51.6"; 
+      A     "M 0.3"; 
+      L     MW   124; 
+      SD    "Timer 50"; // LAUER HMI
+NETWORK
+TITLE =Step 10N7 - Conveyor 9 - Packet in Position - Stop
+
+      A(    ; 
+      O(    ; 
+      A     "Timer 50"; // LAUER HMI
+      AN    "M 140.3"; 
+      )     ; 
+      O(    ; 
+      A     "Timer 62"; // OMRON HMI
+      A     "M 140.3"; 
+      )     ; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 51.5"; 
+      S     "M 51.6"; 
+NETWORK
+TITLE =Step 10N8 - Conveyor 9 - Pusher FWD
+
+      A     "M 55.0"; 
+      AN    "M 167.3"; // C10 Step Reset - Mem 
+      AN    "M 55.1"; 
+      AN    "M 55.5"; // Not while Transfering !
+      A     "M 0.3"; 
+      A     "M 51.6"; 
+      S     "M 51.7"; 
+NETWORK
+TITLE =Step 10N9 - Conveyor 9 - Pushing Packet
+
+      AN    "P 10.0"; 
+      A     "M 0.3"; 
+      A     "M 51.7"; 
+      S     "M 52.0"; 
+NETWORK
+TITLE =Step 10N10 - Conveyor 9 - Pusher Steps Register - Reset
+
+      AN    "P 10.1"; 
+      A     "M 0.3"; 
+      A     "M 52.0"; 
+      S     "M 52.1"; 
+NETWORK
+TITLE =Pusher Roller Conveyor - Run
+
+      A     "M 51.2"; 
+      AN    "M 51.6"; 
+      A     "M 0.3"; 
+      O(    ; 
+      A     #CONVEYOR_9_RUN; 
+      AN    "B 9.7"; 
+      )     ; 
+      =     "K 47.5"; 
+NETWORK
+TITLE =Pusher 2 - Retract (Home) After Steps Reset
+
+      A(    ; 
+      A     "M 51.0"; 
+      AN    "M 51.1"; 
+      A     "M 0.3"; 
+      O     ; 
+      A     "M 190.7"; 
+      A     "M 161.1"; 
+      O     ; 
+      A     #MAIN_SERVICE_2_SW; 
+      AN    #PUSHER_PUSH; 
+      )     ; 
+      A     "P 10.0"; 
+      AN    "K 47.6"; 
+      =     "K 47.7"; 
+NETWORK
+TITLE =Events UpDate - Pusher 2 - Forward
+
+      A     "M 51.7"; 
+      AN    "M 52.1"; 
+      A     "M 0.3"; 
+      AN    "M 54.7"; 
+      AN    "M 98.1"; 
+      A     "P 10.1"; 
+      AN    "K 47.7"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Pusher 2 - Forward
+
+      A(    ; 
+      A     "M 9.0"; 
+      AN    "M 98.2"; 
+      A(    ; 
+      O     "P 15.0"; 
+      O     "P 15.1"; 
+      )     ; 
+      AN    "DB UTILITY".Conveyor_8_Disable; 
+      O     ; 
+      A     "M 190.7"; 
+      A     "M 161.0"; 
+      O     ; 
+      A     #MAIN_SERVICE_2_SW; 
+      A     #PUSHER_PUSH; 
+      )     ; 
+      AN    "DB UTILITY".Pusher_2_Disable; 
+      AN    "K 47.5"; 
+      A     "P 10.1"; 
+      AN    "K 47.7"; 
+      =     "K 47.6"; 
+NETWORK
+TITLE =Position Data Return
+
+      OPN   "DB LAUER"; 
+//;
+      ON    "P 10.0"; 
+      ON    "P 10.1"; 
+      JC    M003; 
+      L     W#16#0; 
+      T     DBW  220; 
+      BEC   ; 
+
+M003: AN    "P 10.0"; 
+      JC    M004; 
+      L     W#16#1; 
+      T     DBW  220; 
+      BEC   ; 
+
+M004: L     W#16#2; 
+      T     DBW  220; 
+END_FUNCTION
+

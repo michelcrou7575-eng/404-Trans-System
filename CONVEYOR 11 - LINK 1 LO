@@ -1,0 +1,147 @@
+FUNCTION "CONVEYOR 11 - LINK 1 LO" : VOID
+TITLE =Conveyor 11 - Link 1L  Pos. 13 Low Level
+//
+NAME : POS_13_L
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  BARRIER_BLINKER : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Conveyor 11 - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_11_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 58.7"; 
+      JNB   CO11; 
+//;    
+      A     "HMI_DB".HMI_CONVEYOR_11_TEST_SSW; 
+      AN    "A 48.0"; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_10_Disable; 
+      S     "DB UTILITY".Pivot_Disable; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      =     #INITIALISATION; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_11_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_10_Disable; 
+      R     "DB UTILITY".Pivot_Disable; 
+
+CO11: R     #SERVICE_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 148.0"; 
+      =     "M 58.7"; 
+NETWORK
+TITLE =Power Enable
+
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Conveyor_11_Disable; 
+      =     "M 58.0"; 
+NETWORK
+TITLE =Conveyor 11 - Running TimeOut  30s
+
+      A(    ; 
+      A     "M 59.1"; 
+      AN    "M 59.2"; 
+      O     ; 
+      A     "M 59.3"; 
+      AN    "M 59.4"; 
+      A     "A 48.3"; 
+      )     ; 
+      A     "M 58.0"; 
+      L     S5T#30S; 
+      SD    "Timer 59"; // C11 TimeOut
+NETWORK
+TITLE =Steps Register - Reset
+
+      A(    ; 
+      A     "M 59.1"; // Filling Step
+      AN    "M 59.2"; // Filling Step - Done
+      A     "Timer 59"; // C11 TimeOut
+      O     "M 59.4"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_11_Disable; 
+      )     ; 
+      A     "M 58.0"; 
+      JNB   _001; 
+      L     W#16#0; 
+      T     "MW 59"; 
+
+_001: NOP   0; 
+NETWORK
+TITLE =Step 12N1 - Power ON
+
+      A     "M 58.0"; 
+      S     "M 59.0"; 
+NETWORK
+TITLE =Step 12N2 - Conveyor 11 - Packet Filling & Trig Conveyor 10
+//Flag M 8.4 Holds the Conveyor 11 Belt until New Order Confirm
+      A(    ; 
+      A     "P 15.1"; // Pivot Position LOW OK
+      A(    ; 
+      O     "M 55.4"; // C10 Collator Full - Step - C11 Trigger
+      O     "M 58.2"; // C10 Clearing - UpStream Cleared - C11 Trigger
+      )     ; 
+      AN    "M 55.5"; // C10 Not Tranfering
+      AN    "M 8.4"; // Not Wait After Clearing
+      O     ; 
+      A     "B 10.7"; // Re-Trigger...
+      AN    "M 59.1"; // If Not Filling
+      O     ; 
+      A     "M 9.3"; // C10 Clearing - Transfer Trigger 
+      )     ; 
+      O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
+      A     "M 58.0"; 
+      A     "M 59.0"; 
+      S     "M 59.1"; // C11 Filling Step - Set
+NETWORK
+TITLE =Step 12N3 - Conveyor 11 - Stop Filling
+
+      A     "B 10.7"; // C11 Exit Sens
+      A     "M 58.0"; 
+      A     "M 59.1"; // C11 Filling Step
+      S     "M 59.2"; // Filling Stop Step - Set
+NETWORK
+TITLE =Step 12N4 - Conveyor 11 - Transfering
+
+      A     "M 63.1"; // Called by C12
+      AN    "M 63.2"; // C12 Not Full Yet!
+      A     "M 58.0"; 
+      A     "M 59.2"; // C11 Filling Stop Step - Done
+      S     "M 59.3"; // C11 Transfering Step - Set
+NETWORK
+TITLE =Step 12N5 - Conveyor 11 - Steps Register - Reset
+
+      A(    ; 
+      O     "B 11.0"; // C12 Full -> Stop C11
+      O     "Timer 59"; // C11 TimeOut
+      )     ; 
+      A     "M 58.0"; 
+      A     "M 59.3"; // Transfering Step 
+      S     "M 59.4"; // Register Reset - Trigger Set
+NETWORK
+TITLE =Conveyor 11 VFD - Release
+
+      A(    ; 
+      A     "M 59.1"; // Filling Step 
+      AN    "M 59.2"; // Filling Step - Done
+      O     ; 
+      A     "M 59.3"; // Transfering Step
+      AN    "M 59.4"; // Transfering Done - Register Reset
+      )     ; 
+      A     "M 58.0"; 
+      =     "A 48.3"; 
+      =     "A 48.4"; 
+END_FUNCTION
+

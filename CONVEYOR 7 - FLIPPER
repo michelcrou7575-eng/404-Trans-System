@@ -1,0 +1,505 @@
+FUNCTION "CONVEYOR 7 - FLIPPER" : VOID
+TITLE =Flipper  Pos.9
+//Service : With FLIPPER Service SW "ON", To Flip, Hold the FLIP SW Until Reached 
+//or JOG to Position.
+NAME : POS_9
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  TIME_SW : BOOL ;	
+  FLIPPER_SERVICE_SW : BOOL ;	
+  FLIP : BOOL ;	
+  FLIP_CW : BOOL ;	
+  FLIP_CCW : BOOL ;	
+  CONVEYOR_7_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+  POSITION_TIME : S5TIME ;	
+  T_ZOOLOO : TIME ;	
+  W_ZOOLOO_1 : WORD ;	
+  W_ZOOLOO_2 : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Service Test
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_7_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      R     "HMI_DB".SERVICE_SW_2_TIME_ADJ; 
+      =     #MAIN_SERVICE_2_SW; 
+//;
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 42.3"; 
+      JNB   FLIN; 
+      A     "HMI_DB".HMI_FLIPPER_SERVICE_SSW; 
+      =     #FLIPPER_SERVICE_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_7_TEST_SSW; 
+//;  
+      A     "HMI_DB".HMI_CONVEYOR_7_TEST_SSW; 
+      =     #CONVEYOR_7_RUN; 
+      R     "HMI_DB".HMI_FLIPPER_SERVICE_SSW; 
+//;  
+      A     "HMI_DB".SERVICE_SW_2_TIME_ADJ; 
+      =     #TIME_SW; 
+//;
+      AN    "P 8.0"; 
+      S     "M 46.0"; 
+      FP    "FP 168.5"; 
+      S     "M 46.5"; 
+//;
+      AN    "P 8.1"; 
+      R     "M 46.0"; 
+      FP    "FP 168.6"; 
+      S     "M 46.5"; 
+//;
+      A     #FLIPPER_SERVICE_SW; 
+      AN    "HMI_DB".HMI_FLIPPER_FLIP_SSW; 
+      L     S5T#3S; 
+      SE    "Timer 46"; 
+//;
+      A     "Timer 46"; 
+      FN    "FN 155.1"; 
+      R     "M 46.5"; 
+//;
+      A     #FLIPPER_SERVICE_SW; 
+      A     "HMI_DB".HMI_FLIPPER_FLIP_SSW; 
+      AN    "M 46.0"; 
+      AN    "Timer 46"; 
+      AN    "M 46.5"; 
+      =     #FLIP_CW; 
+//;
+      A     #FLIPPER_SERVICE_SW; 
+      A     "HMI_DB".HMI_FLIPPER_FLIP_SSW; 
+      A     "M 46.0"; 
+      AN    "Timer 46"; 
+      AN    "M 46.5"; 
+      =     #FLIP_CCW; 
+//;
+      A     "HMI_DB".HMI_CONVEYOR_7_TEST_SSW; 
+      =     #CONVEYOR_7_RUN; 
+//;
+      A(    ; 
+      O     #FLIPPER_SERVICE_SW; 
+      O     #CONVEYOR_7_RUN; 
+      )     ; 
+      S     "DB UTILITY".Conveyor_6_Disable; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_7_TEST_SSW; 
+      R     "HMI_DB".HMI_FLIPPER_SERVICE_SSW; 
+      R     "HMI_DB".HMI_FLIPPER_FLIP_SSW; 
+      R     "HMI_DB".SERVICE_SW_2_TIME_ADJ; 
+      R     "DB UTILITY".Conveyor_6_Disable; 
+
+FLIN: R     #TIME_SW; 
+      R     #FLIPPER_SERVICE_SW; 
+      R     #FLIP_CW; 
+      R     #FLIP_CCW; 
+      R     #CONVEYOR_7_RUN; 
+      FP    "FP 158.7"; 
+      =     "M 42.3"; 
+//;
+      A     "HMI_DB".SERVICE_INIT_PB; 
+      A     #MAIN_SERVICE_2_SW; 
+      A     #FLIPPER_SERVICE_SW; 
+      =     #INITIALISATION; 
+NETWORK
+TITLE =Flipper - Flip Status
+
+      A(    ; 
+      ON    "P 8.0"; 
+      ON    "P 8.1"; 
+      )     ; 
+      AN    "A 45.3"; 
+      AN    "A 45.6"; 
+      AN    "K 46.0"; 
+      AN    "K 46.1"; 
+      =     "M 46.1"; 
+NETWORK
+TITLE =Flipper - Flip Enable
+
+      A(    ; 
+      AN    "M 140.3"; 
+      A     "M 152.5"; 
+      O     ; 
+      A     "M 140.3"; 
+      A     "M 111.1"; 
+      )     ; 
+      A     "M 46.1"; 
+      AN    "M 43.5"; 
+      S     "M 42.0"; 
+//;
+      A(    ; 
+      AN    "M 140.3"; 
+      AN    "M 152.5"; 
+      O     ; 
+      A     "M 140.3"; 
+      AN    "M 111.1"; 
+      )     ; 
+      A     "M 46.1"; 
+      AN    "M 43.5"; 
+      O     "DB UTILITY".Conveyor_7_Disable; 
+      R     "M 42.0"; 
+NETWORK
+TITLE =Flipper - Door Closed
+
+      A     "E 9.0"; 
+      A     "M 0.3"; 
+      =     "M 42.2"; 
+NETWORK
+TITLE =Flipper - Service Mode
+
+      A(    ; 
+      A     "M 43.0"; 
+      AN    "M 43.2"; 
+      O     ; 
+      A     "M 43.5"; 
+      AN    "M 44.0"; 
+      )     ; 
+      A     "M 190.1"; 
+      A     "M 42.2"; 
+      =     "M 42.4"; 
+NETWORK
+TITLE =Flipper Conveyor 7 - Running TimeOut  30s
+
+      A     "A 45.6"; 
+      AN    "Timer 41"; 
+      A     "M 0.3"; 
+      L     S5T#30S; 
+      SD    "Timer 41"; 
+NETWORK
+TITLE =Flipper Flip - Obstruct - Fault
+
+      A     "M 43.5"; 
+      AN    "M 43.6"; 
+      A(    ; 
+      O     "B 7.4"; 
+      O     "B 8.2"; 
+      )     ; 
+      A     "M 42.2"; 
+      S     "M 42.7"; 
+//;
+      AN    "B 7.4"; 
+      AN    "B 8.2"; 
+      A     "M 42.2"; 
+      R     "M 42.7"; 
+NETWORK
+TITLE =Step 8N1 - Power ON
+
+      A     "M 42.2"; 
+      AN    "DB UTILITY".Conveyor_7_Disable; 
+      S     "M 43.0"; 
+NETWORK
+TITLE =Step 8N2 - Flipper Flip - Stop
+
+      A(    ; 
+      ON    "P 8.0"; 
+      ON    "P 8.1"; 
+      )     ; 
+      A     "M 43.0"; 
+      S     "M 43.1"; 
+NETWORK
+TITLE =Step 8N3 - Flipper Belt - Packet Runs IN
+
+      A     "M 39.3"; 
+      AN    "M 39.4"; 
+      A     "M 42.2"; 
+      A     "M 43.1"; 
+      S     "M 43.2"; 
+NETWORK
+TITLE =Step 8N4 - Flipper Conveyor 7 - Packet Runs IN
+
+      A     "B 7.4"; 
+      A     "M 42.2"; 
+      A     "M 43.2"; 
+      S     "M 43.3"; 
+NETWORK
+TITLE =Flipper Conveyor - Enter Time
+
+      A(    ; 
+      A     "M 43.3"; 
+      AN    "M 43.4"; 
+      O     ; 
+      A     "M 44.1"; 
+      AN    "M 44.2"; 
+      )     ; 
+      A     "M 42.2"; 
+      L     S5T#500MS; 
+      SD    "Timer 43"; 
+NETWORK
+TITLE =Step 8N5 - Flipper Conveyor 7 - Packet Edge Sens
+
+      A     "Timer 43"; 
+      AN    "B 7.4"; 
+      A     "M 42.2"; 
+      A     "M 43.3"; 
+      S     "M 43.4"; 
+NETWORK
+TITLE =Time Convertion - Lateral Packet Position to Flipper - Adj.(HMI)
+
+//   A     M    140.3
+      AN    "M 6.7"; 
+      FP    "FP 147.0"; 
+      JNB   BYP1; 
+      L     "HMI_DB".CONV_7_POS_mS; // Integer contains MILLISECOND seconds
+      L     50; // mS
+      *I    ; 
+      T     #W_ZOOLOO_1; 
+      ITD   ; 
+      T     #T_ZOOLOO; // Double Int    
+
+      CALL "TIM_S5TI" (
+           IN                       := #T_ZOOLOO,// Integer    
+           RET_VAL                  := #POSITION_TIME);// Simatic Time
+
+      L     #POSITION_TIME; 
+      T     "MW 186"; // Simatic Time
+//;
+      L     #W_ZOOLOO_1; 
+      L     10; 
+      /I    ; 
+      T     #W_ZOOLOO_2; 
+//;
+      A(    ; 
+      L     #W_ZOOLOO_2; 
+      L     "MW 192"; 
+      <>I   ; 
+      )     ; 
+      JNB   BYP1; 
+      L     #W_ZOOLOO_2; // Simatic Time
+      T     "HMI_DB".DELAY_DISPLAY_7; 
+      T     "MW 192"; 
+
+BYP1: CLR   ; 
+
+      A     "M 140.3"; 
+      A     "M 43.4"; 
+      AN    "M 43.5"; 
+      A     "M 42.2"; 
+      A     "M 0.3"; 
+      L     "MW 186"; // Simatic Time
+      SD    "Timer 60"; 
+NETWORK
+TITLE =Flipper Conveyor Stop - Packet in Position
+
+//     OPN   "DB LAUER"
+//;
+//      CALL  "LAUER TIME"
+//       QUEL :=DBW242
+//       _TIME:=MW122
+//;
+      A     "M 43.4"; 
+      AN    "M 43.5"; 
+      A     "M 42.2"; 
+// L     MW   122
+      L     S5T#1S500MS; 
+      SD    "Timer 42"; 
+NETWORK
+TITLE =Step 8N6 - Flipper Belt - Stop
+
+      A     "Timer 42"; 
+//    O     T     60
+      A     "M 42.2"; 
+      A     "M 43.4"; 
+      S     "M 43.5"; 
+NETWORK
+TITLE =Step 8N7 - Flipper - Busy / Not Available
+
+      A(    ; 
+      A     "P 8.0"; 
+      A     "P 8.1"; 
+      ON    "M 42.0"; 
+      )     ; 
+      A     "M 42.2"; 
+      A     "M 43.5"; 
+      S     "M 43.6"; 
+NETWORK
+TITLE =Step 8N8 - Flipper - Flipping Done / Ready
+
+      A(    ; 
+      ON    "P 8.0"; 
+      ON    "P 8.1"; 
+      )     ; 
+      A     "M 42.2"; 
+      A     "M 43.6"; 
+      S     "M 43.7"; 
+NETWORK
+TITLE =Step 8N9 - Flipper Conveyor 7 - Transfer to 8
+
+      A     "M 47.2"; 
+      AN    "M 47.3"; 
+      A     "M 42.2"; 
+      A     "M 43.7"; 
+      S     "M 44.0"; 
+NETWORK
+TITLE =Flipper Belt  - Exit Run - TimeOut  4s
+
+      A     "M 44.0"; 
+      AN    "M 44.1"; 
+      A     "A 45.6"; 
+      A     "M 42.2"; 
+      L     S5T#4S; 
+      SD    "Timer 44"; 
+NETWORK
+TITLE =Step 8N10 - Flipper Belt - Packet Exits
+
+      A(    ; 
+      O     "B 8.2"; 
+      O     "Timer 44"; 
+      )     ; 
+      A     "M 42.2"; 
+      A     "M 44.0"; 
+      S     "M 44.1"; 
+NETWORK
+TITLE =Step 8N11 - Flipper - Steps Register - Reset
+
+      AN    "B 8.2"; 
+      A     "Timer 43"; 
+      A     "M 42.2"; 
+      A     "M 44.1"; 
+      S     "M 44.2"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Run Time   500mS
+
+      A     "M 44.0"; 
+      AN    "M 44.2"; 
+      A     "M 42.2"; 
+      L     S5T#500MS; 
+      SF    "Timer 45"; 
+NETWORK
+TITLE =Flipper Conveyor - VFD Release
+
+      A(    ; 
+      A     "M 43.2"; 
+      AN    "M 43.5"; 
+      O     "Timer 45"; 
+      O     #CONVEYOR_7_RUN; 
+      )     ; 
+      AN    #FLIPPER_SERVICE_SW; 
+      A     "M 42.2"; 
+      A     "M 43.0"; 
+      =     "A 45.6"; 
+      =     "A 45.7"; 
+NETWORK
+TITLE =Flipper
+//Flipper Action
+
+
+NETWORK
+TITLE =Flipper Flip - Steps Register - Reset
+
+      A(    ; 
+      A     "M 190.1"; 
+      A     "M 171.4"; 
+      A     "M 171.5"; 
+      O     "M 44.2"; 
+      O     "Timer 41"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_7_Disable; 
+      )     ; 
+      A     "M 42.2"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 43"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Events UpDate - Flipper Flip 1 - CW
+
+      A(    ; 
+      A     "P 8.0"; 
+      A     "P 8.1"; 
+      A     "M 43.0"; 
+      AN    "M 43.1"; 
+      O     ; 
+      A     "M 42.0"; 
+      AN    "P 8.1"; 
+      A     "M 43.5"; 
+      AN    "M 43.7"; 
+      )     ; 
+      A     "P 8.0"; 
+      A     "M 42.2"; 
+      AN    "M 42.6"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Flipper Flip 2 - CW
+
+      A     "M 9.0"; 
+      S     "M 42.5"; 
+//;
+      A(    ; 
+      A     "M 43.1"; 
+      AN    "M 43.5"; 
+      O     ; 
+      A     "M 43.7"; 
+      O     ; 
+      AN    "P 8.0"; 
+      O     "M 42.6"; 
+      ON    "M 43.0"; 
+      )     ; 
+      R     "M 42.5"; 
+NETWORK
+TITLE =Flipper Flip Motor Contactor - CW
+
+      A(    ; 
+      A     "M 42.5"; 
+      O     ; 
+      A     "M 42.4"; 
+      A     "M 161.1"; 
+      O     ; 
+      A     #FLIP_CW; 
+      )     ; 
+      A     "P 8.0"; 
+      AN    "M 42.7"; 
+      AN    "A 45.6"; 
+      A     "M 42.2"; 
+      =     "K 46.1"; 
+NETWORK
+TITLE =Events UpDate - Flipper Flip 1 - CCW
+
+      A(    ; 
+      A     "M 42.0"; 
+      AN    "P 8.0"; 
+      A     "M 43.5"; 
+      AN    "M 43.7"; 
+      )     ; 
+      A     "P 8.1"; 
+      A     "M 42.2"; 
+      AN    "M 42.5"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Flipper Flip 2 - CCW
+
+      A     "M 9.0"; 
+      S     "M 42.6"; 
+//;
+      A(    ; 
+      A     "M 43.7"; 
+      O     ; 
+      AN    "P 8.1"; 
+      O     "M 42.5"; 
+      ON    "M 43.0"; 
+      )     ; 
+      R     "M 42.6"; 
+NETWORK
+TITLE =Flipper Flip Motor Contactor - CCW
+
+      A(    ; 
+      A     "M 42.6"; 
+      O     ; 
+      A     "M 42.4"; 
+      A     "M 161.0"; 
+      O     ; 
+      A     #FLIP_CCW; 
+      )     ; 
+      A     "P 8.1"; 
+      AN    "A 45.6"; 
+      AN    "M 42.7"; 
+      A     "M 42.2"; 
+      =     "K 46.0"; 
+END_FUNCTION
+

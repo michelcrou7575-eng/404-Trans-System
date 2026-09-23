@@ -1,0 +1,408 @@
+FUNCTION "LOADER LIFT" : VOID
+TITLE =Feeder Lift   Pos. 16
+//
+NAME : FEEDER
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_3_SW : BOOL ;	
+  FEEDER_SW : BOOL ;	
+  FEEDER_SERVICE_SW : BOOL ;	
+  LIGHT_BARRIER : BOOL ;	
+  FEEDER_LIFT_TOP_PB : BOOL ;	
+  FEEDER_LIFT_UP_PB : BOOL ;	
+  FEEDER_LIFT_DN_PB : BOOL ;	
+  FEEDER_LIFT_JOG_UP : BOOL ;	
+  FEEDER_LIFT_JOG_DN : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Light Barrier Buffer
+
+      A     "E 1.4"; 
+      O     "M 90.0"; 
+      =     #LIGHT_BARRIER; 
+//;
+      A     "E 1.4"; 
+      R     "M 90.0"; 
+NETWORK
+TITLE =Feeder Service 
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".LOADER_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".SERVICE_SW_3_STATUS; 
+      =     #MAIN_SERVICE_3_SW; 
+//;
+      A     #MAIN_SERVICE_3_SW; 
+      O     "M 74.7"; 
+      JNB   FEED; 
+      A     "HMI_DB".LOADER_LIFT_SERVICE_SSW; 
+      =     #FEEDER_SERVICE_SW; 
+      S     "DB UTILITY".Conveyor_13_Disable; 
+      S     "DB UTILITY".Conveyor_23_Disable; 
+      R     "M 74.2"; 
+//;  
+      A     #FEEDER_SERVICE_SW; 
+      A     "HMI_DB".LOADER_LIFT_TOP_PB; 
+      =     #FEEDER_LIFT_TOP_PB; 
+//;  
+      A     #FEEDER_SERVICE_SW; 
+      A     "HMI_DB".LOADER_LIFT_UP_PB; 
+      =     #FEEDER_LIFT_UP_PB; 
+//;
+      A     #FEEDER_SERVICE_SW; 
+      A     "HMI_DB".LOADER_LIFT_DN_PB; 
+      =     #FEEDER_LIFT_DN_PB; 
+//;
+      AN    #MAIN_SERVICE_3_SW; 
+      ON    #FEEDER_SW; 
+      R     "HMI_DB".LOADER_FING_SERVICE_SSW; 
+      R     "HMI_DB".LOADER_LIFT_SERVICE_SSW; 
+      R     "HMI_DB".LOADER_LIFT_TOP_PB; 
+      R     "HMI_DB".LOADER_LIFT_UP_PB; 
+      R     "HMI_DB".LOADER_LIFT_DN_PB; 
+      R     "DB UTILITY".Conveyor_13_Disable; 
+      R     "DB UTILITY".Conveyor_23_Disable; 
+
+FEED: R     #FEEDER_SERVICE_SW; 
+      R     #FEEDER_LIFT_TOP_PB; 
+      R     #FEEDER_LIFT_UP_PB; 
+      R     #FEEDER_LIFT_DN_PB; 
+      FP    "FP 159.6"; 
+      =     "M 74.7"; 
+NETWORK
+TITLE =Automatic Trigger
+
+      O     "M 9.1"; 
+      A     "S 2.6"; 
+      FP    "FP 169.6"; 
+      S     "M 74.2"; 
+//;
+      AN    "S 2.6"; 
+      R     "M 74.2"; 
+NETWORK
+TITLE =Feeder Lift - Ready
+
+      A     "M 0.3"; 
+      AN    "M 3.7"; 
+      A     "E 0.5"; 
+      A     "E 12.5"; 
+      =     "M 74.0"; 
+NETWORK
+TITLE =Feeder Lift - Manual Mode
+
+      A(    ; 
+      A     "M 75.0"; 
+      AN    "M 75.5"; 
+      O     ; 
+      A     "M 75.6"; 
+      AN    "M 76.0"; 
+      )     ; 
+      A     "M 74.0"; 
+      A     "M 190.4"; 
+      =     "M 74.4"; 
+NETWORK
+TITLE =Door Open Status
+
+      AN    "E 12.5"; 
+      A     "M 0.3"; 
+      S     "M 74.5"; 
+//;
+      A     "E 12.5"; 
+      A     "S 2.7"; 
+      R     "M 74.5"; 
+NETWORK
+TITLE =Fault Reset Status        X121     transfered to FC 212 Net 79
+//      A(    
+//      O     "M 54.7"
+//      O     "M 66.7"
+//      O     "M 86.7"
+//      )     
+//      A     "M 145.0"
+//      O     "M 74.5"
+//      O     "Timer 0"
+//      =     "H 40.3"
+// 
+//is transfered to FC 212 Net 79
+
+
+NETWORK
+TITLE =Feeder - Hold 10s - Steps Chain Register Reset Timer
+
+      A     "S 2.7"; 
+      AN    "M 71.3"; 
+      A     "M 74.0"; 
+      L     S5T#10S; 
+      SD    "Timer 75"; 
+NETWORK
+TITLE =Feeder - All Register Reset
+
+      A(    ; 
+      A     "M 190.4"; 
+      A     "M 171.4"; 
+      A     "M 171.5"; 
+      O     "Timer 75"; 
+      )     ; 
+      A     "M 74.0"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     2#0; 
+      T     "MW 71"; 
+      T     "MW 75"; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 16N1 - Power On
+
+      A     "M 74.0"; 
+      S     "M 75.0"; 
+NETWORK
+TITLE =Step 16N2 - Feeder Lift - Step Chain Run
+
+      A     "M 70.4"; 
+      A     "M 74.0"; 
+      A     "M 75.0"; 
+      S     "M 75.1"; 
+NETWORK
+TITLE =Step 16N3 - Feeder Lift - Ready
+
+      A     "M 74.0"; 
+      A     "M 75.1"; 
+      S     "M 75.2"; 
+NETWORK
+TITLE =Step 16N4 - Feeder Lift - Level Positionning
+
+      A(    ; 
+      A(    ; 
+      ON    "P 11.4"; 
+      ON    "P 11.5"; 
+      )     ; 
+      A     "M 73.6"; 
+      O     ; 
+      A(    ; 
+      ON    "P 13.1"; 
+      ON    "P 13.2"; 
+      )     ; 
+      A     "M 73.7"; 
+      )     ; 
+      A     "M 74.0"; 
+      A     "M 75.2"; 
+      S     "M 75.3"; 
+NETWORK
+TITLE =Step 16N5 - Feeder Lift - At Loading Position
+
+      A(    ; 
+      AN    "P 11.4"; 
+      A     "M 73.6"; 
+      O     ; 
+      AN    "P 13.2"; 
+      A     "M 73.7"; 
+      )     ; 
+      A     "M 74.0"; 
+      A     "M 75.3"; 
+      S     "M 75.4"; 
+NETWORK
+TITLE =Step 16N6 - Feeder Lift - Down
+
+      A     "M 71.3"; 
+      AN    "M 71.6"; 
+      A     "M 74.0"; 
+      A     "M 75.4"; 
+      S     "M 75.5"; 
+NETWORK
+TITLE =Step 16N7 - Feeder Lift - Delivery Enable
+
+      A     "S 2.6"; 
+      A     #LIGHT_BARRIER; 
+      A     "M 74.0"; 
+      A     "M 75.5"; 
+      S     "M 75.6"; 
+NETWORK
+TITLE =Step 16N8 - Feeder Lift - Delivery Position
+
+      A(    ; 
+      ON    "P 11.6"; 
+      ON    "P 11.7"; 
+      )     ; 
+      A     "M 74.0"; 
+      A     "M 75.6"; 
+      S     "M 75.7"; 
+NETWORK
+TITLE =Step 16N9 - Feeder - Delivery Stand-By
+
+      AN    "P 11.7"; 
+      A     "M 74.0"; 
+      A     "M 75.7"; 
+      S     "M 76.0"; 
+NETWORK
+TITLE =Feeder Lift Steps Chain Reset by Feeder Fingers (MW71)
+
+      A     "M 76.0"; 
+      AN    "M 76.1"; 
+      A(    ; 
+      ON    "M 71.2"; 
+      O     "M 72.2"; 
+      )     ; 
+      A     "M 74.0"; 
+      JC    M003; 
+      JU    M004; 
+
+M003: L     2#0; 
+      T     "MW 75"; 
+
+M004: NOP   0; 
+NETWORK
+TITLE =Step 16N10 - Feeder Hold Operation (Stop) 1
+
+      A     "S 3.4"; 
+      A     "M 71.5"; 
+      AN    "M 71.7"; 
+      A     "M 74.0"; 
+      A     "M 76.0"; 
+      S     "M 76.1"; 
+NETWORK
+TITLE =Step 16N11 - Feeder Hold Operation (Stop) 2
+
+      AN    "P 11.5"; 
+      A     "M 74.0"; 
+      A     "M 76.1"; 
+      S     "M 76.2"; 
+NETWORK
+TITLE =Step 16N12 - Feeder Hold Operation (Stop) 3
+
+      AN    "S 3.4"; 
+      A     "M 74.0"; 
+      A     "M 76.2"; 
+      S     "M 76.3"; 
+NETWORK
+TITLE =Step 16N13 - Feeder Hold Operation (Stop) 4
+
+      A     "S 3.4"; 
+      A     "M 74.0"; 
+      A     "M 76.3"; 
+      S     "M 76.4"; 
+NETWORK
+TITLE =Step 16N14 - Feeder Hold Operation (Stop) 4 - Fill MB76
+
+      A     "M 76.4"; 
+      A     "M 74.0"; 
+      JC    M005; 
+      JU    M006; 
+
+M005: L     2#11111100000000; 
+      T     "MW 75"; 
+
+M006: NOP   0; 
+NETWORK
+TITLE =Packets Movements - UpDate
+
+      A(    ; 
+      A     "P 11.4"; 
+      A     "M 73.6"; 
+      O     ; 
+      A     "P 13.2"; 
+      A     "M 73.7"; 
+      O     ; 
+      AN    "M 73.6"; 
+      AN    "M 73.7"; 
+      A     "P 11.5"; 
+      )     ; 
+      A     "M 74.2"; 
+      A     "M 75.2"; 
+      AN    "M 75.4"; 
+      O     ; 
+      A     "M 76.1"; 
+      AN    "M 76.2"; 
+      A     "P 11.4"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Feeder Lift - Up Motion
+
+      A(    ; 
+      A     "M 9.0"; 
+      AN    #FEEDER_SERVICE_SW; 
+      O     ; 
+      A     #FEEDER_SERVICE_SW; 
+      A     #FEEDER_LIFT_TOP_PB; 
+
+      O     ; 
+      A     "P 11.4"; 
+      A     "M 74.4"; 
+      A     "M 161.0"; 
+
+      O     ; 
+      A     #FEEDER_SERVICE_SW; 
+      A     #FEEDER_LIFT_UP_PB; 
+      A     "P 11.4"; 
+      )     ; 
+      AN    "M 74.5"; 
+      AN    "A 50.1"; 
+      A     "M 74.0"; 
+      A     "P 13.2"; 
+      =     "A 50.0"; 
+NETWORK
+TITLE =Feeder Lift - Down Motion
+
+      A(    ; 
+      A     "M 75.6"; 
+      AN    "M 76.0"; 
+      AN    #FEEDER_SERVICE_SW; 
+
+      O     ; 
+      A     "P 11.7"; 
+      A     "M 74.4"; 
+      A     "M 161.1"; 
+
+      O     ; 
+      A     #FEEDER_SERVICE_SW; 
+      A     #FEEDER_LIFT_DN_PB; 
+      )     ; 
+      A     #LIGHT_BARRIER; 
+      AN    "A 50.0"; 
+      A     "M 74.0"; 
+      A     "P 11.7"; 
+      =     "A 50.1"; 
+NETWORK
+TITLE =Feeder Lift - Fast
+
+      A(    ; 
+      A     "M 75.2"; 
+      AN    "M 75.3"; 
+      O     ; 
+      A     "M 75.6"; 
+      AN    "M 75.7"; 
+      O     ; 
+      A     "M 76.1"; 
+      AN    "M 76.2"; 
+      )     ; 
+      A     "M 74.0"; 
+      AN    "M 190.4"; 
+      AN    #FEEDER_SERVICE_SW; 
+      =     "A 50.2"; 
+NETWORK
+TITLE =Feeder Lift - Slow
+
+      A(    ; 
+      A     "M 75.3"; 
+      AN    "M 75.4"; 
+      O     ; 
+      A     "M 75.7"; 
+      AN    "M 76.0"; 
+      O     ; 
+      A     "M 76.2"; 
+      AN    "M 76.3"; 
+      )     ; 
+      A     "M 74.0"; 
+      =     "A 50.3"; 
+NETWORK
+TITLE =Q PB-L - Status Lamp
+
+      A     "M 76.1"; 
+      AN    "M 76.4"; 
+      A     "M 145.4"; 
+      O     "Timer 0"; 
+      =     "A 49.6"; 
+END_FUNCTION
+

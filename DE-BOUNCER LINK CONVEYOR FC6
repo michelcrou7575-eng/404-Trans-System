@@ -1,0 +1,274 @@
+FUNCTION "DE-BOUNCER LINK CONVEYOR" : VOID
+TITLE =Sensor Debouncer For LINK CONVEYORS 3-5-6-11-12-13-21-22-23
+//Only Collator Conveyor 4 & 10 have encoders. Packet Length (C4) and Packet 
+//Width 
+//(C10) are measured in Encoder Pulses.
+//These measurements are converted to mS to serve as Packet counter TimeBase for 
+//all the other conveyors.
+//
+//- Not Counting Foul Sensor Switching of less than PreSet Time.
+//
+//- Bit_0 Count Up  : Confirm after T_confirm = max(Preset_mS, Debounce_mS * 0.85)
+//                  then recheck Bit_0 and count UP once.
+//- Bit_1 Count Down: Validate ON time on Bit_1, then count DOWN on falling edge.
+VERSION : 0.4
+
+
+VAR_INPUT
+  Bit_0 : BOOL ;	//Count UP Input
+  Bit_1 : BOOL ;	//Count DOWN Input
+  Transfer_Start : BOOL ;	// Transfer Conditions
+  Preset_mS : INT ;	
+  Debounce_mS : INT ;	
+  Plc_Scan_mS : INT ;	
+END_VAR
+VAR_IN_OUT
+  Rising_Pulse_1 : BOOL ;	//Db Struct
+  Rising_Pulse_2 : BOOL ;	//Db Struct
+  Rising_Pulse_3 : BOOL ;	//Db Struct
+  Rising_Pulse_4 : BOOL ;	//Db Struct
+  Rising_Pulse_5 : BOOL ;	//Db Struct
+  Rising_Pulse_6 : BOOL ;	//Db Struct
+  Rising_Pulse_7 : BOOL ;	//Db Struct
+  Rising_Pulse_8 : BOOL ;	//Db Struct
+  IO_Bit0_Front_End : BOOL ;	//Db Struct   Bit_0 candidate active
+  IO_Bit1_Front_End : BOOL ;	//Db Struct   Bit_1 candidate active
+  IO_Bit0_Rear_End : BOOL ;	//Db Struct   Bit_0 count done latch
+  IO_Bit1_Rear_End : BOOL ;	//Db Struct   Bit_0 long ON bypass
+  IO_Packet_at_End_Sens : BOOL ;	//Db Struct   Packet At END Sensor
+  IO_Count_Done : BOOL ;	//Db Struct   Count Adjust done
+  IO_Sens_Error : BOOL ;	//Db Struct   Packet Stuck before sensor
+  IO_FirstScan_Init_Done : BOOL ;	//Db Struct   First scan init done
+  IO_B0_ON_Time : INT ;	//Db Struct   Bit_0 elapsed ON time
+  IO_B1_ON_Time : INT ;	//Db Struct   Bit_1 elapsed ON time
+  IO_Count_Result : INT ;	//Db Struct
+  IO_Count_Limit : INT ;	//Db Data
+END_VAR
+VAR_TEMP
+  END_CHECK_FLAG : BOOL ;	
+  COUNT_1_VALID : BOOL ;	
+  RESET_ALL : BOOL ;	
+  TIME_CONFIRM : INT ;	//Trigger Confirm = max(Preset_mS, Debounce_mS * 0.8) the Larger Wins
+  PACKET_FRACTION : INT ;	
+  TEMP_REAL : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Init on First Call
+// Init only once
+      AN    #IO_FirstScan_Init_Done; 
+      S     #RESET_ALL; 
+      JC    IRST; 
+NETWORK
+TITLE =Input Bits - Start Event
+//- #Bit_0 : Conveyor X InFeed Sensor
+//- #Bit_1 : Conveyor X Exit Sensor
+      A     #Bit_0; // Packet Detection
+      AN    #Transfer_Start; // Filling Mode
+      AN    #IO_Bit0_Front_End; // Not Latch Yet
+      JNB   K001; 
+      L     0; 
+      T     #IO_B0_ON_Time; // Filling Mode - Time
+      R     #IO_Bit0_Rear_End; 
+      R     #IO_Bit1_Rear_End; 
+      R     #IO_Bit1_Front_End; 
+      S     #IO_Bit0_Front_End; // Packet Detected
+
+K001: NOP   0; 
+
+      A     #Bit_1; 
+      A     #Transfer_Start; // Transfer Mode
+      AN    #IO_Bit1_Front_End; // Not Latch Yet
+      JNB   K002; 
+      L     0; 
+      T     #IO_B1_ON_Time; 
+      R     #IO_Bit0_Rear_End; 
+      R     #IO_Bit1_Rear_End; 
+      R     #IO_Bit0_Front_End; 
+      S     #IO_Bit1_Front_End; // Packet Detected
+
+K002: NOP   0; 
+
+NETWORK
+TITLE =TimeBase - Start Timing
+//TimeBase -> ScanTime
+      A     #IO_Bit0_Front_End; // Packet Comes IN
+      JNB   K003; 
+      L     #IO_B0_ON_Time; // Start Clock
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #IO_B0_ON_Time; // Added Time
+
+K003: NOP   0; 
+
+      A     #IO_Bit1_Front_End; // Packet Exits
+      JNB   K004; 
+      L     #IO_B1_ON_Time; // Start Clock
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #IO_B1_ON_Time; // Added Time
+
+K004: NOP   0; 
+
+NETWORK
+TITLE =Compute T_confirm
+//T_confirm = max(Preset_mS, Debounce_mS * 0.80) 
+//- "Debounce_mS * 0.80" to help with "U" Shaped Packet (Width measurements)
+      L     #Debounce_mS; // Packet Measurement [mS]
+      ITD   ; 
+      DTR   ; 
+      L     8.000000e+01; // x 80%
+      *R    ; 
+      L     1.000000e+02; 
+      /R    ; 
+      T     #TEMP_REAL; // 80.0% of Packet Measurement
+      RND   ; 
+      T     #PACKET_FRACTION; // 80% of Packet Measurement
+//;
+      L     #Preset_mS; // Min Debounce mS
+      L     #PACKET_FRACTION; // 80% of Packet Measurement
+      >=I   ; 
+      JC    K012; 
+      L     #PACKET_FRACTION; // 80% of Packet Measurement
+      T     #TIME_CONFIRM; // = Debounce_mS * 0.8
+      JU    K013; 
+
+K012: L     #Preset_mS; // Min Wait mS
+      T     #TIME_CONFIRM; // = Preset_mS
+
+K013: NOP   0; 
+NETWORK
+TITLE =Bit_0 Compare with Minimum length [mS]
+
+      A(    ; 
+      L     #IO_B0_ON_Time; // Entry Sens
+      L     #TIME_CONFIRM; // max(Preset_mS, Debounce_mS * 0.8)
+      >=I   ; 
+      AN    #Transfer_Start; // Filling Mode
+      O     ; 
+      L     #IO_B1_ON_Time; // Exit Sens
+      L     #TIME_CONFIRM; // max(Preset_mS, Debounce_mS * 0.8)
+      >=I   ; 
+      A     #Transfer_Start; // Transfer Mode
+      )     ; 
+      =     #END_CHECK_FLAG; 
+NETWORK
+TITLE =Add to Packet Number with Bit_0
+//Validated ON event on Bit_0 adds +1 one time
+//Wait until T_confirm then recheck Bit_0 still ON
+      A     #IO_Bit0_Front_End; // Packet Detected - Latch
+      A     #END_CHECK_FLAG; // Packet End Check Pulse
+      A     #Bit_0; // Packet Still There ?
+      AN    #IO_Count_Done; // Not Counted Yet
+      AN    #Transfer_Start; // Filling Mode
+      FP    #Rising_Pulse_4; 
+      JNB   CNTU; 
+
+      L     #IO_Count_Result; 
+      L     1; 
+      +I    ; 
+      T     #IO_Count_Result; 
+      S     #IO_Count_Done; // Counted Adjusted
+
+CNTU: NOP   0; 
+NETWORK
+TITLE =Subtract from Packet Number with Bit_1
+
+      A     #IO_Bit1_Front_End; // Packet Detected - Latch
+      A     #END_CHECK_FLAG; // Packet End Check Pulse
+      A     #Bit_1; // Packet Still There ?
+      AN    #IO_Count_Done; // Not Counted Yet
+      A     #Transfer_Start; // Transfer Mode
+      FP    #Rising_Pulse_5; 
+      JNB   CNTD; 
+
+      L     #IO_Count_Result; 
+      L     1; 
+      -I    ; 
+      T     #IO_Count_Result; 
+      S     #IO_Count_Done; // Counted Adjusted
+
+CNTD: NOP   0; 
+NETWORK
+TITLE =Clamp Packet Number
+
+      L     #IO_Count_Result; 
+      L     0; 
+      <I    ; 
+      JNB   K007; 
+      L     0; 
+      T     #IO_Count_Result; 
+
+K007: NOP   0; 
+
+      L     #IO_Count_Result; 
+      L     #IO_Count_Limit; 
+      >I    ; 
+      JNB   K008; 
+      L     #IO_Count_Limit; 
+      T     #IO_Count_Result; 
+
+K008: NOP   0; 
+NETWORK
+TITLE =Disable Over 5s ON
+//Long switching event on Bit_0 -> bypass foul count
+      L     #IO_B0_ON_Time; 
+      L     5000; 
+      >=I   ; 
+      =     #RESET_ALL; 
+//;
+      A     #Bit_0; 
+      A     #RESET_ALL; 
+      S     #IO_Sens_Error; 
+
+NETWORK
+TITLE =Monitor
+
+      A     #IO_Bit0_Front_End; // Packet Detected - Latch
+      AN    #END_CHECK_FLAG; // End Check Pulse - Not Yet
+      AN    #Bit_0; // Packet Disapear ?
+      AN    #IO_Count_Done; // Not Counted Yet
+      AN    #Transfer_Start; // Filling Mode
+      A(    ; 
+      L     #IO_B0_ON_Time; 
+      L     #Preset_mS; 
+      <I    ; 
+      )     ; 
+      FP    #Rising_Pulse_6; // Not a Packet !
+      =     #RESET_ALL; 
+
+
+
+NETWORK
+TITLE =Reset Exit Event on Falling Edge
+
+      AN    #Bit_1; 
+      FP    #Rising_Pulse_7; 
+      JNB   K011; 
+      R     #IO_Bit1_Front_End; 
+      L     0; 
+      T     #IO_B1_ON_Time; 
+
+K011: NOP   0; 
+
+NETWORK
+TITLE =Reset All
+
+
+IRST: A     #RESET_ALL; 
+      JCN   NRST; 
+
+      R     #IO_Bit0_Front_End; 
+      R     #IO_Bit0_Front_End; 
+      R     #IO_Sens_Error; 
+      R     #IO_Bit0_Rear_End; 
+      R     #IO_Bit1_Rear_End; 
+      L     0; 
+      T     #IO_B0_ON_Time; 
+      T     #IO_B1_ON_Time; 
+
+      S     #IO_FirstScan_Init_Done; 
+NRST: NOP   0; 
+
+END_FUNCTION
+
