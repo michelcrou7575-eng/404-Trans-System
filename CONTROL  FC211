@@ -1,0 +1,265 @@
+FUNCTION "CONTROL" : VOID
+TITLE =Controls FC211
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =Qty Accumulation Conveyor
+//  A     "M 0.3"
+//      A     "M 92.0"
+//      AN    "M 14.4"
+//      CU    "COUNTER 4"
+////;
+//      A     "M 0.3"
+//      A     "B 6.4"
+//      CD    "COUNTER 4"
+////;
+//      A     "M 161.0"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 4"
+//
+
+
+NETWORK
+TITLE =Qty Accumulation Conveyor
+//      A     "M 0.3"
+//      AN    "B 6.7"
+//      CU    "COUNTER 5"
+//      A     "M 0.3"
+//      AN    "B 7.2"
+//      CD    "COUNTER 5"
+//      A     "M 161.0"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 5"
+//
+
+
+NETWORK
+TITLE =Qty Flipper to Pusher
+//      A     "M 0.3"
+//      AN    "B 7.4"
+//      CU    "COUNTER 6"
+//      A     "M 0.3"
+//      AN    "B 10.4"
+//      CD    "COUNTER 6"
+//      A     "M 161.0"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 6"
+//
+
+
+NETWORK
+TITLE =Qty Pivot / Collator Conveyor
+//      A     "M 0.3"
+//      AN    "B 10.4"
+//      CU    "COUNTER 7"
+//      A     "M 0.3"
+//      AN    "B 10.5"
+//      CD    "COUNTER 7"
+//      A     "M 161.0"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 7"
+//
+
+
+NETWORK
+TITLE =Qty Bottom Accumulator
+//      A     "M 0.3"
+//      A     "B 10.6"
+//      A     "P 15.1"
+//      CU    "COUNTER 8"
+//      A     "M 0.3"
+//      AN    "B 11.2"
+//      CD    "COUNTER 8"
+//      A     "M 161.0"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 8"
+//
+
+
+NETWORK
+TITLE =Qty Top Accumulator
+//      A     "M 0.3"
+//      A     "B 10.6"
+//      A     "P 15.0"
+//      CU    "COUNTER 9"
+//      A     "M 0.3"
+//      AN    "B 15.6"
+//      CD    "COUNTER 9"
+//      A     "M 161.1"
+//      A     "M 161.1"
+//      A(    
+//      ON    "S 2.1"
+//      O     "S 2.2"
+//      )     
+//      R     "COUNTER 9"
+//
+
+
+NETWORK
+TITLE =Start Signal
+
+      A     "E 0.0"; 
+      A(    ; 
+      O     "S 2.0"; 
+//   O     "M 146.1"
+      )     ; 
+      A     "S 2.1"; 
+//      A     "M 146.2"
+      AN    "M 0.4"; 
+      AN    "M 0.5"; 
+      =     "M 0.1"; 
+NETWORK
+TITLE =Defective Start Display
+
+      A     "M 146.1"; 
+      AN    "M 0.1"; 
+      L     S5T#3S; 
+      SE    "Timer 2"; 
+//;
+      A     "Timer 2"; 
+      A     "M 6.2"; 
+      =     "M 5.5"; 
+//;
+      A     "Timer 2"; 
+      AN    "M 6.2"; 
+      =     "M 5.3"; 
+//;
+      A     "Timer 2"; 
+      FN    "FN 155.4"; 
+      A     "M 146.1"; 
+      =     "M 5.0"; 
+NETWORK
+TITLE =Signal TimeOut
+
+      A     "M 0.1"; 
+      L     S5T#3S; 
+      SD    "Timer 1"; 
+NETWORK
+TITLE =Start Ready 10s
+
+      A     "Timer 1"; 
+      S     "M 0.2"; 
+//;
+      A(    ; 
+      O     "M 0.3"; 
+      O     "Timer 5"; 
+      )     ; 
+      R     "M 0.2"; 
+NETWORK
+TITLE =Start Signal - Delay
+
+      A     "M 0.2"; 
+      L     S5T#10S; 
+      SD    "Timer 5"; 
+NETWORK
+TITLE =Control Voltage
+
+      A     "M 0.2"; 
+      AN    "S 2.0"; 
+      A     "S 2.1"; 
+//    A    "M 146.2"
+      A(    ; 
+      O     "S 2.2"; 
+      O     "M 146.0"; 
+      )     ; 
+      S     "M 0.3"; 
+//;
+      A(    ; 
+      ON    "S 2.1"; 
+//    ON    "M 146.2"
+      ON    "E 0.0"; 
+      O     "M 0.4"; 
+      O     "M 0.5"; 
+      ON    "M 50.0"; 
+      )     ; 
+      R     "M 0.3"; 
+NETWORK
+TITLE =Fuse Sens - Fault
+
+      AN    "E 0.1"; 
+      A     "M 9.1"; 
+      R     "M 0.4"; 
+//;
+      A     "E 0.1"; 
+      S     "M 0.4"; 
+NETWORK
+TITLE =Motor Protect - Fault
+
+      AN    "E 0.2"; 
+      A     "M 9.1"; 
+      R     "M 0.5"; 
+//;
+      A     "E 0.2"; 
+      S     "M 0.5"; 
+NETWORK
+TITLE =Fault Status Lamp
+
+      A(    ; 
+      O     "M 0.4"; 
+      O     "M 0.5"; 
+      )     ; 
+      AN    "E 0.1"; 
+      AN    "E 0.2"; 
+      A     "M 6.2"; 
+      O     ; 
+      A     "M 0.4"; 
+      A     "M 6.2"; 
+      O     ; 
+      A     "M 0.5"; 
+      A     "M 6.5"; 
+      O     ; 
+      A     "M 0.6"; 
+      A     "M 6.5"; 
+      O     ; 
+      A     "M 33.7"; 
+      A     "M 6.5"; 
+      O     ; 
+      AN    "M 11.0"; 
+      A     "M 6.5"; 
+      O     "Timer 0"; 
+      =     "H 40.0"; 
+NETWORK
+TITLE =Control Voltage Status Lamp X120
+
+      A     "M 0.2"; 
+      A     "M 145.4"; 
+      O     "M 0.3"; 
+      O     "Timer 0"; 
+      AN    "M 5.7"; 
+      O     "M 5.6"; 
+      =     "H 40.1"; 
+NETWORK
+TITLE =Buzzer
+
+      A     "M 0.1"; 
+      AN    "M 0.2"; 
+      O     "M 300.7"; 
+      =     "K 40.6"; 
+NETWORK
+TITLE =Outputs - Power Voltage
+
+      A     "M 0.3"; 
+      =     "K 40.7"; 
+END_FUNCTION
+

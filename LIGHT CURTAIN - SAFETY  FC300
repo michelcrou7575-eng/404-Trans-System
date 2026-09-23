@@ -1,0 +1,145 @@
+FUNCTION "LIGHT CURTAIN - SAFETY" : VOID
+TITLE =Conveyors Catways - Access Safety  FC300
+//Access to Conveyor 1-2-3 & 4 : Crossing Light Curtains Latches / Freezes these 
+//Conveyors !
+//- To Resume Run, CatWay 1 (Conveyors 1-2-3) :  Push Top PB (Catway) 
+//and Push Lower PB (Main Floor) within 15sec . 
+//- To Resume Run, CatWay 2 (Conveyors 3-4) :  Push Top PB (Catway) .
+//
+//If Crossing CatWay 2 Light Curtain while No Conveyors are running, Run will 
+//resume automatic after 1 sec of free Light Curtain.
+//
+//Big Red Light will Blink to confirm the Conveyors are disabled / Safe .
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Safety Light Curtains -  Trigger 2 - Momentary SF = 1s 
+
+      AN    "M 300.0"; // Safety ByPass (NOT)
+      AN    "E 16.6"; // Light Curtain 2 - Triggered (NOT)
+      AN    "A 44.3"; // AND IF Conveyor 4,3 and 2R ...
+      AN    "A 44.0"; // are OFF when Triggered +
+      AN    "K 43.5"; // Conveyor 2 Roller = Off +
+      AN    "Y 43.6"; // Conveyor 2 Roller - Frame Up = Off
+      L     S5T#2S; 
+      SF    "Timer 136"; // Debouncer 2s
+//;
+      A     "Timer 136"; 
+      =     "M 300.6"; // Resume Automatic after 2 Sec
+
+NETWORK
+TITLE =Safety Light Curtains - Trigger 1 - Latch
+
+      AN    "M 300.0"; // Safety ByPass (NOT)
+      AN    "E 16.2"; // Light Curtain 1 - Trigger (NOT)
+      S     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+//;
+      AN    "M 300.0"; // Safety ByPass (NOT)
+      AN    "E 16.6"; // Light Curtain 2 - Trigger (NOT)
+      A(    ; 
+      O     "A 44.0"; // AND IF Conveyor 3 or ...
+      O     "A 44.3"; // Conveyor 4 is ON
+      )     ; 
+      AN    "M 300.6"; 
+      S     "M 300.2"; // Light Curtain 2 - Triggered - Latch
+NETWORK
+TITLE =Big Red Light - Blinking
+
+      A(    ; 
+      O     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      O     "M 300.2"; // Light Curtain 2 - Triggered - Latch
+      O     "M 300.6"; // Light Curtain 2 - Triggered - Momentary
+      )     ; 
+      =     "H 55.2"; // Big Red Light (Top Catway)
+NETWORK
+TITLE =Freeze Sequences
+
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      AN    "M 300.0"; // Safety ByPass Flag    
+      =     "DB UTILITY".Freeze_Sequence_1; //   Freezes E1 + C1 + C2 Belt      
+//;
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      O     "M 300.2"; // Light Curtain 2 - Triggered - Latch
+      AN    "M 300.0"; // Safety ByPass Flag    
+      O     "M 300.6"; // Safety Momentary
+      =     "DB UTILITY".Freeze_Sequence_2; //  Freezes C2 Roller + C3 + C4  
+NETWORK
+TITLE =Safety ByPass - While blocking Curtain, Push Top Button for 5s
+
+      AN    "E 16.2"; 
+      A     "E 16.1"; 
+      L     S5T#5S; 
+      SD    "Timer 129"; 
+//;
+      A     "Timer 129"; 
+      S     "M 300.0"; // Safety ByPass Flag - Set
+//;
+      A     "M 300.0"; // Safety ByPass Flag
+      A     "M 6.1"; 
+      AN    "M 300.5"; // Safety Reset Flag - Set
+      =     "M 301.0"; // Safety ByPass Flag - Blinker
+
+NETWORK
+TITLE =TEST REMOTE B+
+
+      R     "A 58.4"; 
+
+NETWORK
+TITLE =PB Led - Control
+
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      A     "M 145.4"; 
+      AN    "M 300.0"; // Safety ByPass Flag
+      O     "M 301.0"; // ByPass Fast Blink
+      =     "M 300.3"; // PB Led - Flag
+//;
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latc
+      AN    "M 145.4"; 
+      AN    "M 300.0"; // Safety ByPass Flag    
+      O     "M 301.0"; // ByPass Fast Blink
+      =     "M 300.4"; // PB Led - Flag
+NETWORK
+TITLE =Re-Arm (Resume) Process - Safety Slat-In Catway Light Curtain
+
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      A     "E 16.2"; // Light Curtain Need to be Clear ...
+      A     "E 16.1"; // While PB Push !
+      FP    "FP 157.5"; 
+      S     "M 300.5"; // Safety Reset Flag - Set
+//;
+      A     "M 300.5"; // Safety Reset Flag - Set
+      L     S5T#15S; 
+      SD    "Timer 135"; // Safety Reset Flag - TimeOut
+//;                        
+      A     "Timer 135"; 
+      R     "M 300.5"; // Safety Reset Flag - Reset
+//;
+      A     "M 300.1"; // Light Curtain 1 - Triggered - Latch
+      A     "M 300.5"; // Safety Reset Flag 
+      A     "E 16.0"; 
+      R     "M 300.1"; 
+      R     "M 300.5"; // Safety Reset Flag - Reset
+      R     "M 300.0"; // Safet ByPass Flag - Reset
+NETWORK
+TITLE =Re-Arm (Resume) Process - Safety Slat-Out Catway Light Curtain
+
+      A     "M 300.2"; // Light Curtain 2 - Triggered - Latch
+      A     "K 40.6"; // PB Led / Start / Alarm Buzzer - Output
+      A     "E 16.4"; // PB Light Curtain 2
+      R     "M 300.2"; // Light Curtain 2 - Triggered - Latch -> Reset
+//;
+      A     "M 300.2"; // Light Curtain 2 - Triggered - Latch
+      =     "M 300.7"; // PB Led / Start / Alarm Buzzer
+NETWORK
+TITLE =PB Led - Out
+
+      A     "M 300.3"; 
+      O     "M 300.5"; // Safety Reset Flag - Set
+      =     "H 55.1"; 
+//;
+      A     "M 300.4"; 
+      O     "M 300.5"; // Safety Reset Flag - Set
+      =     "H 55.0"; 
+END_FUNCTION
+
