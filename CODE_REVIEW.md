@@ -35,7 +35,7 @@ The main problems:
 | 2 | ✅ | CONVEYOR 10 - PIVOT | No cross-interlock between DOWN `K53.0` and UP `K53.1`. **Fixed (§7)** |
 | 3 | ✅ | CONVEYOR 3 - SLAT | `#INITIALISATION` read uninitialised in normal operation, so MB27 can reset at random. **Fixed (§7)** |
 | 4 | ✅ | CONVEYOR 21 - LINK 1 HI | Same bug: `#INITIALISATION` not reset at label `CO21`, so MW79/MB81 can reset at random. **Fixed (§7)** |
-| 5 | 🔴❓ | ELEVATOR + PUSHER 1 | VFD/brake fault `M92.5` does not drop brake release `A56.2` or drive release `A63.0`, and is never reset |
+| 5 | 🟠❓ | ELEVATOR + PUSHER 1 | VFD/brake fault `M92.5` does not drop `A63.0`. **Downgraded (§10):** the brake is dropped by `E15.3` (motor energised), and `M92.5` is reset by FC212 |
 | 6 | ✅ | CONVEYOR 6 - FLIP DELIVERY | `#INITIALISATION` never assigned, and read as garbage while in service mode. **Fixed (§7)** |
 | 7 | ✅ | LOADER LIFT | `#FEEDER_SW` never assigned, and read as garbage while in service mode. **Fixed (§7)** |
 | 8 | 🟠 | CONVEYOR 10 - PIVOT | `#SURFACE_LENGTH_LEFT_10` read when it may not have been written this scan |
@@ -141,6 +141,8 @@ Result: jogging C3 doesn't stop C2 from feeding it, and drive-testing C11/C21 do
 The "HMI Service Switch Reset" network resets `SERVICE_SW_3_STATUS` after 10 s on screen 0 with the flap open. That drops `M140.3`, so roller, flipper, turntable direction, clearing and hand feed all switch back to their **LAUER** inputs (`M152.x`) without the operator knowing. If the LAUER panel is gone, give `M140.3` its own permanent bit.
 
 ### 3.8 Automatic restart after guard closing 🟠❓
+> **Update (§10):** the symbol table shows that `E9.0`, `E12.5` and `E4.6` are *safety-relay* "door closed" contacts. If those relays are manual-reset types, the door already needs a deliberate reset before motion can restart, and this finding is covered in hardware. Check the relay type.
+
 * Turntable: `M46.3` includes `E9.0` (line 163).
 * Flipper: `M42.2 = E9.0 AND M0.3` (line 150).
 * Loader lift: `M74.0` includes `E12.5` (line 91).
@@ -299,9 +301,9 @@ F1, F2, F3 and F5 were applied afterwards, along with the OB1 Faults Monitor (`<
 
 ---
 
-## 9. FC1208 "DE-BOUNCER / COUNTER" (WIP v0.6), the replacement for FC1206 "DE-BOUNCER OLD"
+## 9. FC1208 "HMI PACKET COUNTER  NEW" + FC8 "DE-BOUNCER / COUNTER" (WIP), the replacement for FC1206 "HMI PACKET COUNTER OLD" + FC6
 
-**Which file:** there is no file named FC1208 or FC1206 in the repo. This section reviews `DE-BOUNCER-COUNTER-WIP` (`FUNCTION "DE-BOUNCER / COUNTER"`, instance data in DB8 `"DEBOUNCER COUNTER DB"`) and its caller `HMI PACKET COUNTER  NEW`. The FC1206 source (`"DE-BOUNCER OLD"`, DB6) and both UDTs are not in the repo, so feature parity was judged from the FC1206 call interface in `HMI PACKET COUNTER OLD`.
+**Correction (from the symbol table, §10):** FC1208 = `HMI PACKET COUNTER  NEW`, FC1206 = `HMI PACKET COUNTER OLD`, FC8 = `DE-BOUNCER / COUNTER` (the WIP counter), FC6 = `DE-BOUNCER OLD`. This section covers both FC1208 and the FC8 it calls, so the findings stand. Originally this section reviewed `DE-BOUNCER-COUNTER-WIP` (`FUNCTION "DE-BOUNCER / COUNTER"`, instance data in DB8 `"DEBOUNCER COUNTER DB"`) and its caller `HMI PACKET COUNTER  NEW`. The FC1206 source (`"DE-BOUNCER OLD"`, DB6) and both UDTs are not in the repo, so feature parity was judged from the FC1206 call interface in `HMI PACKET COUNTER OLD`.
 
 ### 9.1 Is it ready to replace FC1206?
 **Not yet.** The Collator path (C3, C4) and the Link path (C5) run, but items P1–P4 below miscount in normal production, and resetting the counts from the HMI or the conveyor FCs does not work (P5). The Delivery type is an empty stub, so C6, C13 and C23 can't be switched over at all.
@@ -332,3 +334,40 @@ Line numbers refer to `DE-BOUNCER-COUNTER-WIP`.
 P5 (reset) → P2 (delete one line) → P3 (stuck timer and latch timeout) → P1 (repeat count-down while blocked) → P6/P7. Then test on C4 alone (`TESTM 400.0`), comparing against FC1206 on the HMI, before moving C3/C5 over. Implement the Delivery type last.
 
 No code was changed for FC1208.
+
+---
+
+## 10. Symbol table (`404_Symbol_Table.asc`)
+
+1,707 entries: 867 M, 192 I, 184 Q, 121 timers, 59 FCs, 13 DBs, 5 UDTs, 7 OBs, 30 VATs. There are no duplicate names or addresses. Every "letter + address" name (`"M 11.1"`, `"K 46.0"`, `"B 6.2"`, …) maps to exactly that address: `E/B/P/S` → I, `A/K/Y/H` → Q, `FP/FN/TESTM` → M. So the code's symbolic names can be read literally, and every finding above holds as written.
+
+### 10.1 Block names that didn't match (fixed)
+A name used in the sources that isn't in the table stops the source from compiling, or silently creates a new, uncalled block.
+
+| Where | Was | Table | Action |
+|---|---|---|---|
+| OB1 | `CALL "FEEDER FINGERS"` | FC1070 `LOADER FINGERS` | ✅ renamed |
+| OB1 | `CALL "FEEDER LIFT"` | FC1074 `LOADER LIFT` | ✅ renamed |
+| `LOADER FINGERS` file | `FUNCTION "FEEDER FINGERS"` | FC1070 `LOADER FINGERS` | ✅ renamed |
+| `CONVEYOR 6 … _ VFD OK -Check` | `FUNCTION "CONVEYOR 6 - FLIP DELIVERY"` | FC1038 `CONVEYOR 6 - FLIP DELIV.` | ✅ renamed back |
+| `DE-BOUNCER LINK CONVEYOR FC6` file | `FUNCTION "DE-BOUNCER LINK CONVEYOR"` | FC6 is `DE-BOUNCER OLD`, with a different interface (see the OLD call) | ⚠️ left alone. This file is **not** the current FC6 source. Don't import it over FC6. |
+
+### 10.2 Earlier assumptions, now confirmed or corrected
+| Address | Table comment | Effect on the review |
+|---|---|---|
+| `E15.3` | ELEVATOR MOTOR ENERGIZED | The "Safety Brake" network (`AN E15.3 → R A56.2`) keeps the brake applied until the motor is energised. That covers the "brake opens before torque" concern in §2.5 and §7.2. The code comment "Motor Stopped" is wrong. **§2.5 downgraded.** The `AN M11.1` added in §7.1 stays, as a second layer. |
+| `E14.4` | ELEVATOR VFD - H:READY / L:TRIPPED | Confirms the elevator fault path. |
+| `M161.0` / `M161.1` | F-KEYS `+` / `-` on LAUER | Two separate keys, so both can be pressed together. This confirms the flipper and pivot interlock fixes were needed. |
+| `M3.7` / `M7.0` | VFD U47.5 fault – **Pusher 2 Conveyor 9** / VFD U50.0 fault – **Feeder Lift** | Confirms the LOADER LIFT fix (`M3.7` → `M7.0`). |
+| `M54.2` / `M54.6` | CLEARING ON EMPTY LINK / PIVOT C10 FULL SENSING | Confirms §3.2: Clearing uses the wrong bit. **Still open.** |
+| `MD1` | HMI E-Stop to Conveyor 23 | Confirms the `<>D` fix in OB1 and FC212. |
+| `M2.2` | VFD U42.0 FAULT – ELEVATOR | Confirms FC212 F6 (it is set by the door, not the drive). |
+| `M90.0` | FEEDER TEST with 506 Power Off | The feeder light-curtain "buffer" is a **test bypass**. It must never be settable in production. FC300 "LIGHT CURTAIN - SAFETY" (not in the repo) is the likely writer, so review it. |
+| `E9.0`, `E12.5`, `E4.6` | SAFETY RELAY – DOOR CLOSED | See the update in §3.8. |
+| `E34.1` | PB NEW HMI – SIGNAL | Used as one of the three fault-reset inputs (`M9.1`). |
+| `M333.3`, `M400.1` | not in table | Absolute test bits in OB1 and FC1208. Give them symbols or remove them. |
+
+### 10.3 Blocks that exist in the PLC but not in the repo
+FC1 LAUER CALL, FC2 SETUP, FC3/FC9 SENSOR CHECK, FC5 SENSOR DE-BOUNCER, **FC6 DE-BOUNCER OLD**, FC10/FC105 SCALER, FC100–103 LAUER comms, FC190–201 LAUER, **FC211 CONTROL** (start-up routine, probably calls HMI COMMS/CONTROL, LIGHT BAR and FC212), FC245 BLINKER, **FC300 LIGHT CURTAIN - SAFETY**, FC350/351 FM350, FC1046 CONV 8 - TURNTABLE WIP, FC1205 HMI PACKET COUNTER, FC1300 FM350 COUNTERS, FC1500 ELEVATOR TEST FUNCTION. Also OB35 (100 ms), OB82/86/100/121/122, DB2/3/5/10/12/14/18/22/50 and all 5 UDTs.
+
+Priority to add next: **FC211 CONTROL** (it computes `M0.3` and the start-up sequence), **FC300** (light curtain / `M90.0`), **FC6** and **UDT5/UDT8** (so the counter replacement can be compared properly).
