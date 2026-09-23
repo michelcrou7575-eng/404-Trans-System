@@ -403,3 +403,51 @@ R   "DEBOUNCER OLD".<inst>.Count_Error   // re-arm count-done latch
 
 ### 11.4 If it doesn't fix it
 Upload the live FC6 source (Export Source from the S7 project). If FC6 differs from v0.4, the fix must go inside FC6 instead: clear `Count_Done` when a new front-end latch is set.
+
+---
+
+## 12. FC1208 v0.3 + FC8 v0.7 + UDT8: replacement for FC1206 + FC6
+
+### 12.1 What changed
+**FC8 `DE-BOUNCER / COUNTER` v0.7** (file `DE-BOUNCER-COUNTER-WIP`), rewritten:
+| | How it counts |
+|---|---|
+| **Up** (`Bit_0`, infeed, gated by the caller) | Adds the ON time. **+1** when ON ≥ `Preset_MIN_mS`. Re-armed only after `Bit_0` has been OFF for the **gap** (`Space_DX_mS / 2`, min 100 ms). A U-shaped packet counts once, and a blip shorter than the preset is dropped. |
+| **Down** (`Bit_1` = **raw** exit sensor) | ON time is added **only while `Transfer_Start`**, so a packet parked on the end sensor isn't counted. **−1 when the packet has left**: exit sensor OFF for the gap time **and** ON ≥ preset. **Packets that touch** (the sensor never clears): −1 for every `HighSpd_Dimension_mS + gap` of continuous ON time. |
+| HMI | New IN_OUT `Word_Count` (like FC6): an operator edit on the HMI, or a reset writing 0, is taken over on the next call. The result is written back every call. **The resets now work.** |
+| Error | Infeed continuously ON for ≥ 5 s → `Error`/`Q_Error`. Cleared by the new `Error_Reset` input (wired to `M9.1`). |
+| Robustness | All time accumulators are capped at 30 s (no INT wrap). Delivery type counts like the others. `Maximum_Count = 0` means no limit. |
+
+This fixes P1–P8 from §9. It also fixes the "count-down freezes" problem (§11): the count-done flag re-arms on every gap.
+
+**UDT8 `Debouncer Counter Struct` v0.7** is a new file, `UDT8 - Debouncer Counter Struct`. It has the fields FC8 needs, and it keeps `InFeed_Window_mS`, so the DB8 source is unchanged.
+
+**FC1208 `HMI PACKET COUNTER  NEW` v0.3**, rebuilt as a **drop-in replacement for FC1206**:
+* **All 11 conveyors** are active: C3, C4, C5, C6, C10, C11, C12, C13, C21, C22, C23.
+* Counts are written to **`"HMI_DB"`**, the same words FC1206 used, which the HMI, the LIGHT BAR and the C5 re-sync read. They are also mirrored to `"HMI DB NEW"`.
+* The infeed gating is the same as FC1206 (fill steps, and pivot position for C11/C21). The exit sensor is raw. Transfer = step active and not done.
+* It also does FC1206's other jobs: `MW202` (packet length in mm for Conv 4), and the flipper/turntable/C9/pusher-2 presence words (to both DBs).
+* The count resets are the same as in FC1206.
+* A 1 s call-hold is used on every conveyor. C3, C4 and C10 get new ones on timers **T118, T119, T134**.
+* Packet dimensions: C4/C5/C6 use `HOUSE_KEEPING DB.C4_Packet_Length_mS`. C10–C12 and C21–C22 use the C10 width scaled 27→31 m/min. C13/C23 use the width scaled 27→23.7 m/min.
+* The test leftovers (`TESTM 400.0`, `M400.1`, `<>R`) are removed.
+
+**OB1:** `M333.3` now **selects** the counter (0 = FC1206 + FC6, 1 = FC1208 + FC8), and only one of them runs. Both hand the count over through `HMI_DB`, so you can switch online in either direction without losing counts.
+
+### 12.2 What is needed to compile
+Nothing can be compiled here: STEP 7 runs on Windows and the full project isn't in the repo. In the **S7 project** (SIMATIC Manager → S7 Program → Sources → *Insert → External Source*), compile in this order:
+1. `UDT8 - Debouncer Counter Struct`
+2. `DB8 WIP` (DB8, built on UDT8)
+3. `DE-BOUNCER-COUNTER-WIP` (FC8)
+4. `HMI PACKET COUNTER  NEW` (FC1208)
+5. `OB1`
+
+These blocks read or write existing blocks that are in the PLC project but not in the repo, so the compile has to happen in that project: DB1 `DB UTILITY`, DB4 `COLLATORS DB`, DB10 `HOUSE_KEEPING DB`, DB12 `HMI_DB` (`CONV_x_COUNT`, `CONVEYOR_MAXCOUNT_L/W`, `*_PACK_PRESENCE`), DB22 `HMI DB NEW` (`CONV_x_COUNT`, `FP131/132`, `*_PACK_PRESENCE`), and the symbol table (already matches). If a field name differs in your DB12/DB22, the compile names it. Send me the error and I'll adjust.
+
+### 12.3 To run (commissioning)
+1. Cross-reference **T118, T119, T134** in the online project (they must be unused), and check that `M333.3` is free.
+2. Download UDT8, DB8, FC8, FC1208, then OB1. FC1206 keeps running while `M333.3` = 0.
+3. VAT: `M 333.3`, plus `"DEBOUNCER COUNTER DB".Conveyor_C4_Collator.Count_Result`, `.Bit1_Exit_mS`, `.Bit1_OFF_mS` and `"HMI_DB".CONV_4_COUNT`.
+4. Set `M333.3 = 1` → FC1208 takes over the current HMI counts. Watch a full C4 collate + transfer: the count should go up for each packet in and down to 0 on transfer.
+5. Tune if needed: `Preset_MIN_mS` (500 / 300) and `Space_DX_mS` (600 → gap 300 ms) in the FC1208 calls.
+6. To roll back, set `M333.3 = 0`. `M333.3` is probably not retentive, so after a power cycle FC1206 runs again until the bit is made permanent (or the switch is removed).

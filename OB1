@@ -43,12 +43,13 @@ NETWORK
 TITLE =Packet Counters
 
 
+      A     M    333.3; // 1 = FC1208 + FC8 (New) / 0 = FC1206 + FC6 (Old) - Only One Runs
+      JC    NEWC; 
+
       CALL "HMI PACKET COUNTER OLD" ;
 
-      A     M    333.3; 
-      JCN   NOOP; 
-
-      CALL "HMI PACKET COUNTER  NEW" ;
+      JU    NOOP; 
+NEWC: CALL "HMI PACKET COUNTER  NEW" ;
 
 NOOP: NOP   0; 
 

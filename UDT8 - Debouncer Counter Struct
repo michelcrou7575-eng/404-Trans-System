@@ -1,0 +1,26 @@
+TYPE "Debouncer Counter Struct"
+VERSION : 0.7
+
+
+  STRUCT
+   FirstScan_Done : BOOL ;	//Init Done
+   Bit0_ON_Latch : BOOL ;	//InFeed - Packet Seen (Until Gap)
+   Bit1_ON_Latch : BOOL ;	//Exit - Packet Seen During Transfer (Until Gap)
+   Transfer_Active : BOOL ;	//Spare (Compatibility)
+   Count_Done_Latch_0 : BOOL ;	//InFeed - Packet Counted
+   Count_Done_Latch_1 : BOOL ;	//Spare (Compatibility)
+   Error : BOOL ;	//InFeed Sensor Stuck
+   Spare_Bit : BOOL ;	//Spare
+   Bit0_Entry_mS : INT ;	//InFeed - ON Time This Packet [mS]
+   Bit0_OFF_mS : INT ;	//InFeed - Gap Time [mS]
+   Bit0_Stuck_mS : INT ;	//InFeed - Continuous ON Time [mS]
+   Bit1_Exit_mS : INT ;	//Exit - ON Time During Transfer [mS]
+   Bit1_OFF_mS : INT ;	//Exit - Gap Time [mS]
+   Space_Between : INT ;	//Gap Confirm [mS]
+   InFeed_Window_mS : INT ;	//Info: Preset Used [mS]
+   Exit_Window_mS : INT ;	//Butted Packets Window [mS]
+   Count_Result : INT ;	//Packet Count
+   Maximum_Count : INT ;	//Count Limit (0 = No Limit)
+   HMI_Last : INT ;	//Last Value Written to HMI
+  END_STRUCT ;
+END_TYPE
