@@ -371,3 +371,35 @@ A name used in the sources that isn't in the table stops the source from compili
 FC1 LAUER CALL, FC2 SETUP, FC3/FC9 SENSOR CHECK, FC5 SENSOR DE-BOUNCER, **FC6 DE-BOUNCER OLD**, FC10/FC105 SCALER, FC100–103 LAUER comms, FC190–201 LAUER, **FC211 CONTROL** (start-up routine, probably calls HMI COMMS/CONTROL, LIGHT BAR and FC212), FC245 BLINKER, **FC300 LIGHT CURTAIN - SAFETY**, FC350/351 FM350, FC1046 CONV 8 - TURNTABLE WIP, FC1205 HMI PACKET COUNTER, FC1300 FM350 COUNTERS, FC1500 ELEVATOR TEST FUNCTION. Also OB35 (100 ms), OB82/86/100/121/122, DB2/3/5/10/12/14/18/22/50 and all 5 UDTs.
 
 Priority to add next: **FC211 CONTROL** (it computes `M0.3` and the start-up sequence), **FC300** (light curtain / `M90.0`), **FC6** and **UDT5/UDT8** (so the counter replacement can be compared properly).
+
+---
+
+## 11. Live counter problem: "count-up works, count-down freezes"
+
+**Live chain:** OB1 → FC1206 `HMI PACKET COUNTER OLD` → FC6 `DE-BOUNCER OLD` (DB6, UDT5). FC1208 and FC8 are not in the PLC.
+
+### 11.1 Root cause (from the code)
+* The FC6 source isn't in the repo. However, `DE-BOUNCER LINK CONVEYOR FC6` (v0.4) has **the same in/out layout** as UDT5 / the DB6 instance, field by field: 8 rising pulses, 4 front/rear bits, packet-at-end, **bit 6**, sensor error, first-scan, two ON times, result and limit. It is an earlier version of FC6.
+* In v0.4, bit 6 is `IO_Count_Done`. It is **set** by every count (up and down), **required to be 0** by every count, and **never reset inside FC6** (§3.9). In DB6 the same bit is called `Count_Error`, and FC1206 resets it only on the conveyor's **stop** edge (for C3, C4, C5, C10 only).
+* **Count-up looks fine** because C4 stops after every collated packet, so the stop edge re-arms the bit. **During a transfer** the conveyor runs without stopping: the first packet out sets the bit, and **every following count-down is blocked** until the conveyor stops. C6 and C11–C23 have no stop-edge reset at all.
+
+### 11.2 How to confirm online (1 minute)
+In a VAT, watch `"DEBOUNCER OLD".B6_7_Conv_4_InFeed.Count_Error` and `…Word_Count_Result` during a C4 transfer. If `Count_Error` goes TRUE after the first packet leaves and stays TRUE while the count freezes, this is the cause.
+
+### 11.3 Fix applied: FC1206 only, FC6 unchanged
+For the 10 conveyors that count down (C4, C5, C6, C10, C11, C12, C13, C21, C22, C23), a re-arm now follows each FC6 call:
+```
+AN  <Bit_1 passed to FC6>      // exit sensor clear
+A   <Transfer_Start>           // during transfer
+L   S5T#300MS
+SD  T 1xx                      // clear for >= 300 ms
+A   T 1xx
+R   "DEBOUNCER OLD".<inst>.Count_Error   // re-arm count-done latch
+```
+* This re-arms once per packet. A U-shaped packet whose opening passes the sensor in under 300 ms still counts only once. Tune the 300 ms if needed; it must be shorter than the smallest gap between packets during a transfer.
+* Timers used: **T105, T106, T107, T108, T111, T112, T113, T114, T115, T117**. None of them is in the symbol table or used by any block in the repo. **Before downloading, check in the PLC's cross-reference that no block outside the repo uses them.**
+* The existing stop-edge resets are unchanged.
+* **Test order:** C4 alone first (a full collate + transfer cycle, with the count reaching 0), then C5/C6, then C10 and C11–C23.
+
+### 11.4 If it doesn't fix it
+Upload the live FC6 source (Export Source from the S7 project). If FC6 differs from v0.4, the fix must go inside FC6 instead: clear `Count_Done` when a new front-end latch is set.
