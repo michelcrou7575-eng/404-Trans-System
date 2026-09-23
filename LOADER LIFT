@@ -56,7 +56,7 @@ TITLE =Feeder Service
       =     #FEEDER_LIFT_DN_PB; 
 //;
       AN    #MAIN_SERVICE_3_SW; 
-      ON    #FEEDER_SW; 
+      ON    #FEEDER_SERVICE_SW; // Fix: #FEEDER_SW was never written
       R     "HMI_DB".LOADER_FING_SERVICE_SSW; 
       R     "HMI_DB".LOADER_LIFT_SERVICE_SSW; 
       R     "HMI_DB".LOADER_LIFT_TOP_PB; 

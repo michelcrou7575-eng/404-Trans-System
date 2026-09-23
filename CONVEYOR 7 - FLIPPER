@@ -457,6 +457,7 @@ TITLE =Flipper Flip Motor Contactor - CW
       AN    "M 42.7"; 
       AN    "A 45.6"; 
       A     "M 42.2"; 
+      AN    "K 46.0"; // Interlock - Not while CCW
       =     "K 46.1"; 
 NETWORK
 TITLE =Events UpDate - Flipper Flip 1 - CCW
@@ -500,6 +501,7 @@ TITLE =Flipper Flip Motor Contactor - CCW
       AN    "A 45.6"; 
       AN    "M 42.7"; 
       A     "M 42.2"; 
+      AN    "K 46.1"; // Interlock - Not while CW
       =     "K 46.0"; 
 END_FUNCTION
 

@@ -39,6 +39,7 @@ TITLE =Conveyor 21 - Service
       R     "DB UTILITY".Pivot_Disable; 
 
 CO21: R     #SERVICE_RUN; 
+      R     #INITIALISATION; // Fix: temp not written when service is off
       FP    "FP 148.3"; 
       =     "M 78.7"; 
 NETWORK

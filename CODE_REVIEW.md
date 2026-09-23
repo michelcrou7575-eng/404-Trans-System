@@ -31,13 +31,13 @@ The main problems:
 
 | # | Sev | Block | Finding |
 |---|---|---|---|
-| 1 | 🔴 | CONVEYOR 7 - FLIPPER | No cross-interlock between CW `K46.1` and CCW `K46.0` |
-| 2 | 🔴 | CONVEYOR 10 - PIVOT | No cross-interlock between DOWN `K53.0` and UP `K53.1` |
-| 3 | 🔴 | CONVEYOR 3 - SLAT | `#INITIALISATION` read uninitialised in normal operation, so MB27 can reset at random |
-| 4 | 🔴 | CONVEYOR 21 - LINK 1 HI | Same bug: `#INITIALISATION` not reset at label `CO21`, so MW79/MB81 can reset at random |
+| 1 | ✅ | CONVEYOR 7 - FLIPPER | No cross-interlock between CW `K46.1` and CCW `K46.0`. **Fixed (§7)** |
+| 2 | ✅ | CONVEYOR 10 - PIVOT | No cross-interlock between DOWN `K53.0` and UP `K53.1`. **Fixed (§7)** |
+| 3 | ✅ | CONVEYOR 3 - SLAT | `#INITIALISATION` read uninitialised in normal operation, so MB27 can reset at random. **Fixed (§7)** |
+| 4 | ✅ | CONVEYOR 21 - LINK 1 HI | Same bug: `#INITIALISATION` not reset at label `CO21`, so MW79/MB81 can reset at random. **Fixed (§7)** |
 | 5 | 🔴❓ | ELEVATOR + PUSHER 1 | VFD/brake fault `M92.5` does not drop brake release `A56.2` or drive release `A63.0`, and is never reset |
-| 6 | 🟠 | CONVEYOR 6 - FLIP DELIVERY | `#INITIALISATION` never assigned, and read as garbage while in service mode |
-| 7 | 🟠 | LOADER LIFT | `#FEEDER_SW` never assigned, and read as garbage while in service mode |
+| 6 | ✅ | CONVEYOR 6 - FLIP DELIVERY | `#INITIALISATION` never assigned, and read as garbage while in service mode. **Fixed (§7)** |
+| 7 | ✅ | LOADER LIFT | `#FEEDER_SW` never assigned, and read as garbage while in service mode. **Fixed (§7)** |
 | 8 | 🟠 | CONVEYOR 10 - PIVOT | `#SURFACE_LENGTH_LEFT_10` read when it may not have been written this scan |
 | 9 | 🟠 | CONVEYORS CLEARING | Uses `M54.6` (C10 full flag) where the comment and logic need `M54.2` (C11…C23 empty) |
 | 10 | 🟠 | CONVEYOR 4 - COLLATOR | REAL math applied to INT `MW202`, so the HMI length hysteresis is always 0 |
@@ -48,7 +48,7 @@ The main problems:
 | 15 | 🟠❓ | TURNTABLE / FLIPPER / LOADER | Sequences freeze (instead of resetting) when the guard door opens, and resume by themselves when it closes |
 | 16 | 🟠 | DE-BOUNCER LINK CONVEYOR (FC6) | `IO_Count_Done` never reset (only one count ever); `Bit1_Front_End` never reset; 5 s reset is overwritten |
 | 17 | 🟠 | DE-BOUNCER-COUNTER-WIP | No error reset, Delivery type empty, ms accumulator overflow, stale exit window |
-| 18 | 🟡 | LIGHT BAR | Lamps 4/5/6: operator precedence, so the lamp is "solid" whenever count ≥ 1 and never blinks |
+| 18 | ~~🟡~~ | LIGHT BAR | ~~Lamps 4/5/6 operator precedence~~. **Withdrawn:** STL evaluates `O <operand>` left to right, so these lamps are correct |
 | 19 | 🟡 | many | Calibration constants and timer values that disagree with their comments |
 | 20 | 🟡 | many | Dead code, debug/test leftovers, misc. (see §4) |
 
@@ -166,7 +166,7 @@ No block in this repo calls it, but it is broken if it ever comes back:
 
 ## 4. LOW severity: display, dead code, comments
 
-**Light bar precedence** (`LIGHT BAR` lamps >6< line 82, >5< line 124, >4< line 161). The code is `A( count>=1 ) O "M x" AN … AN …`. In STL, `AND` binds tighter than `O`, so this becomes `(count≥1) OR (M x AND NOT…)`, and the lamp is solid whenever count ≥ 1. Lamps >2<, >3< and >7< bracket it correctly.
+~~**Light bar precedence**~~ (withdrawn). In STL, `O <operand>` resets the OR status bit, so `a O b A c` evaluates left to right as `(a OR b) AND c`. AND-before-OR only applies to `O` without an operand. Lamps >4<, >5< and >6< therefore work as intended.
 
 **Constants that don't match their comments:**
 | Where | Code | Comment |
@@ -219,3 +219,50 @@ Check the encoder factors against a measured packet before changing them. They m
 6. Connect the disable flags (§3.5, §3.6), then fix the display and comment items.
 
 Every change must be commissioned on the machine. Test service mode, clearing and the door-open/close cycles for each station.
+
+---
+
+## 7. Update: fixes applied, and review of the "VFD OK -Check" blocks, OB1 and DBs
+
+### 7.1 Fixes applied on this branch
+Each fix was applied to **both** the original file and its `_ VFD OK -Check` copy, so the fix is in whichever version gets imported. Every change is marked with a `//` comment in the code.
+
+| Block | Change |
+|---|---|
+| CONVEYOR 7 - FLIPPER | `K46.1` CW: added `AN "K 46.0"`. `K46.0` CCW: added `AN "K 46.1"` |
+| CONVEYOR 10 - PIVOT | `K53.0` DOWN: added `AN "K 53.1"`. `K53.1` UP: added `AN "K 53.0"`. Service `#PIVOT_DN`/`#PIVOT_UP` are now mutually exclusive: if both HMI switches are on, neither output runs |
+| CONVEYOR 3 - SLAT | `R #INITIALISATION` after `CON3:` |
+| CONVEYOR 21 - LINK 1 HI | `R #INITIALISATION` after `CO21:` |
+| CONVEYOR 6 - FLIP DELIVERY | `CLR / = #INITIALISATION` at the start of the service network. No behaviour change: this conveyor never had an INIT button |
+| LOADER LIFT | `ON #FEEDER_SW` → `ON #FEEDER_SERVICE_SW`, which matches the same line in LOADER FINGERS |
+| ELEVATOR + PUSHER 1 _ VFD OK -Check | `AN "M 11.1"` added to the Rise (`M92.0`) and Fall (`M92.1`) networks. See 7.2 for why |
+
+Each interlock line is appended at the end of the chain, just before the `=`. With left-to-right STL evaluation, it therefore blocks **every** branch (auto, LAUER jog and HMI service).
+
+### 7.2 "VFD OK -Check" blocks (`M11.1` = VFD NOT all ready)
+The change blocks VFD release outputs while `M11.1` is set. It is correct and consistent on C1, C2, C3, C4, C7, C8 belt, C9, C10, C11, C12, C21 and C22. Conveyor 0 sends packets "through" while `M11.1` is set and blocks Pusher 0 FWD. That also looks correct.
+
+Issues found:
+1. 🔴 **Elevator (fixed, see 7.1).** `AN M11.1` had been added only to the two **UP** speed branches of the VFD network. Two consequences:
+   * DOWN was not blocked at all.
+   * When UP was blocked, `#ELEVATOR_UP_OUT` stayed true. That kept brake release `A56.2` energised while the drive was never enabled (`A63.0` not set). **The brake would open with no torque on the vertical axis.**
+
+   `M11.1` now gates `M92.0`/`M92.1`, the signals that drive both the brake and the drive. So when the VFDs aren't ready the brake stays applied. The original `AN M11.1` lines in the speed branches were left in place (harmless).
+2. 🟠 **Not gated by `M11.1`:** Conveyor 5 (`A45.0`), Conveyor 6 (`A45.3`), Conveyor 13 (`A49.0`), Conveyor 23 (`A54.0`), Feeder Fingers belt (`A51.0`) and TurnTable turn (`A47.0/A47.1/A47.2`). No "VFD OK -Check" version exists for C5, C6, C13, C23 and the loader blocks. Check whether these are on the same VFD-ready circuit.
+3. 🟠 **Block name mismatch.** `CONVEYOR 6 - FLIP DELIVERY _ VFD OK -Check` renames the FUNCTION to `"CONVEYOR 6 - FLIP DELIVERY"`, but OB1 calls `"CONVEYOR 6 - FLIP DELIV."`. Also, OB1 calls `"FEEDER LIFT"` while the `LOADER LIFT` file declares `FUNCTION "LOADER LIFT"`. Make sure the symbol table matches, or the source import creates a new, uncalled block.
+4. 🟡 Where `M11.1` is computed isn't in the repo (probably FC "CONTROL").
+5. 🟡 Step timeouts that don't depend on the running output keep counting while `M11.1` holds a conveyor, so a long VFD-not-ready period ends in a step-register reset. Examples: C6 `Timer 40`, and the C11/C21 filling branch of `Timer 59/79`. This is acceptable, but be aware of it.
+
+### 7.3 OB1
+* **Counters:** `HMI PACKET COUNTER OLD` is always called. `NEW` is called only when test bit `M333.3` is set. So the **OLD counter and `"HMI_DB"` are live**, and the CONVEYOR 5 re-sync and the LIGHT BAR are reading the right DB (this reduces finding 3.4). While `M333.3` is on, both FCs write `M143.0..7` and run `Timer 80/81`. Keep `M333.3` off in production.
+* 🟠 **Faults Monitor:** `L "MD 1"; L 0; >I` compares only the **low word** (`MW3` = MB3, MB4). `MB1` (E-stops `M1.x`) and `MB2` (motor faults `M2.x`) never reach `M5.1`. Use `<>D` (not `>D`, because bit 31 would make the value negative).
+* Call order: CLEARING runs before the conveyors, and OLD counter runs before them too. This matches the one-scan pulses (`M9.3`) described in §3.
+* `HMI COMMS`, `HMI CONTROL` and `LIGHT BAR` aren't called from OB1. Presumably they are called from `"CONTROL"`. Confirm.
+
+### 7.4 DBs
+* **DB1 `DB UTILITY`:** every flag used by the code is declared. The start values are `LENGTH_CONST = 0.0` and `WIDTH_CONST = 0.0`. If those are also the actual values, then `MW176`/`MW178` = 0, so the OLD debouncer gets `Debounce_mS = 0` and falls back to `Preset_mS` only. Check the online values. Some comments also don't match the code: T23 "2s" (code 2.5 s), T24 "2.5s" (code 8 s), T35 "20s" (code 30 s).
+* **DB4 `COLLATORS DB`:** `Packet_Width_C10_mS` is a DWORD (CONVEYOR 10 uses `+D`, correct). `Packet_Length_C4_mS` is an INT (CONVEYOR 4 uses `+I`, correct, but it overflows at 32.7 s). `Surface_Left_C4` and `Surface_Length_Left_10` are WORDs holding `-D` results, so they are truncated to 16 bits. Encoder data confirms the C10 wheel is 283 mm. The 0.31 mm/pulse in CONVEYOR 10 still doesn't match 283/600 = 0.47 (§4).
+* **DB6 / DB8:** instance arrays for the OLD and NEW debouncers. The UDTs `"Sensor Debounce Struct"` and `"Debouncer Counter Struct"` are still missing from the repo.
+
+### 7.5 Still open
+Everything else in §2–§4 is unchanged, in particular: elevator `M92.5` fault handling and brake sequencing (§2.5), Clearing `M54.6` (§3.2), Conv 4 REAL math (§3.3), unread disable flags (§3.5/3.6) and guard-door restart (§3.8). Every change above must be tested on the machine before production use: service jog both directions on the flipper and the pivot, an elevator run with the VFD not ready, and a slat / C21 cycle.

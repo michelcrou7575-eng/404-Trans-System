@@ -17,6 +17,8 @@ TITLE =Slat Conveyor - Service
       A     "HMI_DB".CONVEYOR_6_SERVICE_SW; 
       A     "HMI_DB".SERVICE_SW_2_STATUS; 
       =     #MAIN_SERVICE_2_SW; 
+      CLR   ; // Fix: #INITIALISATION was never written
+      =     #INITIALISATION; 
 //;    
       A     #MAIN_SERVICE_2_SW; 
       O     "M 38.1"; 

@@ -320,6 +320,7 @@ TITLE =Elevator - VFD Release + Rise
       A     "P 4.3"; // Not if Already at Top
       AN    "M 92.1"; // Not While Going Down
       A     "M 14.3"; 
+      AN    "M 11.1"; // VFD NOT All Ready ! - Keep Brake Applied
       =     "M 92.0"; 
       =     #ELEVATOR_UP_OUT; 
 NETWORK
@@ -343,6 +344,7 @@ TITLE =Elevator - VFD Release + Fall
       A     "P 4.0"; // Not at Bottom Position
       AN    "M 92.0"; // Not Drive Release
       A     "M 14.3"; // Clear to Proceed
+      AN    "M 11.1"; // VFD NOT All Ready ! - Keep Brake Applied
       =     "M 92.1"; 
       =     #ELEVATOR_DN_OUT; 
 NETWORK

@@ -34,6 +34,7 @@ TITLE =Service Test
       =     #INITIALISATION; 
 
 CON3: R     #SERVICE_RUN; 
+      R     #INITIALISATION; // Fix: temp not written when service is off
       FP    "FP 227.0"; 
       =     M     26.3; 
 NETWORK
