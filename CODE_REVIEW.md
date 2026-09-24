@@ -451,3 +451,26 @@ These blocks read or write existing blocks that are in the PLC project but not i
 4. Set `M333.3 = 1` → FC1208 takes over the current HMI counts. Watch a full C4 collate + transfer: the count should go up for each packet in and down to 0 on transfer.
 5. Tune if needed: `Preset_MIN_mS` (500 / 300) and `Space_DX_mS` (600 → gap 300 ms) in the FC1208 calls.
 6. To roll back, set `M333.3 = 0`. `M333.3` is probably not retentive, so after a power cycle FC1206 runs again until the bit is made permanent (or the switch is removed).
+
+---
+
+## 13. HMI COMMS (FC1200) and HMI CONTROL (FC1100)
+
+### 13.1 HMI COMMS (FC1200): good design, display-only findings
+It updates each HMI group only when its inputs change, plus a round-robin refresh (`COUNTER 11` "DISPLAY_REFRESH", 6 groups × 300 ms). It also animates the pushers and elevator by shifting a bit in MB135–139.
+* ✅ **Fixed:** the Conveyor 2 fault colour used `M30.7` (C4 timeout fault). It now uses `M22.7` (Angle Conv 2 fault).
+* 🟡 Change detection adds input words together (`IW9+IW12+IB15`, `QW42+…+QB54`, …). Different patterns can give the same sum, so the change is picked up late, by the next round-robin pulse (≤ 1.8 s).
+* 🟡 After a door closes or an E-stop is reset, the HMI status clears up to about 1.8 s late (those blocks only run while a door is open or an E-stop is active, or on their pulse).
+* 🟡 Absolute writes to `DB12.DBB4…7`, `DBB19` and `DBX88.0–2`: check that they still match the DB12 layout.
+* 🟡 About 20 unused temps. `PUSHER_2_COLOR` is BOOL while the others are BYTE.
+
+### 13.2 HMI CONTROL (FC1100)
+| # | Sev | Line | Finding |
+|---|---|---|---|
+| H1 | 🟠❓ | 50–52, 104–118 | **`M140.3` "NEW HMI ON – RUN SCREEN CTRLs" = `ON_SW AND SERVICE_SW_3_STATUS`.** The "HMI Service Switch Reset" clears `SERVICE_SW_3_STATUS` after 10 s on screen 0 once the 2145 flap opens (`E34.7`). The flap opens on every packet, so in production `M140.3` drops, and roller "goes through", flipper, turntable direction, hand feed and clearing all switch back to the **LAUER** inputs (`M152.x`, `M150.x`). If the LAUER panel is no longer used, the new-HMI switches stop working without any warning. **Fix:** base `M140.3` on its own bit (e.g. `ON_SW` alone), or don't reset `SERVICE_SW_3_STATUS` in that network. |
+| H2 | 🟠 | FC211 181, 190 | **The new HMI "OFF" button does nothing.** `E34.2` → `M146.2` is computed here, but FC211 has it commented out in both the start and the control-voltage-OFF logic. Control voltage `M0.3` goes off only by `S2.1`, E-stop or faults. Either wire `M146.2` in, or remove the button. |
+| H3 | 🟡 | 64–68 | `JNB MAIN` skips the whole switch-status section unless the screen changed or the 1.6 s clock pulses. Operator switches (hand feed `M110.0`, roller `M111.0`, flipper `M111.1`, service status) take effect up to **1.6 s late**. The jump crosses networks: legal, but easy to break when editing. |
+| H4 | 🟡❓ | 44–46 | The E-stop lamp is `H57.3 = E28.7` ("PB NEW HMI – E-STOP"). If `E28.7` is the E-stop's NC contact, the lamp is ON when the E-stop is **not** pressed. Check the contact type. |
+| H5 | 🟡 | 30–38 | The "Clearing" lamp `H57.0` also shows `M5.3` "Defective start – white", and the "Fault" lamp `H57.2` also shows `M5.5` "Defective start – red". This is probably intended (it copies the X120 lamps). Document it for operators. |
+| H6 | 🟡 | — | `E34.1` (NEW HMI SIGNAL) is also a **fault-reset** input (FC212 `M9.1`), and FC211 uses it for the "defective start" display. A long press (> 3 s) while start conditions aren't met makes the white/red lamps blink. Harmless, but surprising. |
+| H7 | 🟡 | temps | `CLEARING_ON` is declared and never used. |
