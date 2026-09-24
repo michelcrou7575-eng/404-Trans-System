@@ -53,7 +53,7 @@ VAR_OUTPUT
   Q_Error : BOOL ;	//Bit_0 Stuck
 END_VAR
 VAR_IN_OUT
-  Word_Count : INT ;	//HMI Packet Count (Read + Write Back)
+  Word_Count : WORD ;	//HMI Packet Count (Read + Write Back) - WORD as in "HMI_DB"
   IO_DB : "Debouncer Counter Struct";
 END_VAR
 BEGIN
