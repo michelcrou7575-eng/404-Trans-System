@@ -27,7 +27,7 @@ TITLE =Fault Status to Registers
       A(    ; 
       L     "MD 1"; 
       L     0; 
-      <>I   ; 
+      <>D   ; // Fix: <>I only tested MB3/MB4
       )     ; 
       =     #FAULT_TRIGGERED; 
 NETWORK
@@ -591,7 +591,7 @@ TITLE =VFD  U53.2 Conveyor 21 - Fault
       O     "M 9.1"; 
       O     "M 0.2"; 
       )     ; 
-      A     "E 13.5"; 
+      A     "E 28.0"; // Fix: was E 13.5 (C1x ready)
       R     "M 4.5"; 
 NETWORK
 TITLE =VFD  U53.4 Conveyor 22 - Fault
@@ -604,7 +604,7 @@ TITLE =VFD  U53.4 Conveyor 22 - Fault
       O     "M 9.1"; 
       O     "M 0.2"; 
       )     ; 
-      A     "E 13.6"; 
+      A     "E 28.1"; // Fix: was E 13.6 (C1x ready)
       R     "M 4.6"; 
 NETWORK
 TITLE =VFD  U54.0 Conveyor 23 - Fault
@@ -617,7 +617,7 @@ TITLE =VFD  U54.0 Conveyor 23 - Fault
       O     "M 9.1"; 
       O     "M 0.2"; 
       )     ; 
-      A     "E 13.7"; 
+      A     "E 28.2"; // Fix: was E 13.7 (C1x ready)
       R     "M 4.7"; 
 NETWORK
 TITLE =Blocks Exit Reset
@@ -690,6 +690,70 @@ FR05: NOP   0;
       AN    #FAULT_REGISTER_5; 
       FP    "FP 149.2"; 
       =     "M 17.5"; 
+NETWORK
+TITLE =Fault Status Lamp X120
+
+      A(    ; 
+      O     #FAULT_TRIGGERED; 
+      O     "M 0.5"; 
+      O     "M 0.6"; 
+      O     "M 0.7"; 
+      O     "M 14.7"; 
+      O     "M 22.7"; 
+      O     "M 30.7"; 
+      O     "M 38.7"; 
+      O     "M 42.7"; 
+      O     "M 54.7"; 
+      O     "M 66.7"; 
+      O     "M 86.7"; 
+      O     "M 98.1"; 
+      O     "M 98.2"; 
+      O     "M 33.7"; 
+      )     ; 
+      A     "M 6.4"; 
+      O     "Timer 0"; 
+      =     "H 40.2"; 
+NETWORK
+TITLE =Fault Status Lamp X121
+//     A(    
+//      O     "M 66.7"
+//      O     "M 86.7"
+//      )     
+//      A     "M 145.0"
+//      O     "M 1.5"
+//      O     "Timer 0"
+//      =     "H 40.3"
+//
+      A(    ; 
+      O     "M 54.7"; 
+      O     "M 66.7"; 
+      O     "M 86.7"; 
+      )     ; 
+      A     "M 145.0"; 
+      O     "M 1.5"; 
+      O     "M 74.5"; 
+      O     "Timer 0"; 
+      =     "H 40.3"; 
+NETWORK
+TITLE =Fault Status Lamp X130
+
+      A     "M 14.7"; 
+      A     "M 145.0"; 
+      O     "M 1.6"; 
+      O     "Timer 0"; 
+      =     "H 40.4"; 
+NETWORK
+TITLE =Fault Status Lamp X134
+
+      A(    ; 
+      O     "M 42.7"; 
+      O     "M 54.7"; 
+      O     "M 46.6"; 
+      )     ; 
+      A     "M 145.0"; 
+      O     "M 1.7"; 
+      O     "Timer 0"; 
+      =     "H 40.5"; 
 NETWORK
 TITLE =Elevator OverTemp
 
@@ -905,69 +969,5 @@ TITLE =
       L     W#16#0; 
       T     "MW 180"; 
       T     MW   182; 
-NETWORK
-TITLE =Fault Status Lamp X120
-
-      A(    ; 
-      O     #FAULT_TRIGGERED; 
-      O     "M 0.5"; 
-      O     "M 0.6"; 
-      O     "M 0.7"; 
-      O     "M 14.7"; 
-      O     "M 22.7"; 
-      O     "M 30.7"; 
-      O     "M 38.7"; 
-      O     "M 42.7"; 
-      O     "M 54.7"; 
-      O     "M 66.7"; 
-      O     "M 86.7"; 
-      O     "M 98.1"; 
-      O     "M 98.2"; 
-      O     "M 33.7"; 
-      )     ; 
-      A     "M 6.4"; 
-      O     "Timer 0"; 
-      =     "H 40.2"; 
-NETWORK
-TITLE =Fault Status Lamp X121
-//     A(    
-//      O     "M 66.7"
-//      O     "M 86.7"
-//      )     
-//      A     "M 145.0"
-//      O     "M 1.5"
-//      O     "Timer 0"
-//      =     "H 40.3"
-//
-      A(    ; 
-      O     "M 54.7"; 
-      O     "M 66.7"; 
-      O     "M 86.7"; 
-      )     ; 
-      A     "M 145.0"; 
-      O     "M 1.5"; 
-      O     "M 74.5"; 
-      O     "Timer 0"; 
-      =     "H 40.3"; 
-NETWORK
-TITLE =Fault Status Lamp X130
-
-      A     "M 14.7"; 
-      A     "M 145.0"; 
-      O     "M 1.6"; 
-      O     "Timer 0"; 
-      =     "H 40.4"; 
-NETWORK
-TITLE =Fault Status Lamp X134
-
-      A(    ; 
-      O     "M 42.7"; 
-      O     "M 54.7"; 
-      O     "M 46.6"; 
-      )     ; 
-      A     "M 145.0"; 
-      O     "M 1.7"; 
-      O     "Timer 0"; 
-      =     "H 40.5"; 
 END_FUNCTION
 

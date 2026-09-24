@@ -43,12 +43,13 @@ NETWORK
 TITLE =Packet Counters
 
 
+      A     M    333.3; // 1 = FC1208 + FC8 (New) / 0 = FC1206 + FC6 (Old) - Only One Runs
+      JC    NEWC; 
+
       CALL "HMI PACKET COUNTER OLD" ;
 
-      A     M    333.3; 
-      JCN   NOOP; 
-
-      CALL "HMI PACKET COUNTER  NEW" ;
+      JU    NOOP; 
+NEWC: CALL "HMI PACKET COUNTER  NEW" ;
 
 NOOP: NOP   0; 
 
@@ -91,8 +92,8 @@ TITLE =Program Blocks
       CALL "CONVEYOR 11 - LINK 1 LO" ;
       CALL "CONVEYOR 12 - LINK 2 LO" ;
       CALL "CONVEYOR 13 - DELIV. LO" ;
-      CALL "FEEDER FINGERS" ;
-      CALL "FEEDER LIFT" ;
+      CALL "LOADER FINGERS" ;
+      CALL "LOADER LIFT" ;
       CALL "CONVEYOR 21 - LINK 1 HI" ;
       CALL "CONVEYOR 22 - LINK 2 HI" ;
       CALL "CONVEYOR 23 - DELIV. HI" ;
@@ -115,7 +116,7 @@ TITLE =Faults Monitor
       A(    ; 
       L     "MD 1"; 
       L     0; 
-      >I    ; 
+      <>D   ; // Fix: >I only tested MB3/MB4
       )     ; 
       =     "M 5.1"; 
 NETWORK

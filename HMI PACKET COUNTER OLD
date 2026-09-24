@@ -165,6 +165,13 @@ TITLE =Packet Counter - Collator Conveyor 4
       T     "HMI_DB".CONV_4_COUNT; 
 
 M443: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    "B 7.0"; 
+      A     "M 31.6"; 
+      L     S5T#300MS; 
+      SD    T    105; 
+      A     T    105; 
+      R     "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Count_Error; // Count Done Latch - Re-Arm
 
       AN    "A 44.3"; 
       FP    "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Rising_Pulse_8; 
@@ -249,6 +256,13 @@ TITLE =Packet Counter - Link Conveyor  5 (End Sensor On When Full)
       T     "HMI_DB".CONV_5_COUNT; 
 
 M450: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_5_COUNT_DOWN; 
+      A     "M 35.3"; 
+      L     S5T#300MS; 
+      SD    T    106; 
+      A     T    106; 
+      R     "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Count_Error; // Count Done Latch - Re-Arm
 
       AN    "M 143.0"; 
       FP    "DEBOUNCER OLD".B7_0_Conv_5_InFeed.Rising_Pulse_8; 
@@ -321,6 +335,13 @@ TITLE =Packet Counter - Delivery Conveyor 6 (End Sensor On When Full)
       T     "HMI_DB".CONV_6_COUNT; 
 
 M453: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_6_COUNT_DOWN; 
+      A     "M 38.5"; 
+      L     S5T#300MS; 
+      SD    T    107; 
+      A     T    107; 
+      R     "DEBOUNCER OLD".B7_1_Conv_6_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter - Flipper
 
@@ -406,6 +427,13 @@ TITLE =Packet Counter - Pivot Conveyor 10
       T     "HMI_DB".CONV_10_COUNT; 
 
 M480: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    "B 10.6"; 
+      A     "M 55.5"; 
+      L     S5T#300MS; 
+      SD    T    108; 
+      A     T    108; 
+      R     "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Count_Error; // Count Done Latch - Re-Arm
 
       AN    "A 48.0"; 
       FP    "DEBOUNCER OLD".B10_4_Conv_10_InFeed.Rising_Pulse_8; 
@@ -479,6 +507,13 @@ TITLE =Packet Counter - Cumul Conveyor 11 (End Sensor On When Full)
       T     "HMI_DB".CONV_11_COUNT; 
 
 M483: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_11_COUNT_DOWN; 
+      A     "M 59.3"; 
+      L     S5T#300MS; 
+      SD    T    111; 
+      A     T    111; 
+      R     "DEBOUNCER OLD".B10_6_Conv_11_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter Call Hold - Conveyor 12
 
@@ -546,6 +581,13 @@ TITLE =Packet Counter - Cumul Conveyor 12 (End Sensor On When Full)
       T     "HMI_DB".CONV_12_COUNT; 
 
 M486: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_12_COUNT_DOWN; 
+      A     "M 63.3"; 
+      L     S5T#300MS; 
+      SD    T    112; 
+      A     T    112; 
+      R     "DEBOUNCER OLD".B10_7_Conv_12_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter Call Hold - Conveyor 13
 
@@ -612,6 +654,13 @@ TITLE =Packet Counter - Delivery Conveyor 13 (End Sensor On When Full)
       T     "HMI_DB".CONV_13_COUNT; 
 
 M490: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_13_COUNT_DOWN; 
+      A     "M 67.4"; 
+      L     S5T#300MS; 
+      SD    T    113; 
+      A     T    113; 
+      R     "DEBOUNCER OLD".B11_0_Conv_13_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter Call Hold - Conveyor 21
 
@@ -680,6 +729,13 @@ TITLE =Packet Counter - Cumul Conveyor 21 (End Sensor On When Full)
       T     "HMI_DB".CONV_21_COUNT; 
 
 M534: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_21_COUNT_DOWN; 
+      A     "M 79.3"; 
+      L     S5T#300MS; 
+      SD    T    114; 
+      A     T    114; 
+      R     "DEBOUNCER OLD".B10_6_Conv_21_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter Call Hold - Conveyor 22
 
@@ -746,6 +802,13 @@ TITLE =Packet Counter - Cumul Conveyor 22 (End Sensor On When Full)
       T     "HMI_DB".CONV_22_COUNT; 
 
 M536: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_22_COUNT_DOWN; 
+      A     "M 83.3"; 
+      L     S5T#300MS; 
+      SD    T    115; 
+      A     T    115; 
+      R     "DEBOUNCER OLD".B15_4_Conv_22_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =Packet Counter Call Hold - Conveyor 23
 
@@ -812,6 +875,13 @@ TITLE =Packet Counter - Delivery Conveyor 23 (End Sensor On When Full)
       T     "HMI_DB".CONV_23_COUNT; 
 
 M540: NOP   0; 
+//;  Count Down Re-Arm - Exit Sens Clear >= 300mS During Transfer
+      AN    #BIT1_23_COUNT_DOWN; 
+      A     "M 87.4"; 
+      L     S5T#300MS; 
+      SD    T    117; 
+      A     T    117; 
+      R     "DEBOUNCER OLD".B15_5_Conv_23_InFeed.Count_Error; // Count Done Latch - Re-Arm
 NETWORK
 TITLE =HMI Packet Counters Reset
 

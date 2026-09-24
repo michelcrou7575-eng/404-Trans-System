@@ -1070,7 +1070,7 @@ Q427: T     "HMI_DB".PUSHER_1_COLOR_WORD;
 Q430: T     "HMI_DB".CONV_1_COLOR_WORD; 
 
       L     5; 
-      A     "M 30.7"; 
+      A     "M 22.7"; // Fix: was M 30.7 (C4 fault) - Angle Conv 2 Fault
       O     "M 100.5"; 
       JC    C02; 
       L     0; 
