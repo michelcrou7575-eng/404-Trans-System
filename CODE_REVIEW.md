@@ -505,12 +505,17 @@ Start: new-HMI broom switch (`M5.2` = `M140.3` AND `CLEARING_SSW_MAIN`) or LAUER
 > The fix is unchanged: C10 must be proven empty, and the re-call uses the normal C11/C21 call (receiver empty → one complete transfer).
 
 **Fix (CONVEYORS CLEARING only, active only while clearing `M10.0`):**
-1. **C10 proven empty (`M10.7`):** the C10 exit sensor `B10.6` must stay clear while the belt runs fast (transfer) for **6 s** (`T137`), long enough for a packet to cross the whole belt. Any packet seen on `B10.4` / `B10.5` / `B10.6` cancels the proof. `M10.7` sits in `MB10`, so it is cleared automatically when clearing ends.
+1. **C10 proven empty (`M10.7`):** the C10 exit sensor `B10.6` must stay clear while the belt runs fast (transfer) for **10 s** (`T137`), long enough for a packet to cross the whole belt. Any packet seen on `B10.3` / `B10.4` / `B10.5` / `B10.6`, or a Pusher 2 push (`M51.7`), cancels the proof. `M10.7` sits in `MB10`, so it is cleared automatically when clearing ends.
 2. **Call C10 again:** while clearing, C3–C9 are cleared, and C10 is not proven empty, `M58.2` is re-armed each time C10 is back to idle after a transfer. C11/C21 then call C10 to transfer again, until C10 is empty.
 3. **"C10 cleared" now also requires `M10.7`.**
 
 **Effects to expect:**
 * Clearing can take about 20–30 s longer when C10 has to prove it is empty (an empty transfer runs until `Timer 55`, 20 s).
 * If C10 cannot unload (C11/C21 blocked, or a C10 fault `M54.7`), clearing **waits** instead of ending with packets left. See CL4: an overall clearing timeout is still recommended.
-* **Tune** `S5T#6S` = C10 belt length ÷ 0.52 m/s + 1 s.
+* **Tune** `S5T#10S` = C10 belt length ÷ 0.52 m/s + 1 s.
 * **Before download:** cross-reference `T137` and `M10.7` in the PLC. Both are not in the symbol table and not used in the repo.
+
+### 14.2 Root cause confirmed: Pusher 2 → C10 start race (packets left near the infeed)
+`B10.3` is "PUSHER EXTENDED – PACKET SENS". C10 step 11N2 (collator-mode start) needs `B10.3 AND M51.7 AND NOT M52.1`. `M52.1` is set by C9 as soon as `P10.1` reports "extended", and OB1 calls C9 **before** C10. So if the packet reaches `B10.3` in the same scan as the pusher reaches its end (or later), C10 never starts, and C9 resets its register on the next scan. The packet stays at the C10 infeed. In production the next push carries it along. During clearing there is no next push, and the done check never looked at C10.
+* **Clearing fix (done):** the proof time is now 10 s. `B10.3` and `M51.7` also cancel the "C10 empty" proof, so such a packet forces another C10 transfer before clearing can finish.
+* **Root fix (proposed, not applied):** in C10 step 11N2, also start C10 when a push has just ended and `B10.3` still sees the packet. A "push done, C10 start pending" memory would be set at `M52.1` and cleared when `M55.1` starts or after about 3 s. This changes collator-mode starts in production, so it needs confirmation and a test.

@@ -428,18 +428,21 @@ TITLE =Clearing - C10 Proven Empty (Exit Sens Clear While Belt Runs Fast)
 //Fix: Clearing used to end with packets left on C10 (nothing checked C10 itself).
 //C10 is proven empty when its Exit Sens B10.6 stays clear while the belt runs
 //FAST (transfer) for the time a packet needs to cross the whole belt.
-//TUNE: C10 belt length / 0.52 m/s (31 m/min) + 1s.  6s = about 2.6 m.
-//Any packet seen on C10 (B10.4 / B10.5 / B10.6) cancels the proof.
+//TUNE: C10 belt length / 0.52 m/s (31 m/min) + margin.  10s = about 5 m.
+//Any packet seen on C10 (B10.3 / B10.4 / B10.5 / B10.6) or a Pusher 2 push
+//cancels the proof (a pushed packet can sit at the infeed without C10 starting).
       A     "M 10.0"; // Clearing CMD
       A     "A 48.0"; // C10 Belt Running
       A     "A 48.1"; // C10 Fast = Transfer
       AN    "B 10.6"; // C10 Exit Sens Clear
-      L     S5T#6S; // TUNE - Belt Length @ Fast
+      L     S5T#10S; // TUNE - Belt Length @ Fast
       SD    T    137; 
       A     T    137; 
       S     "M 10.7"; // C10 Proven Empty - Set
 //;
       A(    ; 
+      O     "B 10.3"; // Pusher Extended - Packet Sens (C10 Infeed)
+      O     "M 51.7"; // Pusher 2 FWD - Packet Being Pushed
       O     "B 10.4"; // C10 InFeed Sens
       O     "B 10.5"; // C10 Full Sens
       O     "B 10.6"; // C10 Exit Sens
