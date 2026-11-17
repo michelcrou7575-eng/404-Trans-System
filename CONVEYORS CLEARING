@@ -424,6 +424,44 @@ TITLE =Conveyors 3, 4, 5, 6, 7, 8, 9 - Clearing - Cleared / Ready
       L     S5T#1S; 
       SE    "Timer 58"; // UpStream Cleared - Pulse 1s 
 NETWORK
+TITLE =Clearing - C10 Proven Empty (Exit Sens Clear While Belt Runs Fast)
+//Fix: Clearing used to end with packets left on C10 (nothing checked C10 itself).
+//C10 is proven empty when its Exit Sens B10.6 stays clear while the belt runs
+//FAST (transfer) for the time a packet needs to cross the whole belt.
+//TUNE: C10 belt length / 0.52 m/s (31 m/min) + 1s.  6s = about 2.6 m.
+//Any packet seen on C10 (B10.4 / B10.5 / B10.6) cancels the proof.
+      A     "M 10.0"; // Clearing CMD
+      A     "A 48.0"; // C10 Belt Running
+      A     "A 48.1"; // C10 Fast = Transfer
+      AN    "B 10.6"; // C10 Exit Sens Clear
+      L     S5T#6S; // TUNE - Belt Length @ Fast
+      SD    T    137; 
+      A     T    137; 
+      S     "M 10.7"; // C10 Proven Empty - Set
+//;
+      A(    ; 
+      O     "B 10.4"; // C10 InFeed Sens
+      O     "B 10.5"; // C10 Full Sens
+      O     "B 10.6"; // C10 Exit Sens
+      )     ; 
+      R     "M 10.7"; // Packet Seen - Not Empty
+NETWORK
+TITLE =Clearing - C10 Not Proven Empty -> Call C10 Transfer Again
+//Fix: After a C10 transfer ends (C11/C21 full or 20s), packets could stay on C10
+//and nothing called C10 again. While clearing and C10 is not proven empty,
+//re-arm the C11/C21 call (M58.2) each time C10 is back to idle.
+      A     "M 10.0"; // Clearing CMD
+      A     "M 10.5"; // C3...C9 Cleared
+      AN    "M 10.6"; // C10 Not Cleared Yet
+      AN    "M 10.7"; // C10 Not Proven Empty
+      A     "M 58.3"; // C10 Did a Transfer & Stopped
+      A     "M 55.0"; // C10 Steps Idle
+      AN    "M 55.1"; 
+      AN    "M 55.5"; // Not Transfering
+      AN    "M 58.2"; // Not Already Called
+      A     "M 0.3"; 
+      S     "M 58.2"; // C11/C21 Trigger -> C10 Transfer
+NETWORK
 TITLE =Pivot Conveyor 10 - Clearing - Cleared / Ready
 //"C10_EMPTY_TEST" : Work Around to "Will NOT Empty Conveyor 10 - Pivot after a 
 //Clearing (F4)".
@@ -439,6 +477,7 @@ TITLE =Pivot Conveyor 10 - Clearing - Cleared / Ready
       )     ; 
       A     "M 6.5"; // System Clock 1s
       A     "M 10.5"; // C10 UpStream Cleared
+      A     "M 10.7"; // Fix: C10 Proven Empty (No Packet Left)
       A     "M 0.3"; 
       =     #C10_EMPTY_TEST; // C10 UpStream Cleared - Pulse
 //;

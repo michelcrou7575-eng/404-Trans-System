@@ -495,3 +495,19 @@ Start: new-HMI broom switch (`M5.2` = `M140.3` AND `CLEARING_SSW_MAIN`) or LAUER
 | CL9 | 🟡 | 286–293, 297–310 | The **normal end** of clearing goes through `#CLEARING_ABORT` (`O "M 10.6"`). It works only because the "Clearing Done" network (467) runs after `M10.6` is set and before `MB10` is cleared on the next scan. This is fragile if the networks are ever moved. | Rename it, or clear `MB10` in a separate "clearing done" network after line 474. |
 
 **Dual-panel note:** with both panels in use, CL1 and CL2 are the ones operators will notice. The same clearing behaves differently depending on which panel started it, and an HMI-started clearing can stop by itself.
+
+### 14.1 "Packets left on C10 after clearing" (intermittent): root cause and fix ✅
+**Root cause:** clearing declares C10 done (`M10.6`) when **all** of these are true:
+`M10.5` (C3–C9 cleared) AND `M58.3` (C10 finished *one* transfer and stopped) AND the receiving exit sensor is clear (`B10.7` C11 / `B15.4` C21, or the `Timer 57` bypass) AND the 1 s clock.
+**Nothing checks C10 itself.** A C10 transfer ends as soon as C11/C21 reports full (`M59.2`/`M79.2`: first packet at its exit sensor) or after 20 s (`Timer 55`). If more packets are on C10 than C11/C21 can take, or the transfer ends before the last packet has crossed, the rest stay on C10. C10 is only called once during clearing (`M9.3` / `M58.2` are one-shot). When C11 later empties its exit sensor, clearing ends with those packets still on C10. It is intermittent because it depends on how many packets C10 holds, how much room C11/C21 has, and timing.
+
+**Fix (CONVEYORS CLEARING only, active only while clearing `M10.0`):**
+1. **C10 proven empty (`M10.7`):** the C10 exit sensor `B10.6` must stay clear while the belt runs fast (transfer) for **6 s** (`T137`), long enough for a packet to cross the whole belt. Any packet seen on `B10.4` / `B10.5` / `B10.6` cancels the proof. `M10.7` sits in `MB10`, so it is cleared automatically when clearing ends.
+2. **Call C10 again:** while clearing, C3–C9 are cleared, and C10 is not proven empty, `M58.2` is re-armed each time C10 is back to idle after a transfer. C11/C21 then call C10 to transfer again, until C10 is empty.
+3. **"C10 cleared" now also requires `M10.7`.**
+
+**Effects to expect:**
+* Clearing can take about 20–30 s longer when C10 has to prove it is empty (an empty transfer runs until `Timer 55`, 20 s).
+* If C10 cannot unload (C11/C21 blocked, or a C10 fault `M54.7`), clearing **waits** instead of ending with packets left. See CL4: an overall clearing timeout is still recommended.
+* **Tune** `S5T#6S` = C10 belt length ÷ 0.52 m/s + 1 s.
+* **Before download:** cross-reference `T137` and `M10.7` in the PLC. Both are not in the symbol table and not used in the repo.
