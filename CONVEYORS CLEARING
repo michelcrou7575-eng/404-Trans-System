@@ -277,8 +277,9 @@ TITLE =Conveyors Clearing - Cmd
       )     ; 
       S     "M 10.0"; 
 //;
-      A     "M 5.2"; 
+      A     "HMI_DB".CLEARING_SSW_MAIN; // Fix: Abort only on a real HMI Switch OFF
       FN    "FN 155.6"; 
+      A     "M 140.3"; // ... while New HMI in Control (not when M140.3 drops)
       A     "M 10.0"; 
       =     "M 5.4"; // Clearing ABORT !
       R     "M 5.2"; 

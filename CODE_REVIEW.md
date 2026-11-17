@@ -521,3 +521,17 @@ Start: new-HMI broom switch (`M5.2` = `M140.3` AND `CLEARING_SSW_MAIN`) or LAUER
 2. **Clearing switched off before reaching C10.** `Timer 128` (C4 not confirmed cleared within 30 s → `MB10` := 0, no alarm), `Timer 109` (C10 belt running 1 min → `R M10.0`), or an operator abort. C10 is never called. This is **not** covered by §14.1; see CL4 (overall timeout + alarm instead of a silent stop).
 **On site:** after a clearing that left packets, check whether the amber New Order lamp `H49.5` and the S3.2 confirmation happened. Yes → path 1. No (and the clearing lamp went off early) → path 2.
 The `B10.3`/`M51.7` proof resets added in §14.1 are kept as extra safety.
+
+### 14.3 Order change (A → B): "S3.2 confirmation skipped, orders joined" and "order A packets left on C10"
+**Process (operator):** order A finished → clearing called → TS no longer fed (`K41.0` off while `M10.0`) → C1–C10 empty into C11–C13/C21–C23 while the bottomer finishes A → clearing ends → order B fed into TS → C10 fills with B and is **held** (`M8.4`) until the bottomer has finished A → S3.2 lamp (`H49.5`) → operator confirms → C10 sends B.
+**Both symptoms mean A and B get mixed.** Ways the hold is skipped or clearing ends too early:
+
+| # | Cause | Panel | Status |
+|---|---|---|---|
+| A | `M54.2` "C11…C23 already empty" (Case B = **no hold**) is decided at an HMI start from the **exit/slow sensors only**. Packets of A between sensors are invisible, so it decides "empty" → no hold → no S3.2. | New HMI only | **Open: decision needed** (see below) |
+| B | CL1: when `M140.3` drops, `M5.2` falls → read as "switch OFF" → `M5.4` abort → clearing stops (C10 not emptied, so **A left on C10**) **and** the new-order hold is cancelled (**orders joined**). | New HMI only | ✅ **Fixed:** abort only on a real `CLEARING_SSW_MAIN` OFF while `M140.3` = 1 |
+| C | SIGNAL (`E34.1`, also a fault reset) held ≥ 3 s while waiting → `M5.0` → hold cancelled. | Both | Open: operator training, or remove `M5.0` from "Clearing - Cancelling" |
+| D | LAUER F4+ENT+CLR abort; `Timer 128` (C4 30 s) or `Timer 109` (C10 1 min) switching clearing off silently. | Both | Open: CL4 (timeout + alarm instead of a silent stop) |
+| E | Clearing ends with packets still on C10. | Both | ✅ **Fixed** (§14.1: C10 must be proven empty) |
+
+**Proposal for A:** always hold C10 and always require S3.2 after a clearing (remove Case B). Operators confirm every order change, which is safe and simple. The alternative is to make the "empty" check use step registers as well as sensors, and to run it on any start (CL2), but it can still be fooled.
