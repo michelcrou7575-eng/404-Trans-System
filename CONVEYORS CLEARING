@@ -507,14 +507,12 @@ TITLE =Conveyors 1 - 9 Clearing - Clearing Done !
 //- Clearing Initiated with an empty Conveyors 11-13, 21-23: No HOLD for New 
 //Order!  [Case:B]
 //
-      AN    "M 54.2"; // Non-Empty C11...C23   [Case:A] 
-      A     "M 10.6"; // Clearing Done / Off Pulse 
+//Fix: S3.2 confirmation ALWAYS required (Case B "lines empty" removed: it only
+//looked at exit sensors and could skip the hold). Old M54.6 line removed (wrong bit).
+      A     "M 10.6"; // Clearing Done / Off Pulse
       A     "M 0.3"; 
-      S     "M 8.4"; // New Order - Wait Set   [Case:A] 
+      S     "M 8.4"; // New Order - Wait Set (Always)
       S     "M 8.5"; // New Order - Clearing Done - Set
-//;
-      A     "M 54.6"; // Empty C11...C23
-      R     "M 8.5"; // New Order - Clearing Done - Reset   [Case:B] 
 NETWORK
 TITLE =Events UpDate - Clearing Stop - Command
 

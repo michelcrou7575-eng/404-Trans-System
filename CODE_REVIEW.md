@@ -557,3 +557,14 @@ Intermittent: it only happens when C4 is empty at that moment.
 **Fix applied:** `O "Timer 33"` → `O "DB UTILITY".T33_DN`. C4's own 20 s clearing run now confirms "C4 cleared" before `Timer 128` (30 s). OB1 calls CLEARING before CONVEYOR 4, so it sees `T33_DN` in the scan after C4 sets it. That is enough because `M10.3` is latched.
 **Confirm online before the window (read-only):** during a clearing with C4 **empty**, watch `M10.2`, `M10.3`, `T128`, `"DB UTILITY".T33_DN`, `M10.0`. Expected today: `M10.3` stays 0, and `M10.0` drops 30 s after `M10.2`.
 **Still recommended (CL4):** `Timer 128` should raise an alarm instead of silently clearing `MB10`.
+
+### 14.6 Operator answers (2026-11-17) and resulting changes
+* **S3.2 always required: YES.** ✅ Applied: the "Clearing Done" network sets `M8.4` hold on every normal end. The Case B gate `AN M54.2` and the wrong `A M54.6 / R M8.5` lines are removed. `M54.2` is still computed but no longer used.
+* **SIGNAL held ≥ 3 s: NO.** Cause C excluded.
+* **Clearing lamp goes off early: NO** (as seen by operators). The lamp only shows `M10.0`, so a `Timer 128` stop looks the same as a normal end. The reliable sign is the **missing S3.2 lamp**. With aborts, SIGNAL and HMI excluded, nothing can cancel `M8.4` once it is set. So a skipped S3.2 means `M10.6` was never reached, i.e. clearing was switched off by `Timer 128` (fixed in §14.5) or `Timer 109`. Confirm with the read-only VAT in §14.5.
+
+**Clearing block now contains, for the next maintenance window:**
+1. §14.5: `T33_DN` instead of S5 `Timer 33` (**root cause**).
+2. §14.1: C10 must be proven empty (10 s, `T137` / `M10.7`) before "clearing done", with a re-call of C10 until it is.
+3. §14.6: S3.2 hold always required.
+4. §14.3 B: abort only on a real HMI switch-off (harmless while `M140.3` = 0).
