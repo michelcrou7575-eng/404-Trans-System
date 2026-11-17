@@ -571,14 +571,16 @@ Intermittent: it only happens when C4 is empty at that moment.
 
 ## 15. Full PLC export (`ALL_BLOCKS.AWL`, 2026-11-17): what the project contains
 
-The export is split into one file per block in `PLC_EXPORT_2026-11-17/`, named by address (`FC1011 - CONVEYORS CLEARING.AWL`, …). That folder is the **reference copy of the project as exported**. The files at the repo root are the working copies, with the pending fixes.
+The export is split into one file per block in `PLC_EXPORT_2026-11-17/`, named by address (`FC1011 - CONVEYORS CLEARING.AWL`, …). That folder is the **reference copy of the code running in the PLC** (confirmed by the operator, 2026-11-17: everything in the export runs, and the original problems are still there). The files at the repo root are the working copies, with the pending fixes.
 
-### 15.1 Which version is in the project
+### 15.1 Which version runs in the PLC
 
-| Block | In the project | Fixes from this review still **missing** in the project |
+The September fixes (FC212 E28.x, HMI COMMS `M22.7`, LOADER LIFT/FINGERS, conveyor interlocks, FC8 v0.7 + FC1208 v0.3) **are running**. None of them touches the clearing chain, so the clearing problems are expected to be unchanged.
+
+| Block | Running in the PLC | Fixes from this review **not loaded yet** |
 |---|---|---|
 | Conveyors 0–23, Elevator | The **"VFD OK -Check"** versions (`M11.1` interlocks) | C3 and C21: `R #INITIALISATION`. C6: `CLR / = #INITIALISATION`. All other conveyor fixes are in (C7 CW/CCW interlock, C10 UP/DN, …) |
-| CONVEYORS CLEARING FC1011 | **Original.** None of the §14 fixes | All of §14: `T33_DN` (root cause), C10 proven empty (`T137` / `M10.7`), S3.2 always, abort fix. Planned for the Phase 0 trial between shifts |
+| CONVEYORS CLEARING FC1011 | **Original** (not modified, as planned). None of the §14 fixes. **This is why the C10 leftovers and the skipped S3.2 are still there** | All of §14: `T33_DN` (root cause), C10 proven empty (`T137` / `M10.7`), S3.2 always, abort fix. Planned for the Phase 0 trial between shifts |
 | GENERAL FAULTS FC212 | Fixed (E28.x resets, `<>D`, lamps) | None. Note: `Timer 4` (VFD ready check) is **15 s** in the project, 8 s in the original. Kept at 15 s |
 | LOADER LIFT / FINGERS, HMI COMMS | Fixed | None |
 | FC8 v0.7, UDT8, DB8 | Same as the repo (UDT8 field order differs, OK because FC8 is symbolic) | None |
@@ -598,7 +600,7 @@ The export is split into one file per block in `PLC_EXPORT_2026-11-17/`, named b
 | E6 | ✅ | Timers | No S5 timer is started in two blocks. `T118–T127`, `T134` (FC1208) and `T137` (clearing fix) are free in the project | — |
 | E7 | ℹ️ | `"HMI DB NEW"` | Only CONVEYOR 5 and 6 still write it (count reset to 0). Nothing reads it. It can be removed after the LAUER panel is retired, or the two writes changed to `"HMI_DB"` | Low priority. The count resets in C5/C6 still do not clear FC8's `Count_Result` (P5) |
 
-### 15.3 To bring the project up to the repo (between shifts, one block at a time)
+### 15.3 To bring the PLC up to the repo (between shifts, one block at a time)
 1. **FC1011 CONVEYORS CLEARING** (Phase 0 trial, highest value: fixes the C10 leftovers and the skipped S3.2).
 2. **OB1** (`<>D`, one line).
 3. **CONVEYOR 3**, **CONVEYOR 21**, **CONVEYOR 6** (init fixes, from the "VFD OK -Check" files).
