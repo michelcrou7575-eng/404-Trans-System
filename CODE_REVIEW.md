@@ -474,3 +474,24 @@ It updates each HMI group only when its inputs change, plus a round-robin refres
 | H5 | 🟡 | 30–38 | The "Clearing" lamp `H57.0` also shows `M5.3` "Defective start – white", and the "Fault" lamp `H57.2` also shows `M5.5` "Defective start – red". This is probably intended (it copies the X120 lamps). Document it for operators. |
 | H6 | 🟡 | — | `E34.1` (NEW HMI SIGNAL) is also a **fault-reset** input (FC212 `M9.1`), and FC211 uses it for the "defective start" display. A long press (> 3 s) while start conditions aren't met makes the white/red lamps blink. Harmless, but surprising. |
 | H7 | 🟡 | temps | `CLEARING_ON` is declared and never used. |
+
+---
+
+## 14. CONVEYORS CLEARING (FC1011): detailed review
+
+**What it does:** clearing empties the line at the end of an order, stage by stage: elevator + C1/C2 (`M10.1`) → slat C3 (`M10.2`) → collator C4 (`M10.3`) → C5/C6 (`M10.4`) → C7–C9 (`M10.5`) → pivot C10 (`M10.6`). Then the **new-order sequence** (`M7.4 → M7.5 → M7.6 → M7.7 → M8.0 → M8.1 → M8.2`) holds the pivot (`M8.4`) until C11–C23 and the feeder have run out the old order, and the operator confirms with **S3.2** (amber lamp `H49.5`).
+Start: new-HMI broom switch (`M5.2` = `M140.3` AND `CLEARING_SSW_MAIN`) or LAUER **F4** (`M150.4`). Stop: normally when C10 is cleared (`M10.6` → `MB10` := 0).
+
+| # | Sev | Line | Finding | Proposed fix |
+|---|---|---|---|---|
+| CL1 | 🟠 | 20–22, 280–284 | **A clearing started from the new HMI can abort by itself.** `M5.2` includes `M140.3`. When `M140.3` drops (HMI CONTROL H1: 10 s on screen 0 and the 2145 flap opens), `M5.2` falls. Its falling edge is read as "operator switched clearing off" → `M5.4` **CLEARING ABORT**, and the new-order flags are cancelled too (line 552). | Detect the abort from the HMI switch itself: `A "HMI_DB".CLEARING_SSW_MAIN; FN "FN 155.6"; A "M 140.3"; A "M 10.0"; = "M 5.4"`. Then a drop of `M140.3` no longer aborts. |
+| CL2 | 🟠 | 37–47 | **"C11…C23 already empty" (`M54.2`, Case B) is only checked on an HMI start.** A LAUER F4 start never checks it, so it always runs Case A: the pivot is held (`M8.4`) and the operator must press S3.2 even when the lines were already empty. The two panels behave differently. | Check it on the start of `M10.0`, whatever the source: replace `A "M 5.2"; FP "FP 147.4"` with `A "M 10.0"; FP "FP 147.4"`. |
+| CL3 | 🟡 | 473 | `A "M 54.6"` (pivot C10 **full** sensing) where the comment and logic say "Empty C11…C23" (`M54.2`). This resets `M8.5` "Clearing done" when C10 becomes full, so the clearing-done lamp goes out early. | `A "M 54.2"`, or delete the 2 lines (in Case B `M8.5` is never set anyway). |
+| CL4 | 🟠 | 295–310 | **Only one stage has a timeout:** C4, after 30 s (`Timer 128`). If the elevator/C1/C2 never empty (`M10.1`), or C5–C10 never confirm, clearing stays on with no alarm. Meanwhile `K41.0` "Trans System OK → 2145" is OFF (`AN M10.0`), so **the 2145 stays stopped**. | Add an overall clearing timeout (e.g. 3–5 min while `M10.0`) that sets an alarm and clears `MB10`. |
+| CL5 | 🟡 | 334–338 | **"Elevator + Conv 1,2 NOT EMPTY" alarm (`M11.4`)** is set at the start of **every** clearing, because the line is never empty at the start. Nothing in the PLC resets it. | Set it only if not empty after a delay (e.g. 60 s), and reset it on `M9.1` (fault reset) or when the clearing ends. |
+| CL6 | 🟡 | 255–263 | `Clearing Done - Ready` sets `M9.7` = `(M0.3 AND T9) OR NOT M11.6`, so it is ON almost all the time. `M9.7` isn't used anywhere in the repo. | Remove it, or fix it if the LAUER panel reads `M9.7`. |
+| CL7 | 🟡 | 452–459 | `M9.3` "trigger 1 scan" is actually ON for **1 s** (`Timer 58` SE). It starts filling on **both** C11 and C21, whatever the pivot position. The conveyor not facing the pivot runs empty until its 30 s timeout. Harmless. | Accept as-is, or AND it with `P15.1`/`P15.0` in C11/C21. |
+| CL8 | 🟡 | 345–349, 504–517 | Not used: `Timer 10` (started, never read; the title says 3 s, the code says 2 s), `M11.7`, `M142.0` (unless the LAUER panel reads them), and `M9.6` (C3). | Cleanup only. |
+| CL9 | 🟡 | 286–293, 297–310 | The **normal end** of clearing goes through `#CLEARING_ABORT` (`O "M 10.6"`). It works only because the "Clearing Done" network (467) runs after `M10.6` is set and before `MB10` is cleared on the next scan. This is fragile if the networks are ever moved. | Rename it, or clear `MB10` in a separate "clearing done" network after line 474. |
+
+**Dual-panel note:** with both panels in use, CL1 and CL2 are the ones operators will notice. The same clearing behaves differently depending on which panel started it, and an HMI-started clearing can stop by itself.
