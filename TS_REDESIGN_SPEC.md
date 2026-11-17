@@ -1,6 +1,6 @@
 # 404 Trans-System (TS): functional specification and redesign plan
 
-**Status:** DRAFT v0.1 (2026-11-17), written from the PLC code review (`CODE_REVIEW.md`) and the operator answers. **Every line marked ❓ needs your confirmation or correction.**
+**Status:** DRAFT v0.2 (2026-11-17), written from the PLC code review (`CODE_REVIEW.md`) and the operator answers. **Every line marked ❓ needs your confirmation or correction.**
 **Assumptions:** same PLC (CPU 315-2 DP, STEP 7 Classic, STL), same I/O and symbol table, same two HMIs (LAUER for production, OMRON NS12 for service). **Hardwired safety (E-stops, guard doors, light curtain safety relays) is out of scope** and stays as it is.
 **Way of working:** trials **between shifts** only. Every change is a small block download with a **fallback switch or the previous block kept for immediate rollback**.
 
@@ -69,7 +69,7 @@ One **mode manager** block owns these bits, and every station reads them. No mor
 | `State` | Empty / Filling / Full / Transferring / Fault / Service |
 
 **Rules:**
-1. A new packet entering the TS takes the **current order number**. The 2145 / Conveyor 0 hand-off assigns it.
+1. **Order number = an internal counter, incremented at every F4** (confirmed: an order is only identified by the F4 moment). Every packet in the TS at the moment of F4 belongs to the **old** order. A packet entering at Conveyor 0 takes the **current** number. Feeding of the TS is stopped at F4 (`K41.0` off), so the boundary is clean: the first packet accepted after feeding restarts belongs to the **new** order.
 2. On a transfer, the receiver's load record **takes the sender's order number and count**, and the sender becomes empty.
 3. **Transfer allowed only if** the receiver is Empty, **or** (for collators) holds the **same order**.
 4. **Operator "order change" (F4):** the current order is closed, and feeding of the TS stops until all stations upstream of C10 hold the old order or are empty.
@@ -79,7 +79,8 @@ One **mode manager** block owns these bits, and every station reads them. No mor
    - C10 **holds** the new order until no station downstream (C11–C23, feeder) holds the old order, then **always** asks for **S3.2**. After S3.2 it continues with the new order.
 5. Every wait has a **timeout with a named alarm** on both HMIs. Nothing switches off silently.
 
-❓ How is an order identified today: only by the F4 moment, or is there an order number from the 2145 / bottomer?
+✅ Confirmed (2026-11-17): an order is identified **only by the F4 moment**. No order number comes from the 2145 or the bottomer.
+❓ At F4, have **all** order-A packets already left the 2145 (are they all inside the TS)? If the 2145 could still release an A packet after feeding restarts, it would be counted as B.
 
 ---
 
@@ -136,7 +137,7 @@ Each trial: **one small download, done between shifts, with an immediate rollbac
 ## 8. Open questions (needed before phase 2)
 
 1. ❓ How long is the window between shifts (minutes)? Can conveyors run empty during it?
-2. ❓ Order identity: only F4, or an order number from the 2145 / bottomer?
+2. ✅ Order identity = F4 moment only. ❓ Are all order-A packets out of the 2145 when F4 is pressed?
 3. ❓ Conveyor lengths and speeds (C4, C10, links) and the packet length/width range.
 4. ❓ Is a later move to S7-1500 / TIA planned? (It changes how the FB is written.)
 5. ❓ Is the LAUER panel to be retired after the OMRON HMI is validated?
