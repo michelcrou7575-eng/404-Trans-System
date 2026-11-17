@@ -586,13 +586,13 @@ The September fixes (FC212 E28.x, HMI COMMS `M22.7`, LOADER LIFT/FINGERS, convey
 | FC8 v0.7, UDT8, DB8 | Same as the repo (UDT8 field order differs, OK because FC8 is symbolic) | None |
 | FC1208 | The repo version, **edited by you**: presence words and `FP131/132` go to `"HMI_DB"` (as FC1206 did), no mirror to `"HMI DB NEW"` | None. Your edit is correct and is now the repo version |
 | OB1 | Calls **FC1208 directly** (FC1206 commented out, no `M333.3` selector) | Faults monitor: `>D` → `<>D` (MD1 is negative when `M1.7` = 1, so that fault does not raise `M5.1`). Now in the repo OB1 |
-| FC1206, FC6, DB6 | **Still in the project, not called** (OB1 line `// CALL "HMI PACKET COUNTER OLD"`). They are missing from the export only because the generated source left them out | Rollback = un-comment the call in OB1. If the FC1206 in the project is my September version, it uses `T105` (clash with LAUER comms, E1): use the repo version (`T138`) before any rollback |
+| FC1206 | **Deleted** by the operator (2026-11-17). Was not called | Rollback to the old counter = re-insert FC1206 from the repo (`HMI PACKET COUNTER OLD`, uses `T138`, not `T105`) + FC6 + DB6, and swap the calls in OB1 |
 
 ### 15.2 New findings from the blocks seen for the first time
 
 | # | Sev. | Block | Finding | Action |
 |---|---|---|---|---|
-| E1 | 🟠 (only if FC1206 is called again) | FC1206 (repo) / OB35 | The FC1206 count-down re-arm used **`T105`**, which is the LAUER comms timeout timer (`LAUER COMM FC`, `TIMT := T 105` in OB35). Running both would have broken the LAUER comms | **Fixed in the repo:** FC1206 now uses `T138` (free). FC1206 is in the project but not called, so no effect today |
+| E1 | ✅ (FC1206 deleted) | FC1206 (repo) / OB35 | The FC1206 count-down re-arm used **`T105`**, which is the LAUER comms timeout timer (`LAUER COMM FC`, `TIMT := T 105` in OB35). Running both would have broken the LAUER comms | **Fixed in the repo:** FC1206 now uses `T138` (free). FC1206 is in the project but not called, so no effect today |
 | E2 | 🟠 | OB35 (100 ms) | FC212 GENERAL FAULTS, FC1100 HMI CONTROL, FC1200 HMI COMMS and FC1090 LIGHT BAR run in **OB35**, not OB1. They interrupt OB1 and write M bits and timers that OB1 blocks also use (e.g. `M11.1`, `M5.x`). The values are consistent bit by bit, but a bit can change in the middle of an OB1 network | Keep in mind for the spec. Write once, read many: no new writer of an M bit in both OB1 and OB35 |
 | E3 | 🟡 | OB82, OB86, OB121, OB122 | All **empty**. The CPU stays in RUN on I/O, rack, programming and access errors, and nothing records them. A wrong DB access in a new block (FC8/FC1208) would go unnoticed | Add an error counter + last-error word (one network each) and show it on the new HMI service page |
 | E4 | 🟡 | OB100 | `HMI_DB.AERIAL_LINK_RUN_PB` is **toggled** at each restart (`AN x; = x`) instead of set or reset | Check what the HMI expects. Use `S` or `R` |
