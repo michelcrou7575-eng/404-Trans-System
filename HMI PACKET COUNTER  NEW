@@ -3,7 +3,7 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_TEMP
@@ -312,6 +312,7 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
       =     #BIT0; 
       A     "M 67.4"; 
       AN    "M 67.5"; 
+      A     "A 49.0"; // Fix: Only while the belt runs (stops for the loader, M 70.0)
       =     #XFER; 
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
@@ -415,6 +416,7 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
       =     #BIT0; 
       A     "M 87.4"; 
       AN    "M 87.5"; 
+      A     "A 54.0"; // Fix: Only while the belt runs (stops for the loader, M 70.0)
       =     #XFER; 
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,

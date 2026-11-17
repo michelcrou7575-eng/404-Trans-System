@@ -604,3 +604,20 @@ The September fixes (FC212 E28.x, HMI COMMS `M22.7`, LOADER LIFT/FINGERS, convey
 1. **FC1011 CONVEYORS CLEARING** (Phase 0 trial, highest value: fixes the C10 leftovers and the skipped S3.2).
 2. **OB1** (`<>D`, one line).
 3. **CONVEYOR 3**, **CONVEYOR 21**, **CONVEYOR 6** (init fixes, from the "VFD OK -Check" files).
+
+## 16. C23 counts down by 2 per packet (6 > 4 > 2 > 0, sometimes 6 > 4 > 2 > 1 > 0)
+
+**Cause.** In the delivery step (`M87.4`, not `M87.5`) the C23 belt runs only while the loader is ready: `A54.0 = M87.4 AN M87.5 A M70.0`. When the loader is busy, `M70.0` drops and C23 **stops with a packet on the exit sensor `B15.7`**, but the step stays active. FC1208 gives FC8 `Transfer_Start = M87.4 AN M87.5`, so FC8 keeps adding the exit-sensor ON time of the **stopped** packet. Once it passes `DIM_237 + 300 ms`, the butted-packet rule counts −1. When the packet finally leaves, the rest of the time (≥ 300 ms) counts −1 again. Result: **−2 for one packet**. Sometimes the loader does not stop C23 long enough (last packet), so only −1 is counted: 6 > 4 > 2 > 1 > 0.
+
+C13 (`M67.4`, `A49.0`, also `M70.0`) has the same structure and the same risk.
+
+**Fix (FC1208 v0.4, two lines):** `Transfer_Start` also requires the belt release, so time is only added while the belt moves:
+```
+A "M 87.4"; AN "M 87.5"; A "A 54.0"; = #XFER;   // C23
+A "M 67.4"; AN "M 67.5"; A "A 49.0"; = #XFER;   // C13
+```
+No change to FC8, the conveyors or the DBs. Download FC1208 only, between shifts.
+
+**Check with a VAT** during one delivery: `"DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.Bit1_Exit_mS`, `.Exit_Window_mS`, `.Count_Result`, `B 15.7`, `A 54.0`, `M 70.0`. After the fix, `Bit1_Exit_mS` must stop increasing while `A54.0` = 0.
+
+**If it still counts 2 with the belt running all the time:** the delivery speed (slow, `A54.2`) is lower than the 23.7 m/min `DIM_237` is scaled to, so a single packet stays on the sensor longer than `DIM_237 + 300 ms`. Then read `Exit_Window_mS` and the highest `Bit1_Exit_mS` for one packet, and correct the scaling of `DIM_237`.
