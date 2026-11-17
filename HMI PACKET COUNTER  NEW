@@ -1,15 +1,13 @@
 FUNCTION "HMI PACKET COUNTER  NEW" : VOID
 TITLE =HMI Conveyors Display Packet Counter  FC1208
-//Replaces FC1206 "HMI PACKET COUNTER OLD" + FC6 - Uses FC8 v0.7 / DB8 / UDT8.
-//Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync), same as
-//FC1206, and mirrored to "HMI DB NEW".
-//Bit_0 = InFeed (gated like FC1206)  /  Bit_1 = RAW Exit Sensor  /
+//Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
+//Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
 VERSION : 0.3
 
 
 VAR_TEMP
-  ERROR : BOOL ;
+  ERROR : BOOL ;	
   BIT0 : BOOL ;	//Count UP Input
   XFER : BOOL ;	//Transfer Active
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
@@ -22,7 +20,7 @@ TITLE =Packet Length mm - To Conveyor 4 HMI (as FC1206)
       L     "COLLATORS DB".PacketLength_C4; 
       ITD   ; 
       DTR   ; 
-      L     6.673000e+000; 
+      L     6.673000e+00; 
       *R    ; 
       RND   ; 
       T     "MW 202"; 
@@ -178,25 +176,25 @@ TITLE =Packet Presence - Flipper / TurnTable / Conveyor 9 / Pusher 2
       JCN   M434; 
       L     1; 
 M434: T     "HMI_DB".FLIPPER_PACK_PRESENCE; 
-      T     "HMI DB NEW".FLIPPER_PACK_PRESENCE; 
+      T     "HMI_DB".FLIPPER_PACK_PRESENCE; 
       L     0; 
       A     "M 47.4"; 
       JCN   M474; 
       L     1; 
 M474: T     "HMI_DB".TURNTABLE_PACK_PRESENCE; 
-      T     "HMI DB NEW".TURNTABLE_PACK_PRESENCE; 
+      T     "HMI_DB".TURNTABLE_PACK_PRESENCE; 
       L     0; 
       A     "M 51.4"; 
       JCN   M514; 
       L     1; 
 M514: T     "HMI_DB".ROLLER_PACK_PRESENCE; 
-      T     "HMI DB NEW".ROLLER_PACK_PRESENCE; 
+      T     "HMI_DB".ROLLER_PACK_PRESENCE; 
       L     0; 
       A     "M 51.5"; 
       JCN   M515; 
       L     1; 
 M515: T     "HMI_DB".PUSHER_PACK_PRESENCE; 
-      T     "HMI DB NEW".PUSHER_PACK_PRESENCE; 
+      T     "HMI_DB".PUSHER_PACK_PRESENCE; 
 NETWORK
 TITLE =Packet Counter - Pivot Conveyor 10
 
@@ -477,7 +475,7 @@ F634: NOP   0;
       L     S5T#30S; 
       SD    "Timer 80"; 
       A     "Timer 80"; 
-      FP    "HMI DB NEW".FP131; 
+      FP    "HMI_DB".FP131; 
       JNB   F676; 
       L     0; 
       T     "HMI_DB".CONV_13_COUNT; // FC8 Takes Over 0 on Next Call
@@ -496,34 +494,10 @@ F834: NOP   0;
       L     S5T#30S; 
       SD    "Timer 81"; 
       A     "Timer 81"; 
-      FP    "HMI DB NEW".FP132; 
+      FP    "HMI_DB".FP132; 
       JNB   F876; 
       L     0; 
       T     "HMI_DB".CONV_23_COUNT; // FC8 Takes Over 0 on Next Call
 F876: NOP   0; 
-NETWORK
-TITLE =Mirror Counts to "HMI DB NEW"
-
-      L     "HMI_DB".CONV_3_COUNT; 
-      T     "HMI DB NEW".CONV_3_COUNT; 
-      L     "HMI_DB".CONV_4_COUNT; 
-      T     "HMI DB NEW".CONV_4_COUNT; 
-      L     "HMI_DB".CONV_5_COUNT; 
-      T     "HMI DB NEW".CONV_5_COUNT; 
-      L     "HMI_DB".CONV_6_COUNT; 
-      T     "HMI DB NEW".CONV_6_COUNT; 
-      L     "HMI_DB".CONV_10_COUNT; 
-      T     "HMI DB NEW".CONV_10_COUNT; 
-      L     "HMI_DB".CONV_11_COUNT; 
-      T     "HMI DB NEW".CONV_11_COUNT; 
-      L     "HMI_DB".CONV_12_COUNT; 
-      T     "HMI DB NEW".CONV_12_COUNT; 
-      L     "HMI_DB".CONV_13_COUNT; 
-      T     "HMI DB NEW".CONV_13_COUNT; 
-      L     "HMI_DB".CONV_21_COUNT; 
-      T     "HMI DB NEW".CONV_21_COUNT; 
-      L     "HMI_DB".CONV_22_COUNT; 
-      T     "HMI DB NEW".CONV_22_COUNT; 
-      L     "HMI_DB".CONV_23_COUNT; 
-      T     "HMI DB NEW".CONV_23_COUNT; 
 END_FUNCTION
+

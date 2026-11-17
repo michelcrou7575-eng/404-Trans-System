@@ -169,8 +169,8 @@ M443: NOP   0;
       AN    "B 7.0"; 
       A     "M 31.6"; 
       L     S5T#300MS; 
-      SD    T    105; 
-      A     T    105; 
+      SD    T    138; 
+      A     T    138; 
       R     "DEBOUNCER OLD".B6_7_Conv_4_InFeed.Count_Error; // Count Done Latch - Re-Arm
 
       AN    "A 44.3"; 

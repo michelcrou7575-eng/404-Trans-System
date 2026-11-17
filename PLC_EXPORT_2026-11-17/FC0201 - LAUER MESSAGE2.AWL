@@ -1,0 +1,57 @@
+FUNCTION "LAUER MESSAGE2" : VOID
+TITLE =Lauer Message 2
+NAME : STATUS
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     "M 150.4"; 
+      O     "M 150.5"; 
+      O     "M 150.7"; 
+      ON    "S 2.1"; 
+      O     "S 2.2"; 
+      )     ; 
+      AN    "M 0.1"; 
+      AN    "M 0.2"; 
+      AN    "M 0.3"; 
+      AN    "M 1.5"; 
+      AN    "M 1.7"; 
+//;
+      JC    M001; 
+      JU    M002; 
+M001: L     2#100; 
+      T     DBW   82; 
+      BEC   ; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 0.2"; 
+      AN    "M 0.3"; 
+      JC    M003; 
+      JU    M004; 
+M003: L     2#1000; 
+      T     DBW   82; 
+      BEC   ; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 0.3"; 
+      AN    "M 9.7"; 
+      JC    M005; 
+      JU    M006; 
+M005: L     2#10000; 
+      T     DBW   82; 
+      BEC   ; 
+M006: NOP   0; 
+END_FUNCTION
+

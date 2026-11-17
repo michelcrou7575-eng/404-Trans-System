@@ -397,7 +397,7 @@ A   T 1xx
 R   "DEBOUNCER OLD".<inst>.Count_Error   // re-arm count-done latch
 ```
 * This re-arms once per packet. A U-shaped packet whose opening passes the sensor in under 300 ms still counts only once. Tune the 300 ms if needed; it must be shorter than the smallest gap between packets during a transfer.
-* Timers used: **T105, T106, T107, T108, T111, T112, T113, T114, T115, T117**. None of them is in the symbol table or used by any block in the repo. **Before downloading, check in the PLC's cross-reference that no block outside the repo uses them.**
+* Timers used: **T138 (was T105 - used by LAUER COMM FC in OB35), T106, T107, T108, T111, T112, T113, T114, T115, T117**. None of them is in the symbol table or used by any block in the repo. **Before downloading, check in the PLC's cross-reference that no block outside the repo uses them.**
 * The existing stop-edge resets are unchanged.
 * **Test order:** C4 alone first (a full collate + transfer cycle, with the count reaching 0), then C5/C6, then C10 and C11–C23.
 
@@ -568,3 +568,37 @@ Intermittent: it only happens when C4 is empty at that moment.
 2. §14.1: C10 must be proven empty (10 s, `T137` / `M10.7`) before "clearing done", with a re-call of C10 until it is.
 3. §14.6: S3.2 hold always required.
 4. §14.3 B: abort only on a real HMI switch-off (harmless while `M140.3` = 0).
+
+## 15. Full PLC export (`ALL_BLOCKS.AWL`, 2026-11-17): what the project contains
+
+The export is split into one file per block in `PLC_EXPORT_2026-11-17/`, named by address (`FC1011 - CONVEYORS CLEARING.AWL`, …). That folder is the **reference copy of the project as exported**. The files at the repo root are the working copies, with the pending fixes.
+
+### 15.1 Which version is in the project
+
+| Block | In the project | Fixes from this review still **missing** in the project |
+|---|---|---|
+| Conveyors 0–23, Elevator | The **"VFD OK -Check"** versions (`M11.1` interlocks) | C3 and C21: `R #INITIALISATION`. C6: `CLR / = #INITIALISATION`. All other conveyor fixes are in (C7 CW/CCW interlock, C10 UP/DN, …) |
+| CONVEYORS CLEARING FC1011 | **Original.** None of the §14 fixes | All of §14: `T33_DN` (root cause), C10 proven empty (`T137` / `M10.7`), S3.2 always, abort fix. Planned for the Phase 0 trial between shifts |
+| GENERAL FAULTS FC212 | Fixed (E28.x resets, `<>D`, lamps) | None. Note: `Timer 4` (VFD ready check) is **15 s** in the project, 8 s in the original. Kept at 15 s |
+| LOADER LIFT / FINGERS, HMI COMMS | Fixed | None |
+| FC8 v0.7, UDT8, DB8 | Same as the repo (UDT8 field order differs, OK because FC8 is symbolic) | None |
+| FC1208 | The repo version, **edited by you**: presence words and `FP131/132` go to `"HMI_DB"` (as FC1206 did), no mirror to `"HMI DB NEW"` | None. Your edit is correct and is now the repo version |
+| OB1 | Calls **FC1208 directly** (FC1206 commented out, no `M333.3` selector) | Faults monitor: `>D` → `<>D` (MD1 is negative when `M1.7` = 1, so that fault does not raise `M5.1`). Now in the repo OB1 |
+| FC1206, FC6, DB6 | **Not in the project any more** | Rollback to the old counter now means re-inserting those blocks from the repo |
+
+### 15.2 New findings from the blocks seen for the first time
+
+| # | Sev. | Block | Finding | Action |
+|---|---|---|---|---|
+| E1 | 🔴 (repo only) | FC1206 (repo) / OB35 | The FC1206 count-down re-arm used **`T105`**, which is the LAUER comms timeout timer (`LAUER COMM FC`, `TIMT := T 105` in OB35). Running both would have broken the LAUER comms | **Fixed in the repo:** FC1206 now uses `T138` (free). Not in the PLC, no action there |
+| E2 | 🟠 | OB35 (100 ms) | FC212 GENERAL FAULTS, FC1100 HMI CONTROL, FC1200 HMI COMMS and FC1090 LIGHT BAR run in **OB35**, not OB1. They interrupt OB1 and write M bits and timers that OB1 blocks also use (e.g. `M11.1`, `M5.x`). The values are consistent bit by bit, but a bit can change in the middle of an OB1 network | Keep in mind for the spec. Write once, read many: no new writer of an M bit in both OB1 and OB35 |
+| E3 | 🟡 | OB82, OB86, OB121, OB122 | All **empty**. The CPU stays in RUN on I/O, rack, programming and access errors, and nothing records them. A wrong DB access in a new block (FC8/FC1208) would go unnoticed | Add an error counter + last-error word (one network each) and show it on the new HMI service page |
+| E4 | 🟡 | OB100 | `HMI_DB.AERIAL_LINK_RUN_PB` is **toggled** at each restart (`AN x; = x`) instead of set or reset | Check what the HMI expects. Use `S` or `R` |
+| E5 | ✅ | OB100 | Resets `FirstScan_Done` of all 11 DB8 channels on a restart (good, FC8 re-initialises) | — |
+| E6 | ✅ | Timers | No S5 timer is started in two blocks. `T118–T127`, `T134` (FC1208) and `T137` (clearing fix) are free in the project | — |
+| E7 | ℹ️ | `"HMI DB NEW"` | Only CONVEYOR 5 and 6 still write it (count reset to 0). Nothing reads it. It can be removed after the LAUER panel is retired, or the two writes changed to `"HMI_DB"` | Low priority. The count resets in C5/C6 still do not clear FC8's `Count_Result` (P5) |
+
+### 15.3 To bring the project up to the repo (between shifts, one block at a time)
+1. **FC1011 CONVEYORS CLEARING** (Phase 0 trial, highest value: fixes the C10 leftovers and the skipped S3.2).
+2. **OB1** (`<>D`, one line).
+3. **CONVEYOR 3**, **CONVEYOR 21**, **CONVEYOR 6** (init fixes, from the "VFD OK -Check" files).

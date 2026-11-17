@@ -1,0 +1,160 @@
+FUNCTION "LAUER SERVICE" : VOID
+TITLE =Lauer Service
+NAME : SERVICE
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =
+
+      AN    "M 150.5"; 
+      JC    M001; 
+      L     DBW   72; 
+      L     2#100000000; 
+      T     DBW   72; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    "M 150.5"; 
+      JC    M002; 
+      L     2#11; 
+      T     DBW   76; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    "M 150.5"; 
+      JC    M003; 
+      A(    ; 
+      O     "M 161.0"; 
+      O     "M 161.1"; 
+      )     ; 
+      JC    M004; 
+      JU    M003; 
+M004: L     2#1000; 
+      T     DBB   74; 
+      JU    M005; 
+M003: L     DBB   74; 
+      L     2#11110111; 
+      AW    ; 
+      T     DBB   74; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     DBW   44; 
+      T     DBW   44; 
+NETWORK
+TITLE =
+
+      L     W#16#0; 
+      T     "MW 190"; 
+NETWORK
+TITLE =
+
+      AN    "M 150.5"; 
+      BEC   ; 
+NETWORK
+TITLE =Service Mode - Elevator
+
+      A(    ; 
+      L     DBB   32; 
+      L     1; 
+      <>I   ; 
+      )     ; 
+      JC    M006; 
+      =     "M 190.0"; 
+      BEC   ; 
+M006: NOP   0; 
+NETWORK
+TITLE =Service Mode - Flipper
+
+      A(    ; 
+      L     DBB   32; 
+      L     2; 
+      <>I   ; 
+      )     ; 
+      JC    M007; 
+      =     "M 190.1"; 
+      BEC   ; 
+M007: NOP   0; 
+NETWORK
+TITLE =Service Mode - TurnTable
+
+      A(    ; 
+      L     DBB   32; 
+      L     3; 
+      <>I   ; 
+      )     ; 
+      JC    M008; 
+      =     "M 190.2"; 
+      BEC   ; 
+M008: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     4; 
+      <>I   ; 
+      )     ; 
+      JC    M009; 
+      =     "M 190.3"; 
+      BEC   ; 
+M009: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     5; 
+      <>I   ; 
+      )     ; 
+      JC    M010; 
+      =     "M 190.4"; 
+      BEC   ; 
+M010: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     6; 
+      <>I   ; 
+      )     ; 
+      JC    M011; 
+      =     "M 190.5"; 
+      BEC   ; 
+M011: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     7; 
+      <>I   ; 
+      )     ; 
+      JC    M012; 
+      =     "M 190.6"; 
+      BEC   ; 
+M012: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     8; 
+      <>I   ; 
+      )     ; 
+      JC    M013; 
+      =     "M 190.7"; 
+      BEC   ; 
+M013: NOP   0; 
+END_FUNCTION
+
