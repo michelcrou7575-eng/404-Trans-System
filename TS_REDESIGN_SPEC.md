@@ -80,7 +80,7 @@ One **mode manager** block owns these bits, and every station reads them. No mor
 5. Every wait has a **timeout with a named alarm** on both HMIs. Nothing switches off silently.
 
 ✅ Confirmed (2026-11-17): an order is identified **only by the F4 moment**. No order number comes from the 2145 or the bottomer.
-❓ At F4, have **all** order-A packets already left the 2145 (are they all inside the TS)? If the 2145 could still release an A packet after feeding restarts, it would be counted as B.
+✅ Confirmed (2026-11-17): at F4 **all order-A packets have already left the 2145** and are inside the TS. So every packet that enters the TS after feeding restarts belongs to order B, and the order counter can switch at the F4 moment with no grace period.
 
 ---
 
@@ -140,7 +140,7 @@ Each trial: **one small download, done between shifts, with an immediate rollbac
 | # | Question | Answer |
 |---|---|---|
 | 1 | Window between shifts / conveyors may run empty | ✅ Conveyors **may run empty** during the window. ❓ Window length (minutes) still unknown |
-| 2 | Order identity | ✅ **F4 moment only** → internal order counter (§4). ❓ Are all order-A packets out of the 2145 when F4 is pressed? |
+| 2 | Order identity | ✅ **F4 moment only** → internal order counter (§4). ✅ All order-A packets are out of the 2145 at F4 |
 | 3 | Lengths / speeds | ✅ **10 s of fast running clears any conveyor** → used as the standard "proven empty" / clearing time (tunable per station). Lengths are not needed |
 | 4 | S7-1500 / TIA later | ✅ **No.** Target stays **S7-300 CPU 315-2 DP, STEP 7 Classic**. The FB is written in STL with symbolic access, and no TIA-only features are used |
 | 5 | Retire the LAUER panel | ✅ **Yes, after the OMRON HMI is validated.** Target = **one HMI (OMRON)**. Every LAUER function (F-keys `M150.x`/`M152.x`, service `M190.x` + `M161.x`/`M171.x`, `DB LAUER`, FC1/FC100–103/FC190–201) gets an OMRON equivalent; then the LAUER blocks are removed. Until then, `M140.3` decides who controls the run screen (see `NEW_HMI_TEST_PLAN.md`) |
