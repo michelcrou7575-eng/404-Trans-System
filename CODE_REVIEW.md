@@ -586,7 +586,7 @@ The September fixes (FC212 E28.x, HMI COMMS `M22.7`, LOADER LIFT/FINGERS, convey
 | FC8 v0.7, UDT8, DB8 | Same as the repo (UDT8 field order differs, OK because FC8 is symbolic) | None |
 | FC1208 | The repo version, **edited by you**: presence words and `FP131/132` go to `"HMI_DB"` (as FC1206 did), no mirror to `"HMI DB NEW"` | None. Your edit is correct and is now the repo version |
 | OB1 | Calls **FC1208 directly** (FC1206 commented out, no `M333.3` selector) | Faults monitor: `>D` → `<>D` (MD1 is negative when `M1.7` = 1, so that fault does not raise `M5.1`). Now in the repo OB1 |
-| FC1206 | **Deleted** by the operator (2026-11-17). Was not called | Rollback to the old counter = re-insert FC1206 from the repo (`HMI PACKET COUNTER OLD`, uses `T138`, not `T105`) + FC6 + DB6, and swap the calls in OB1 |
+| FC1206 | **Deleted** from the project (2026-11-17) and **not in the CPU** | Rollback to the old counter = re-insert FC1206 from the repo (`HMI PACKET COUNTER OLD`, uses `T138`, not `T105`) + FC6 + DB6, and swap the calls in OB1 |
 
 ### 15.2 New findings from the blocks seen for the first time
 
