@@ -363,7 +363,7 @@ TITLE =Conveyors 3, 4 - Cleared -> Start Conveyor 5, 6 Clearing
 
       A(    ; 
       O     "M 31.5"; 
-      O     "Timer 33"; 
+      O     "DB UTILITY".T33_DN; // Fix: was S5 "Timer 33" - never started (C4 uses Soft Timer T33 20s)
       )     ; 
       A     "M 10.2"; 
       A     "M 0.3"; 

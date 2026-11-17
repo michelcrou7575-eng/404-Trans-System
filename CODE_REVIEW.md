@@ -540,3 +540,20 @@ The `B10.3`/`M51.7` proof resets added in §14.1 are kept as extra safety.
 * `T137` and `M10.7` confirmed **unused** in the PLC project.
 * The machine is in production, so **no download yet**. The clearing changes (§14.1, §14.3 B) wait for a maintenance window.
 * While waiting, monitor **read-only** in a VAT during a real order change: `M10.0`, `M10.5`, `M10.6`, `M58.3`, `M55.0`–`M55.6`, `M54.2`, `M5.4`, `M5.0`, `M8.4`, `M8.5`, `M140.3`, `"HMI_DB".CLEARING_SSW_MAIN`, `T128`, `T109`. This shows which path (§14.3 A–D) happens on this machine.
+
+### 14.5 ROOT CAUSE FOUND: clearing switches itself off when C4 is empty (S5 `Timer 33` never started) 🔴
+**Operator facts:** the new HMI is only used for service (`M140.3` = 0 in production). Clearing is always started from **LAUER F4**. Operators do not abort it.
+→ `M54.2` is never set, so a **normal** end of clearing (`M10.6`) **always** sets the S3.2 hold (`M8.4`). A skipped S3.2 therefore means clearing **did not end normally**.
+
+**Chain:**
+1. "C4 cleared" `M10.3` = (`M31.5` **OR S5 `"Timer 33"`**) AND `M10.2`. S5 `Timer 33` is **started nowhere**: CONVEYOR 4 was converted to the soft timer `"DB UTILITY".T33_DN` (20 s), and the clearing block was not updated.
+2. If **C4 is empty** when clearing reaches it, no packet reaches `B7.0`, so `M31.5` (via `M30.6`) never comes and `M10.3` never comes.
+3. `Timer 128` (30 s from "C3 cleared") then sets **`MB10` := 0: clearing is switched off silently.**
+4. C10 is never called, so its **collated order-A group stays near the infeed**.
+5. `M10.6` never comes, so **no `M8.4` hold, no S3.2 lamp**.
+6. `K41.0` is on again, so **order B is fed**, collates behind A on C10, and both are transferred together **without a gap**.
+Intermittent: it only happens when C4 is empty at that moment.
+
+**Fix applied:** `O "Timer 33"` → `O "DB UTILITY".T33_DN`. C4's own 20 s clearing run now confirms "C4 cleared" before `Timer 128` (30 s). OB1 calls CLEARING before CONVEYOR 4, so it sees `T33_DN` in the scan after C4 sets it. That is enough because `M10.3` is latched.
+**Confirm online before the window (read-only):** during a clearing with C4 **empty**, watch `M10.2`, `M10.3`, `T128`, `"DB UTILITY".T33_DN`, `M10.0`. Expected today: `M10.3` stays 0, and `M10.0` drops 30 s after `M10.2`.
+**Still recommended (CL4):** `Timer 128` should raise an alarm instead of silently clearing `MB10`.
