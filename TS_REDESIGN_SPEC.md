@@ -1,6 +1,6 @@
 # 404 Trans-System (TS): functional specification and redesign plan
 
-**Status:** DRAFT v0.2 (2026-11-17), written from the PLC code review (`CODE_REVIEW.md`) and the operator answers. **Every line marked ❓ needs your confirmation or correction.**
+**Status:** DRAFT v0.3 (2026-11-17), written from the PLC code review (`CODE_REVIEW.md`) and the operator answers. **Every line marked ❓ needs your confirmation or correction.**
 **Assumptions:** same PLC (CPU 315-2 DP, STEP 7 Classic, STL), same I/O and symbol table, same two HMIs (LAUER for production, OMRON NS12 for service). **Hardwired safety (E-stops, guard doors, light curtain safety relays) is out of scope** and stays as it is.
 **Way of working:** trials **between shifts** only. Every change is a small block download with a **fallback switch or the previous block kept for immediate rollback**.
 
@@ -123,6 +123,7 @@ Each trial: **one small download, done between shifts, with an immediate rollbac
 | 4 | Other link/delivery stations, then C5/C6 | 1 per shift change | Switch |
 | 5 | Collators C4/C10 + order change on the new logic | Planned trial at a real order change | Switch |
 | 6 | Remove old FCs, final alarm/HMI cleanup | none | none |
+| 7 | **Retire the LAUER panel:** every LAUER function moved to the OMRON HMI, then the LAUER blocks removed | 1 function per shift change | Keep the LAUER blocks until the last trial passes |
 
 **Phase 0 trial (FC1011), about 15 min:**
 1. Save the current online FC1011 (upload it into a backup project) so you can roll back.
@@ -134,11 +135,18 @@ Each trial: **one small download, done between shifts, with an immediate rollbac
 
 ---
 
-## 8. Open questions (needed before phase 2)
+## 8. Answers and open questions (2026-11-17)
 
-1. ❓ How long is the window between shifts (minutes)? Can conveyors run empty during it?
-2. ✅ Order identity = F4 moment only. ❓ Are all order-A packets out of the 2145 when F4 is pressed?
-3. ❓ Conveyor lengths and speeds (C4, C10, links) and the packet length/width range.
-4. ❓ Is a later move to S7-1500 / TIA planned? (It changes how the FB is written.)
-5. ❓ Is the LAUER panel to be retired after the OMRON HMI is validated?
-6. ❓ The missing block sources (FC2, FC3/5/9, OB35, OB100, FC245, DB2/3/10/12/14/22/50) are needed to finish the specification.
+| # | Question | Answer |
+|---|---|---|
+| 1 | Window between shifts / conveyors may run empty | ✅ Conveyors **may run empty** during the window. ❓ Window length (minutes) still unknown |
+| 2 | Order identity | ✅ **F4 moment only** → internal order counter (§4). ❓ Are all order-A packets out of the 2145 when F4 is pressed? |
+| 3 | Lengths / speeds | ✅ **10 s of fast running clears any conveyor** → used as the standard "proven empty" / clearing time (tunable per station). Lengths are not needed |
+| 4 | S7-1500 / TIA later | ✅ **No.** Target stays **S7-300 CPU 315-2 DP, STEP 7 Classic**. The FB is written in STL with symbolic access, and no TIA-only features are used |
+| 5 | Retire the LAUER panel | ✅ **Yes, after the OMRON HMI is validated.** Target = **one HMI (OMRON)**. Every LAUER function (F-keys `M150.x`/`M152.x`, service `M190.x` + `M161.x`/`M171.x`, `DB LAUER`, FC1/FC100–103/FC190–201) gets an OMRON equivalent; then the LAUER blocks are removed. Until then, `M140.3` decides who controls the run screen (see `NEW_HMI_TEST_PLAN.md`) |
+| 6 | Missing block sources | ✅ OK: FC2, FC3/5/9, OB35, OB100, FC245, DB2/3/10/12/14/22/50 to be uploaded |
+
+**Consequences for the design:**
+* The **mode manager** (§3) has one HMI source in the end state. During transition it accepts LAUER or OMRON, selected by one bit (no more scattered `M140.3` tests).
+* Standard "clear / proven empty" time = **10 s** per station.
+* The **LAUER retirement** is its own migration phase, after phase 5: move each LAUER function to OMRON, trial between shifts, then remove the LAUER blocks.
