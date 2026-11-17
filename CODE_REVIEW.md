@@ -535,3 +535,8 @@ The `B10.3`/`M51.7` proof resets added in §14.1 are kept as extra safety.
 | E | Clearing ends with packets still on C10. | Both | ✅ **Fixed** (§14.1: C10 must be proven empty) |
 
 **Proposal for A:** always hold C10 and always require S3.2 after a clearing (remove Case B). Operators confirm every order change, which is safe and simple. The alternative is to make the "empty" check use step registers as well as sensors, and to run it on any start (CL2), but it can still be fooled.
+
+### 14.4 Status (operator, 2026-11-17)
+* `T137` and `M10.7` confirmed **unused** in the PLC project.
+* The machine is in production, so **no download yet**. The clearing changes (§14.1, §14.3 B) wait for a maintenance window.
+* While waiting, monitor **read-only** in a VAT during a real order change: `M10.0`, `M10.5`, `M10.6`, `M58.3`, `M55.0`–`M55.6`, `M54.2`, `M5.4`, `M5.0`, `M8.4`, `M8.5`, `M140.3`, `"HMI_DB".CLEARING_SSW_MAIN`, `T128`, `T109`. This shows which path (§14.3 A–D) happens on this machine.
