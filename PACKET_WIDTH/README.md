@@ -88,7 +88,7 @@ In another project the operator reads the FM350-2 directly: `L PID 264` = channe
 | DB30 | |
 |---|---|
 | `Enc_Direct` | 0 = `ACT_CNTV5` (as before) / **1 = direct `PID` read every scan** |
-| `Enc_PID_Addr` | Channel 5 address. Module at **320**: try **340** (ch0 at +0); if wrong, **348** (ch0 at +8, as `PID 264` suggests if that module was at 256) |
+| `Enc_PID_Addr` | Direct address. Default **328** (= module 320 + 8, like 410) |
 | `Enc_Live` | Value used this scan |
 
 **Try (online, no download):**
@@ -97,3 +97,7 @@ In another project the operator reads the FM350-2 directly: `L PID 264` = channe
 3. Compare `Cal_mm_Pulse`, `Cal_Speed_mm_s` (≈ 510) and `Width_mm_Cal` (≈ 436 for the 407 mm sacks) with `Enc_Direct` = 0 and = 1.
 
 A wrong address only gives an access error (OB122 exists, the CPU stays in RUN, see the diagnostic buffer).
+
+### From project 410 (same FM350-2)
+`FC120`: `L PID 264` = channel 0 `ACT_CNTV`, **module base 256 + offset 8**, input area **PIW 256…271 (16 bytes)**, confirmed live. For 404 (module 320, `MOD_ADR` = `W#16#140`): **channel 0 = `PID 328`**, input area 320…335. 340/348 are outside it (access error), so the default is now 328.
+**Open:** C10 is **channel 5**. With 16 input bytes there is room for 2 count values only (+8, +12). **Check online:** VAT `PID 328`, `PID 332` and `"FM350 DB".ACT_CNTV0` … `ACT_CNTV7` with C10 running: which channel do they follow? If channel 5 is not there, the fix is in FC1300 instead: call `CNT2_RD` until the job is done (`BUSY` = 0) and only then start the next one.

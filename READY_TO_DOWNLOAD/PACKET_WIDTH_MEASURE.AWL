@@ -38,7 +38,7 @@ VERSION : 0.5
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
    Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
    Enc_Direct : BOOL  := FALSE;	//0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS) / 1 = PID Direct (Every Scan)
-   Enc_PID_Addr : INT  := 340;	//FM350-2 Ch5 Direct Address (Module 320: Try 340, Else 348)
+   Enc_PID_Addr : INT  := 328;	//FM350-2 Direct Count (Module 320 + 8 = Ch0, as 410 PID 264). Find the PID = ACT_CNTV5
    Enc_Live : DINT ;	//Encoder Value Used This Scan
    Active : BOOL ;	//C10 Transfering
    FP_Start : BOOL ;	//Edge Memory
