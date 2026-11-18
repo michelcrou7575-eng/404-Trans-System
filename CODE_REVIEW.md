@@ -646,3 +646,10 @@ Operator (2026-11-18): **each delivery takes one packet off the edge and brings 
 **v0.6:** C23 count-down no longer uses `B15.7`. The rising edge of **Delivery Done `M87.5`** (once per delivery cycle, until the steps reset) gives a 500 ms pulse (`FP M283.0`, `SE T 138`, both free) as `Bit_1` and `Transfer_Start` of FC8. FC8 counts it as one packet leaving (ON 500 ms ≥ 300 ms, then gap 300 ms) → exactly **−1 per delivery**, whatever the packet shape. Butted rule off. Count-up (C22 exit `B15.5` while C23 fills) unchanged.
 
 **Test:** VAT `M 87.5`, `T 138`, `"DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.Count_Result`. Expected: −1 about 0.8 s after each Delivery Done → 6 > 5 > 4 > 3 > 2 > 1 > 0.
+
+### 16.3 FC1208 v0.7: only a packet the sensor has seen is counted down (replaces v0.6)
+Operator: the count-down must be for a packet **the sensor has seen**. In v0.6 a delivery without a packet would also have counted −1: step 24N5 can start a delivery with `B15.7` off (`ON "B 15.7"` in its condition).
+
+**v0.7:** `M283.1` "Packet Seen" is **set** when `B15.7` is ON during the delivery (`M87.4 AN M87.5`). On the rising edge of Delivery Done `M87.5` (= `B15.7` seen clear), the 500 ms count-down pulse (`SE T 138`) is given **only if `M283.1` is set**. `M283.1` is reset by the pulse or by the steps reset `M87.6`. Result: −1 only for a packet seen **on the edge** and seen **leaving**, and only once per delivery (the sag cannot count it twice). `M283.0`, `M283.1` and `T138` are free.
+
+**Test:** VAT `B 15.7`, `M 87.4`, `M 87.5`, `M 283.1`, `T 138`, `…Conveyor_C23_Delivery.Count_Result`. Per delivery: `M283.1` = 1 while the packet is on the edge, then −1 about 0.8 s after `M87.5`. A delivery without a packet gives no count.

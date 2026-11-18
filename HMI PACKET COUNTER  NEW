@@ -3,7 +3,7 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.6
+VERSION : 0.7
 
 
 VAR_TEMP
@@ -480,13 +480,23 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
       AN    "M 87.2"; 
       =     #BIT0; 
 //;
-//C23: One Delivery = One Packet Leaves (the next one comes to the edge).
-//Exit Sens B15.7 can NOT be used: beam at top of stack, a U-Shape packet
-//clears it in its sag (counted 2). Count Down = 1 pulse per Delivery Done.
-      A     "M 87.5"; // Delivery Done - Once per Delivery
+//C23: Count Down only a packet the Exit Sens has SEEN on the edge and SEEN
+//leave (Delivery Done M87.5 = B15.7 clear). Once per delivery: the sag of a
+//U-Shape packet (beam at top of stack) can not count it twice.
+      A     "M 87.4"; // Delivery
+      AN    "M 87.5"; 
+      A     "B 15.7"; // Packet on the Edge - Seen by Exit Sens
+      S     M    283.1; // Packet Seen (Free)
+//;
+      A     "M 87.5"; // Delivery Done - Exit Sens Clear
       FP    M    283.0; // Edge Memory (Free)
+      A     M    283.1; // Only if a Packet was Seen
       L     S5T#500MS; 
-      SE    T    138; // Pulse 500mS (> Preset_MIN 300mS)
+      SE    T    138; // Count Down Pulse 500mS (> Preset_MIN 300mS)
+//;
+      A     T    138; // Counted
+      O     "M 87.6"; // Steps Reset
+      R     M    283.1; 
 //;
       A     T    138; 
       =     #BIT1; // Count Down Pulse
