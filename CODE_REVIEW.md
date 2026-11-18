@@ -627,3 +627,15 @@ No change to FC8, the conveyors or the DBs. Download FC1208 only, between shifts
 Agreed with the operator: the fixed program blocks get new numbers (FC10xx → FC9xx). OB1 calls the old or the new block depending on one bit per block (`M280.0`…`M282.4`). All bits at 0 = exactly today's machine. Rollback = reset the bit, no download. Details, the table and the steps are in `NEW_FC9xx/README.md`. **PLCSIM test OK (2026-11-18):** compiles, no CPU stop, every switch on/off.
 
 Blocks with real changes: **FC911** clearing (§14), **FC924** C3, **FC938** C6, **FC978** C21 (init fixes). The 17 other FC9xx are unchanged copies of the running code (verified line by line against the export). The OB1 for this step keeps `>D` so that its download changes nothing. FC1208 v0.4 (§16) stays a direct FC1208 download.
+
+### 16.1 Real cause: U-shape packets at the C23 exit sensor (2026-11-18)
+v0.4 did **not** fix it. A photo from the operator shows the cause: the C23 exit sensor `B15.7` is a retro-reflective sensor whose beam crosses **at the top of the stack** (to keep it above the dust). A **U-shaped packet** (sagging middle) blocks the beam with its front edge, clears it in the sag, and blocks it again with its rear edge. FC8 sees the sag as a gap (≥ 300 ms) → **−1**, then the rear edge → **−1** again. When the rear pulse is shorter than 300 ms it is dropped → 6 > 4 > 2 > **1** > 0. Lowering the sensor is not possible (dust).
+
+The C23 step logic is also affected: Delivery Done (`M87.5`) is set as soon as `B15.7` clears, i.e. **in the sag**. The belt keeps running during `M87.5` (3 s, `Timer 89`), so the rear passes, but with v0.4 the counter's `Transfer_Start` had already dropped.
+
+**FC1208 v0.5 (C23 only):**
+* `B15.7` is bridged with an **off-delay of 800 ms** (`SF T 138`, free), so the sag of a U-shape no longer counts as a gap. **TUNE** if needed.
+* `Transfer_Start` = `M87.4 AN M87.6 A A54.0`: the delivery stays active through Delivery Done until the step reset, so the rear of the packet is part of the same packet.
+* Butted-packet rule **off** for C23 (`HighSpd_Dimension_mS := 0`). On C23 every packet must clear `B15.7` for the delivery step to finish, so packets are never butted at the exit.
+
+**Condition:** two packets must pass `B15.7` more than about 1.1 s apart (800 ms bridge + 300 ms gap confirm), otherwise they are counted as one. **To check in a VAT:** `B15.7`, `T 138`, `.Count_Result`, `.Bit1_Exit_mS`, `.Bit1_OFF_mS`. Expected: 6 > 5 > 4 > 3 > 2 > 1 > 0. If two close packets count as one, lower the 800 ms. If a U-shape still counts 2, raise it.

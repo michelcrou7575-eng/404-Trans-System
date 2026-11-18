@@ -3,13 +3,14 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.4
+VERSION : 0.5
 
 
 VAR_TEMP
   ERROR : BOOL ;	
   BIT0 : BOOL ;	//Count UP Input
   XFER : BOOL ;	//Transfer Active
+  BIT1 : BOOL ;	//C23 Exit Sensor - U-Shape Bridged
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
   DIM_237 : INT ;	//C10 Width @ 23.7 m/min [mS]
 END_VAR
@@ -479,14 +480,21 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
       AN    "M 87.2"; 
       =     #BIT0; 
 //;
-      A     "M 87.4"; 
-      AN    "M 87.5"; 
-      A     "A 54.0"; // Fix: Only while the belt runs (stops for the loader, M 70.0)
+      A     "B 15.7"; // C23 Exit Sens (Reflector at Top of Stack)
+      L     S5T#800MS; // TUNE - Bridge the Sag of a U-Shape Packet
+      SF    T    138; // Off-Delay: Sag = Still the Same Packet
+//;
+      A     T    138; 
+      =     #BIT1; 
+//;
+      A     "M 87.4"; // Delivery (Stays Set Through Delivery Done M 87.5)
+      AN    "M 87.6"; // Until Steps Reset - Rear of Packet Still Counted
+      A     "A 54.0"; // Only while the belt runs (stops for the loader, M 70.0)
       =     #XFER; 
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "B 15.7",
+           Bit_1                    := #BIT1,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
            Space_DX_mS              := 600,
@@ -494,7 +502,7 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
            Conveyor_Type            := 2,
            Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := #DIM_237,
+           HighSpd_Dimension_mS     := 0,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_23_COUNT,
