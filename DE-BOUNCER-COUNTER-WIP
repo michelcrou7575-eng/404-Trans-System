@@ -1,7 +1,7 @@
 FUNCTION "DE-BOUNCER / COUNTER" : VOID
 TITLE =Packet De-Bouncer / Counter  FC8
 //==========================================================================
-//  PACKET DE-BOUNCER / COUNTER  -  v0.8  (Replaces FC6 "DE-BOUNCER OLD")
+//  PACKET DE-BOUNCER / COUNTER  -  v0.7  (Replaces FC6 "DE-BOUNCER OLD")
 //
 //  COUNT UP   (Bit_0 = InFeed Sensor, gated by the caller)
 //    - Bit_0 ON time is added while the packet is under the sensor.
@@ -9,8 +9,6 @@ TITLE =Packet De-Bouncer / Counter  FC8
 //    - Re-armed only after Bit_0 stays OFF for the Gap time, so a
 //      "U" shaped packet (short opening) is counted ONCE.
 //    - A blip shorter than Preset_MIN_mS is dropped at the Gap.
-//    - Butted packets (infeed sensor never clears, v0.8): +1 every
-//      LowSpd_Dimension_mS + Gap of ON time. 0 disables this.
 //
 //  COUNT DOWN (Bit_1 = RAW Exit Sensor, Transfer_Start = Transfer Step)
 //    - Bit_1 ON time is only added while Transfer_Start is ON
@@ -32,11 +30,10 @@ TITLE =Packet De-Bouncer / Counter  FC8
 //    - Cleared by Error_Reset.
 //
 //  Call while the conveyor runs + ~1 s off-delay.
-//  ReSample_DX, Conveyor_Type: kept for interface compatibility, not used.
-//  LowSpd_Dimension_mS: used since v0.8 = InFeed packet dimension [mS]
-//  for butted packets (count UP). 0 = Off (as before).
+//  ReSample_DX, Conveyor_Type, LowSpd_Dimension_mS: kept for interface
+//  compatibility, not used.
 //==========================================================================
-VERSION : 0.8
+VERSION : 0.7
 
 
 VAR_INPUT
@@ -48,7 +45,7 @@ VAR_INPUT
   ReSample_DX : INT ;	//Not Used (Compatibility)
   Conveyor_Type : INT ;	//Info Only: 1 Collator, 2 Delivery, 3 Link
   Preset_MIN_mS : INT ;	//Min ON Time to Accept a Packet [mS]
-  LowSpd_Dimension_mS : INT ;	//InFeed Packet Dimension [mS] - Butted Count UP - 0 = Off
+  LowSpd_Dimension_mS : INT ;	//Not Used (Compatibility)
   HighSpd_Dimension_mS : INT ;	//Packet Dimension @ Transfer Speed [mS] - 0 = Off
   Plc_Scan_mS : INT ;	//PLC ScanTime [mS]
 END_VAR
@@ -172,39 +169,6 @@ TITLE =Count UP - Packet Accepted +1
       S     #IO_DB.Count_Done_Latch_0; 
 
 U003: NOP   0; 
-NETWORK
-TITLE =Count UP - Butted Packets +1 (InFeed Sensor Never Clears)
-//v0.8: Packets transferred butted (no gap) were counted once per group.
-//+1 every LowSpd_Dimension_mS + Gap of ON time, the rest is kept.
-
-      A     #Bit_0; 
-      A     #IO_DB.Bit0_ON_Latch; 
-      A     #IO_DB.Count_Done_Latch_0; // First Packet Already Counted
-      A(    ; 
-      L     #LowSpd_Dimension_mS; 
-      L     #Preset_MIN_mS; 
-      >I    ; // Enabled
-      )     ; 
-      A(    ; 
-      L     #LowSpd_Dimension_mS; 
-      L     #IO_DB.Space_Between; 
-      +I    ; // Window = Dimension + Gap
-      L     #IO_DB.Bit0_Entry_mS; 
-      <=I   ; // Window <= ON Time
-      )     ; 
-      JCN   U005; 
-
-      L     #IO_DB.Count_Result; 
-      L     1; 
-      +I    ; 
-      T     #IO_DB.Count_Result; 
-//;
-      L     #IO_DB.Bit0_Entry_mS; 
-      L     #LowSpd_Dimension_mS; 
-      -I    ; 
-      T     #IO_DB.Bit0_Entry_mS; // Keep the Rest for the Next Packet
-
-U005: NOP   0; 
 NETWORK
 TITLE =Count UP - Gap Confirmed - Re-Arm
 
