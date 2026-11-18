@@ -3,7 +3,7 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.11
+VERSION : 0.8
 
 
 VAR_TEMP
@@ -11,10 +11,6 @@ VAR_TEMP
   BIT0 : BOOL ;	//Count UP Input
   XFER : BOOL ;	//Transfer Active
   BIT1 : BOOL ;	//C13/C23 Count Down Pulse - One per Delivery
-  C11_BEFORE : INT ;	//C11 Count Before FC8 Call
-  C11_OUT : INT ;	//Packets C11 Counted Down This Scan (Transfer to C12)
-  C21_BEFORE : INT ;	//C21 Count Before FC8 Call
-  C21_OUT : INT ;	//Packets C21 Counted Down This Scan (Transfer to C22)
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
   DIM_237 : INT ;	//C10 Width @ 23.7 m/min [mS]
 END_VAR
@@ -271,9 +267,6 @@ M480: NOP   0;
 NETWORK
 TITLE =Packet Counter - Link Conveyor 11 (Low)
 
-      L     0; 
-      T     #C11_OUT; // Default: Nothing Passed to C12
-//;
       A     "A 48.3"; 
       L     S5T#1S; 
       SF    "Timer 122"; // Call Hold 1s
@@ -294,9 +287,6 @@ TITLE =Packet Counter - Link Conveyor 11 (Low)
       AN    "M 59.4"; 
       =     #XFER; 
 //;
-      L     "HMI_DB".CONV_11_COUNT; 
-      T     #C11_BEFORE; 
-//;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
            Bit_1                    := "B 10.7",
@@ -313,33 +303,10 @@ TITLE =Packet Counter - Link Conveyor 11 (Low)
            Word_Count               := "HMI_DB".CONV_11_COUNT,
            IO_DB                    := "DEBOUNCER COUNTER DB".Conveyor_C11_Link);
 
-//Packets C11 Counted Down = Seen Leaving C11 into C12 (also the last one, counted
-//after the transfer step ends). A reset to 0 is already in CONV_11_COUNT = no change.
-      L     #C11_BEFORE; 
-      L     "HMI_DB".CONV_11_COUNT; 
-      -I    ; 
-      T     #C11_OUT; 
-//;
-      L     0; 
-      >=I   ; // Never Negative
-      JC    X11A; 
-
-      L     0; 
-      T     #C11_OUT; 
-
-X11A: NOP   0; 
-
 M483: NOP   0; 
 NETWORK
 TITLE =Packet Counter - Link Conveyor 12 (Low)
 
-//C12 Count UP = Packets C11 Counted Down (Seen Leaving C11 at its Exit Sens)
-//C12 InFeed = C11 Exit Sens: counting it again on C12 lost butted packets.
-      L     "HMI_DB".CONV_12_COUNT; 
-      L     #C11_OUT; 
-      +I    ; 
-      T     "HMI_DB".CONV_12_COUNT; // FC8 Takes Over on Next Call
-//;
       A     "A 48.6"; 
       L     S5T#1S; 
       SF    "Timer 123"; // Call Hold 1s
@@ -350,7 +317,9 @@ TITLE =Packet Counter - Link Conveyor 12 (Low)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C12_Link.Maximum_Count; 
-      CLR   ; // No Own Count UP (Done Above)
+      A     "B 10.7"; 
+      A     "M 63.1"; 
+      AN    "M 63.2"; 
       =     #BIT0; 
 //;
       A     "M 63.3"; 
@@ -434,9 +403,6 @@ M490: NOP   0;
 NETWORK
 TITLE =Packet Counter - Link Conveyor 21 (High)
 
-      L     0; 
-      T     #C21_OUT; // Default: Nothing Passed to C22
-//;
       A     "A 53.4"; 
       L     S5T#1S; 
       SF    "Timer 125"; // Call Hold 1s
@@ -457,9 +423,6 @@ TITLE =Packet Counter - Link Conveyor 21 (High)
       AN    "M 79.4"; 
       =     #XFER; 
 //;
-      L     "HMI_DB".CONV_21_COUNT; 
-      T     #C21_BEFORE; 
-//;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
            Bit_1                    := "B 15.4",
@@ -476,33 +439,10 @@ TITLE =Packet Counter - Link Conveyor 21 (High)
            Word_Count               := "HMI_DB".CONV_21_COUNT,
            IO_DB                    := "DEBOUNCER COUNTER DB".Conveyor_C21_Link);
 
-//Packets C21 Counted Down = Seen Leaving C21 into C22 (also the last one, counted
-//after the transfer step ends). A reset to 0 is already in CONV_21_COUNT = no change.
-      L     #C21_BEFORE; 
-      L     "HMI_DB".CONV_21_COUNT; 
-      -I    ; 
-      T     #C21_OUT; 
-//;
-      L     0; 
-      >=I   ; // Never Negative
-      JC    X21A; 
-
-      L     0; 
-      T     #C21_OUT; 
-
-X21A: NOP   0; 
-
 M534: NOP   0; 
 NETWORK
 TITLE =Packet Counter - Link Conveyor 22 (High)
 
-//C22 Count UP = Packets C21 Counted Down (Seen Leaving C21 at its Exit Sens)
-//C22 InFeed = C21 Exit Sens: counting it again on C22 lost butted packets.
-      L     "HMI_DB".CONV_22_COUNT; 
-      L     #C21_OUT; 
-      +I    ; 
-      T     "HMI_DB".CONV_22_COUNT; // FC8 Takes Over on Next Call
-//;
       A     "A 53.6"; 
       L     S5T#1S; 
       SF    "Timer 126"; // Call Hold 1s
@@ -513,7 +453,9 @@ TITLE =Packet Counter - Link Conveyor 22 (High)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C22_Link.Maximum_Count; 
-      CLR   ; // No Own Count UP (Done Above)
+      A     "B 15.4"; 
+      A     "M 83.1"; 
+      AN    "M 83.2"; 
       =     #BIT0; 
 //;
       A     "M 83.3"; 
@@ -636,11 +578,6 @@ F556: NOP   0;
       A     "M 59.4"; 
       JNB   F594; 
 
-      L     "HMI_DB".CONV_12_COUNT; // Transfer is Always Complete:
-      L     "HMI_DB".CONV_11_COUNT; // a packet C11 has not counted down yet
-      +I    ; // (its gap not confirmed) moved with the load
-      T     "HMI_DB".CONV_12_COUNT; 
-//;
       L     0; 
       T     "HMI_DB".CONV_11_COUNT; // FC8 Takes Over 0 on Next Call
 
@@ -667,11 +604,6 @@ F676: NOP   0;
       A     "M 79.4"; 
       JNB   F794; 
 
-      L     "HMI_DB".CONV_22_COUNT; // Transfer is Always Complete:
-      L     "HMI_DB".CONV_21_COUNT; // a packet C21 has not counted down yet
-      +I    ; // (its gap not confirmed) moved with the load
-      T     "HMI_DB".CONV_22_COUNT; 
-//;
       L     0; 
       T     "HMI_DB".CONV_21_COUNT; // FC8 Takes Over 0 on Next Call
 
