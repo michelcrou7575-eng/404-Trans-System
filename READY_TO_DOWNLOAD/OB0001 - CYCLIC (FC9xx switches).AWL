@@ -145,6 +145,8 @@ E050: NOP   0;
       JU    E054; 
 N054: CALL FC 954 ;
 E054: NOP   0; 
+
+      CALL FC 1210 ; // PACKET WIDTH MEASURE - Measurement Only (DB30)
       A     M 281.5; // 1 = NEW FC958 / 0 = OLD FC1058
       JC    N058; 
       CALL "CONVEYOR 11 - LINK 1 LO" ;
