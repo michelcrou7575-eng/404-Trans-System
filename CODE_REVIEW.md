@@ -656,3 +656,13 @@ Operator: the count-down must be for a packet **the sensor has seen**. In v0.6 a
 
 ### 16.4 FC1208 v0.8: C13 gets the same fix as C23
 C13 (low level) has the same delivery steps (`M67.4` Delivery, `M67.5` Delivery Done = `B11.2` clear, `M67.6` steps reset) and the same kind of exit sensor `B11.2`. Same logic as §16.3: `M283.3` Packet Seen, `FP M283.2`, `SE T 139` (all free), butted rule off. `DIM_237` is no longer used (kept, harmless).
+
+### 16.5 C12 counts about half on a transfer from C11 (FC8 v0.8 + FC1208 v0.9)
+VAT (operator, 2026-11-18): after C11 → C12, C12 shows 3 instead of 6 (C13/C21/C22/C23 show 6).
+
+**Cause:** the same sensor `B10.7` (C11 exit = C12 infeed) counts **C11 down** correctly, because FC8's count-down has the **butted-packet rule** (−1 every packet dimension of continuous ON). FC8's **count-up has no such rule**: it re-arms only after a 300 ms gap. Packets leaving C11 for C12 run at the same speed and arrive **butted** (or with only short sags), so pairs are counted once → about half.
+
+**FC8 v0.8:** new network "Count UP - Butted Packets": while `Bit_0` stays ON after the first +1, **+1 every `LowSpd_Dimension_mS` + Gap** of ON time, and the rest is kept (same rule as the count-down). It uses the existing, until now unused input `LowSpd_Dimension_mS`; **0 = off**, so every other conveyor behaves exactly as before (no interface change, only its comment).
+**FC1208 v0.9:** C12 passes `LowSpd_Dimension_mS := #DIM_31` (the same dimension that makes C11's count-down correct), and C12's count-up is gated with `A "A 48.6"` (belt running), so a packet parked on `B10.7` is not counted again and again.
+
+**Download:** FC8 and FC1208 together in the same window. **Test:** VAT `B 10.7`, `…Conveyor_C12_Link.Count_Result`, `.Bit0_Entry_mS`, `CONV_11_COUNT`, `CONV_12_COUNT`: after C11 → C12, C12 = the C11 count before transfer. If the same happens on C22 (or C13/C23 count-up), give them `#DIM_31` / `#DIM_237` the same way.
