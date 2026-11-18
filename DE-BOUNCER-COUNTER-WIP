@@ -62,12 +62,14 @@ TITLE =Init on First Call - Take Over HMI Count
 
       AN    #IO_DB.FirstScan_Done; 
       JCN   INIT; 
+
       L     0; 
       T     #IO_DB.Bit0_Entry_mS; 
       T     #IO_DB.Bit0_OFF_mS; 
       T     #IO_DB.Bit0_Stuck_mS; 
       T     #IO_DB.Bit1_Exit_mS; 
       T     #IO_DB.Bit1_OFF_mS; 
+//;
       L     #Word_Count; 
       T     #IO_DB.Count_Result; 
       T     #IO_DB.HMI_Last; 
@@ -77,6 +79,7 @@ TITLE =Init on First Call - Take Over HMI Count
       R     #IO_DB.Count_Done_Latch_0; 
       R     #IO_DB.Error; 
       S     #IO_DB.FirstScan_Done; 
+
 INIT: NOP   0; 
 NETWORK
 TITLE =HMI Count Changed Outside (Operator Edit / Reset) - Take Over
@@ -85,8 +88,10 @@ TITLE =HMI Count Changed Outside (Operator Edit / Reset) - Take Over
       L     #IO_DB.HMI_Last; 
       <>I   ; 
       JCN   H001; 
+
       L     #Word_Count; 
       T     #IO_DB.Count_Result; 
+
 H001: NOP   0; 
 NETWORK
 TITLE =Windows
@@ -95,13 +100,17 @@ TITLE =Windows
       L     2; 
       /I    ; 
       T     #IO_DB.Space_Between; // Gap Confirm [mS]
+//;
       L     100; 
       <I    ; 
       JCN   P001; 
+
       L     100; 
       T     #IO_DB.Space_Between; // Min 100 mS
+
 P001: L     #Preset_MIN_mS; 
       T     #IO_DB.InFeed_Window_mS; // Info
+//;
       L     #HighSpd_Dimension_mS; 
       L     #IO_DB.Space_Between; 
       +I    ; 
@@ -111,27 +120,34 @@ TITLE =Count UP - InFeed Sensor Timing
 
       A     #Bit_0; 
       JCN   U001; 
+
       SET   ; 
       S     #IO_DB.Bit0_ON_Latch; // Packet Seen
+//;
       L     0; 
       T     #IO_DB.Bit0_OFF_mS; 
+//;
       L     #IO_DB.Bit0_Entry_mS; 
       L     #Plc_Scan_mS; 
       +I    ; 
       T     #IO_DB.Bit0_Entry_mS; // ON Time - This Packet
+//;
       L     #IO_DB.Bit0_Stuck_mS; 
       L     #Plc_Scan_mS; 
       +I    ; 
       T     #IO_DB.Bit0_Stuck_mS; // Continuous ON Time
       JU    U002; 
+
 U001: L     0; 
       T     #IO_DB.Bit0_Stuck_mS; 
       A     #IO_DB.Bit0_ON_Latch; 
       JCN   U002; 
+
       L     #IO_DB.Bit0_OFF_mS; 
       L     #Plc_Scan_mS; 
       +I    ; 
       T     #IO_DB.Bit0_OFF_mS; // Gap Time
+
 U002: NOP   0; 
 NETWORK
 TITLE =Count UP - Packet Accepted +1
@@ -144,12 +160,14 @@ TITLE =Count UP - Packet Accepted +1
       >=I   ; 
       )     ; 
       JCN   U003; 
+
       L     #IO_DB.Count_Result; 
       L     1; 
       +I    ; 
       T     #IO_DB.Count_Result; 
       SET   ; 
       S     #IO_DB.Count_Done_Latch_0; 
+
 U003: NOP   0; 
 NETWORK
 TITLE =Count UP - Gap Confirmed - Re-Arm
@@ -160,35 +178,44 @@ TITLE =Count UP - Gap Confirmed - Re-Arm
       >=I   ; 
       )     ; 
       JCN   U004; 
+
       SET   ; 
       R     #IO_DB.Bit0_ON_Latch; 
       R     #IO_DB.Count_Done_Latch_0; 
+//;
       L     0; 
       T     #IO_DB.Bit0_Entry_mS; 
       T     #IO_DB.Bit0_OFF_mS; 
+
 U004: NOP   0; 
 NETWORK
 TITLE =Count DOWN - Exit Sensor Timing
 
       A     #Bit_1; 
       JCN   D001; 
+
       L     0; 
       T     #IO_DB.Bit1_OFF_mS; 
       A     #Transfer_Start; // ON Time only while Transfering
       JCN   D002; 
+
       SET   ; 
       S     #IO_DB.Bit1_ON_Latch; 
+//;
       L     #IO_DB.Bit1_Exit_mS; 
       L     #Plc_Scan_mS; 
       +I    ; 
       T     #IO_DB.Bit1_Exit_mS; // ON Time - This Packet
       JU    D002; 
+
 D001: A     #IO_DB.Bit1_ON_Latch; 
       JCN   D002; 
+
       L     #IO_DB.Bit1_OFF_mS; 
       L     #Plc_Scan_mS; 
       +I    ; 
       T     #IO_DB.Bit1_OFF_mS; // Gap Time
+
 D002: NOP   0; 
 NETWORK
 TITLE =Count DOWN - Butted Packets -1 (Exit Sensor Never Clears)
@@ -207,14 +234,17 @@ TITLE =Count DOWN - Butted Packets -1 (Exit Sensor Never Clears)
       >=I   ; 
       )     ; 
       JCN   D003; 
+
       L     #IO_DB.Count_Result; 
       L     1; 
       -I    ; 
       T     #IO_DB.Count_Result; 
+//;
       L     #IO_DB.Bit1_Exit_mS; 
       L     #HighSpd_Dimension_mS; 
       -I    ; 
       T     #IO_DB.Bit1_Exit_mS; // Keep the Rest for the Next Packet
+
 D003: NOP   0; 
 NETWORK
 TITLE =Count DOWN - Packet Left -1
@@ -225,21 +255,26 @@ TITLE =Count DOWN - Packet Left -1
       >=I   ; 
       )     ; 
       JCN   D005; 
+
       A(    ; 
       L     #IO_DB.Bit1_Exit_mS; 
       L     #Preset_MIN_mS; 
       >=I   ; 
       )     ; 
       JCN   D004; // Too Short = Not a Packet
+
       L     #IO_DB.Count_Result; 
       L     1; 
       -I    ; 
       T     #IO_DB.Count_Result; 
+
 D004: SET   ; 
       R     #IO_DB.Bit1_ON_Latch; 
+//;
       L     0; 
       T     #IO_DB.Bit1_Exit_mS; 
       T     #IO_DB.Bit1_OFF_mS; 
+
 D005: NOP   0; 
 NETWORK
 TITLE =Timers Overflow Clamp 30s
@@ -248,20 +283,26 @@ TITLE =Timers Overflow Clamp 30s
       L     30000; 
       >I    ; 
       JCN   K001; 
+
       L     30000; 
       T     #IO_DB.Bit0_Entry_mS; 
+
 K001: L     #IO_DB.Bit0_Stuck_mS; 
       L     30000; 
       >I    ; 
       JCN   K002; 
+
       L     30000; 
       T     #IO_DB.Bit0_Stuck_mS; 
+
 K002: L     #IO_DB.Bit1_Exit_mS; 
       L     30000; 
       >I    ; 
       JCN   K003; 
+
       L     30000; 
       T     #IO_DB.Bit1_Exit_mS; 
+
 K003: NOP   0; 
 NETWORK
 TITLE =Clamp Packet Qty  0...Maximum_Count  (Max 0 = No Limit)
@@ -270,18 +311,23 @@ TITLE =Clamp Packet Qty  0...Maximum_Count  (Max 0 = No Limit)
       L     0; 
       <I    ; 
       JCN   C001; 
+
       L     0; 
       T     #IO_DB.Count_Result; 
+
 C001: L     #IO_DB.Maximum_Count; 
       L     0; 
       >I    ; 
       JCN   C002; 
+
       L     #IO_DB.Count_Result; 
       L     #IO_DB.Maximum_Count; 
       >I    ; 
       JCN   C002; 
+
       L     #IO_DB.Maximum_Count; 
       T     #IO_DB.Count_Result; 
+
 C002: NOP   0; 
 NETWORK
 TITLE =InFeed Sensor Stuck >= 5s - Error
@@ -292,8 +338,10 @@ TITLE =InFeed Sensor Stuck >= 5s - Error
       >=I   ; 
       )     ; 
       S     #IO_DB.Error; 
+//;
       A     #Error_Reset; 
       R     #IO_DB.Error; 
+//;
       A     #IO_DB.Error; 
       =     #Q_Error; 
 NETWORK

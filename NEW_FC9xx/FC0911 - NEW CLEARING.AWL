@@ -25,6 +25,7 @@ TITLE =HMI Clearing Call
       A     "M 10.0"; 
       =     "HMI_DB".CLEARING_SSW_STATUS; 
       JC    CLEA; 
+
       L     0; 
 
 CLEA: T     "HMI_DB".CLEARING_FUNCTION; 
@@ -305,6 +306,7 @@ TITLE =Conveyors Clearing Conveyors 1,2,3,4 - TimeOut 30S
       A     "Timer 128"; 
       O     #CLEARING_ABORT; 
       JNB   NCLR; 
+
       L     0; 
       T     "MB 10"; // Clearing OFF
 
@@ -438,6 +440,7 @@ TITLE =Clearing - C10 Proven Empty (Exit Sens Clear While Belt Runs Fast)
       AN    "B 10.6"; // C10 Exit Sens Clear
       L     S5T#10S; // TUNE - Belt Length @ Fast
       SD    T    137; 
+//;
       A     T    137; 
       S     "M 10.7"; // C10 Proven Empty - Set
 //;
