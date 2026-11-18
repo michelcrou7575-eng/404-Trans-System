@@ -639,3 +639,10 @@ The C23 step logic is also affected: Delivery Done (`M87.5`) is set as soon as `
 * Butted-packet rule **off** for C23 (`HighSpd_Dimension_mS := 0`). On C23 every packet must clear `B15.7` for the delivery step to finish, so packets are never butted at the exit.
 
 **Condition:** two packets must pass `B15.7` more than about 1.1 s apart (800 ms bridge + 300 ms gap confirm), otherwise they are counted as one. **To check in a VAT:** `B15.7`, `T 138`, `.Count_Result`, `.Bit1_Exit_mS`, `.Bit1_OFF_mS`. Expected: 6 > 5 > 4 > 3 > 2 > 1 > 0. If two close packets count as one, lower the 800 ms. If a U-shape still counts 2, raise it.
+
+### 16.2 FC1208 v0.6: C23 counts down once per delivery (replaces v0.5)
+Operator (2026-11-18): **each delivery takes one packet off the edge and brings the next one to the edge**, about 30 s between deliveries. The next packet can reach `B15.7` right after the previous one leaves, so the 800 ms bridge of v0.5 could merge two packets into one. v0.5 is dropped.
+
+**v0.6:** C23 count-down no longer uses `B15.7`. The rising edge of **Delivery Done `M87.5`** (once per delivery cycle, until the steps reset) gives a 500 ms pulse (`FP M283.0`, `SE T 138`, both free) as `Bit_1` and `Transfer_Start` of FC8. FC8 counts it as one packet leaving (ON 500 ms ≥ 300 ms, then gap 300 ms) → exactly **−1 per delivery**, whatever the packet shape. Butted rule off. Count-up (C22 exit `B15.5` while C23 fills) unchanged.
+
+**Test:** VAT `M 87.5`, `T 138`, `"DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.Count_Result`. Expected: −1 about 0.8 s after each Delivery Done → 6 > 5 > 4 > 3 > 2 > 1 > 0.

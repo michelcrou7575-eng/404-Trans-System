@@ -3,14 +3,14 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.5
+VERSION : 0.6
 
 
 VAR_TEMP
   ERROR : BOOL ;	
   BIT0 : BOOL ;	//Count UP Input
   XFER : BOOL ;	//Transfer Active
-  BIT1 : BOOL ;	//C23 Exit Sensor - U-Shape Bridged
+  BIT1 : BOOL ;	//C23 Count Down Pulse - One per Delivery
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
   DIM_237 : INT ;	//C10 Width @ 23.7 m/min [mS]
 END_VAR
@@ -480,16 +480,16 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
       AN    "M 87.2"; 
       =     #BIT0; 
 //;
-      A     "B 15.7"; // C23 Exit Sens (Reflector at Top of Stack)
-      L     S5T#800MS; // TUNE - Bridge the Sag of a U-Shape Packet
-      SF    T    138; // Off-Delay: Sag = Still the Same Packet
+//C23: One Delivery = One Packet Leaves (the next one comes to the edge).
+//Exit Sens B15.7 can NOT be used: beam at top of stack, a U-Shape packet
+//clears it in its sag (counted 2). Count Down = 1 pulse per Delivery Done.
+      A     "M 87.5"; // Delivery Done - Once per Delivery
+      FP    M    283.0; // Edge Memory (Free)
+      L     S5T#500MS; 
+      SE    T    138; // Pulse 500mS (> Preset_MIN 300mS)
 //;
       A     T    138; 
-      =     #BIT1; 
-//;
-      A     "M 87.4"; // Delivery (Stays Set Through Delivery Done M 87.5)
-      AN    "M 87.6"; // Until Steps Reset - Rear of Packet Still Counted
-      A     "A 54.0"; // Only while the belt runs (stops for the loader, M 70.0)
+      =     #BIT1; // Count Down Pulse
       =     #XFER; 
 //;
       CALL "DE-BOUNCER / COUNTER" (
