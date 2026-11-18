@@ -3,14 +3,14 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.7
+VERSION : 0.8
 
 
 VAR_TEMP
   ERROR : BOOL ;	
   BIT0 : BOOL ;	//Count UP Input
   XFER : BOOL ;	//Transfer Active
-  BIT1 : BOOL ;	//C23 Count Down Pulse - One per Delivery
+  BIT1 : BOOL ;	//C13/C23 Count Down Pulse - One per Delivery
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
   DIM_237 : INT ;	//C10 Width @ 23.7 m/min [mS]
 END_VAR
@@ -361,14 +361,31 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
       AN    "M 67.2"; 
       =     #BIT0; 
 //;
-      A     "M 67.4"; 
+//C13: Count Down only a packet the Exit Sens has SEEN on the edge and SEEN
+//leave (Delivery Done M67.5 = B11.2 clear). Once per delivery: the sag of a
+//U-Shape packet (beam at top of stack) can not count it twice.
+      A     "M 67.4"; // Delivery
       AN    "M 67.5"; 
-      A     "A 49.0"; // Fix: Only while the belt runs (stops for the loader, M 70.0)
+      A     "B 11.2"; // Packet on the Edge - Seen by Exit Sens
+      S     M    283.3; // Packet Seen (Free)
+//;
+      A     "M 67.5"; // Delivery Done - Exit Sens Clear
+      FP    M    283.2; // Edge Memory (Free)
+      A     M    283.3; // Only if a Packet was Seen
+      L     S5T#500MS; 
+      SE    T    139; // Count Down Pulse 500mS (> Preset_MIN 300mS)
+//;
+      A     T    139; // Counted
+      O     "M 67.6"; // Steps Reset
+      R     M    283.3; 
+//;
+      A     T    139; 
+      =     #BIT1; // Count Down Pulse
       =     #XFER; 
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "B 11.2",
+           Bit_1                    := #BIT1,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
            Space_DX_mS              := 600,
@@ -376,7 +393,7 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
            Conveyor_Type            := 2,
            Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := #DIM_237,
+           HighSpd_Dimension_mS     := 0,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_13_COUNT,

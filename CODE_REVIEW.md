@@ -653,3 +653,6 @@ Operator: the count-down must be for a packet **the sensor has seen**. In v0.6 a
 **v0.7:** `M283.1` "Packet Seen" is **set** when `B15.7` is ON during the delivery (`M87.4 AN M87.5`). On the rising edge of Delivery Done `M87.5` (= `B15.7` seen clear), the 500 ms count-down pulse (`SE T 138`) is given **only if `M283.1` is set**. `M283.1` is reset by the pulse or by the steps reset `M87.6`. Result: −1 only for a packet seen **on the edge** and seen **leaving**, and only once per delivery (the sag cannot count it twice). `M283.0`, `M283.1` and `T138` are free.
 
 **Test:** VAT `B 15.7`, `M 87.4`, `M 87.5`, `M 283.1`, `T 138`, `…Conveyor_C23_Delivery.Count_Result`. Per delivery: `M283.1` = 1 while the packet is on the edge, then −1 about 0.8 s after `M87.5`. A delivery without a packet gives no count.
+
+### 16.4 FC1208 v0.8: C13 gets the same fix as C23
+C13 (low level) has the same delivery steps (`M67.4` Delivery, `M67.5` Delivery Done = `B11.2` clear, `M67.6` steps reset) and the same kind of exit sensor `B11.2`. Same logic as §16.3: `M283.3` Packet Seen, `FP M283.2`, `SE T 139` (all free), butted rule off. `DIM_237` is no longer used (kept, harmless).
