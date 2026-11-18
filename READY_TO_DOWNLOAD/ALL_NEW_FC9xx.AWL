@@ -7836,7 +7836,7 @@ TITLE =Delivery Conveyor 23 - Ready
       A     "Timer 87"; 
       S     "M 86.7"; 
 //;
-      A     "S 2.7"; 
+      A     "M 9.1"; // Fix: Same as C13 - All Reset PBs (S0.7, S2.7, HMI E34.1) - Was S 2.7 only
       AN    "B 15.7"; 
       A     "M 0.3"; 
       R     "M 86.7"; 

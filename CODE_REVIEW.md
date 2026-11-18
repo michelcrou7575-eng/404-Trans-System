@@ -687,3 +687,14 @@ Operator (2026-11-18): C11/C21 load = 6 and their **count-down is fine**; C12/C2
 * The same for C21 → C22 (`B15.4`, `#C21_OUT`, `M79.4`).
 
 New temps `C11_BEFORE`, `C11_OUT`, `C21_BEFORE`, `C21_OUT` (VAR_TEMP, no interface change). **Test:** VAT `CONV_11_COUNT`, `CONV_12_COUNT` (and 21/22) during a transfer: C11 goes 6 → 0 while C12 goes 0 → 6.
+
+## 18. Low level (C11/C12/C13) and high level (C21/C22/C23) must be identical
+Operator rule (2026-11-18): **any change to C11/C12/C13 is made to C21/C22/C23 too**, they are the same machine.
+
+Line-by-line check (addresses masked) of FC958/962/966 against FC978/982/986, and of the FC1208 counter networks:
+| Pair | Result |
+|---|---|
+| FC1208 C11/C21, C12/C22, C13/C23 | **Identical** (v0.11) |
+| C12 / C22 | Identical (only the unused temp `BARRIER_BLINKER` in C12) |
+| C11 / C21 | Same logic. C21's steps reset also clears `MB81`, C11 does not clear `MB61`. Nothing writes `MB61`/`MB81` (only LAUER reads them), so no effect. C21 got the `R #INITIALISATION` fix that C11 already had |
+| C13 / C23 | **One real difference:** the "Delivery Conveyor Ready" fault (`M66.7` / `M86.7`) is reset by `M9.1` (all reset PBs: `S0.7`, `S2.7`, HMI `E34.1`) on C13 but only by `S2.7` (feeder box) on C23. **Fixed in FC986** (and the repo `CONVEYOR 23` working copy): C23 now uses `M9.1` like C13 |

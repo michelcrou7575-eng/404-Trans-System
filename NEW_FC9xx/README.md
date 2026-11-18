@@ -28,7 +28,7 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 | FC1074 LOADER LIFT | FC974 | `M282.1` | none (copy) |
 | FC1078 CONVEYOR 21 | **FC978** | `M282.2` | `R #INITIALISATION` |
 | FC1082 CONVEYOR 22 | FC982 | `M282.3` | none (copy) |
-| FC1086 CONVEYOR 23 | FC986 | `M282.4` | none (copy) |
+| FC1086 CONVEYOR 23 | **FC986** | `M282.4` | Fault reset by `M9.1` (all reset PBs) like C13; was `S2.7` only |
 
 The "copy" blocks are the running code, unchanged. They are the base for the redesign, and future fixes go into them, never into the running FC10xx.
 
