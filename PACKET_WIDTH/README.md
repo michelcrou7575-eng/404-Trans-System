@@ -74,3 +74,9 @@ Desk check (`desk_check_calibration.py`): 6 packets, gaps 163–217 → factor 0
 | `.Width_mm_Cal` | Width with the real factor |
 
 If `Cal_mm_Pulse` is stable over a few transfers, the same correction applies to C10's own width measurement (FC1054 uses 0.31 for "Collator Full"): to decide after the data.
+
+### C10 fast speed = 30.6 m/min = 510 mm/s (operator, 2026-11-18)
+With the first transfer (≈ 1797 pulses/s, 855 ms per packet):
+* Encoder factor ≈ 510 / 1797 = **0.284 mm/pulse** (code: 0.31, +9 %). A Ø 92 mm wheel with single counting would give 0.48: the wheel in the photo is probably not on the C10 encoder, or there is a ratio. `Cal_mm_Pulse` (v0.4) will confirm it.
+* Optical width = 855 ms × 510 mm/s = **436 mm** for a **407 mm** sack: the light barriers see about **+29 mm** (beam + response + sack edges). C11…C23 sensors see the same, so `Width_ms_31` is the right value for the blanking.
+* Expected v0.4 values: `Cal_Speed_mm_s` ≈ 510, `Cal_mm_Pulse` ≈ 0.284, `Width_mm_Cal` ≈ 436.
