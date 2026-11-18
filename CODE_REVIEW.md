@@ -676,3 +676,14 @@ Facts from the C11 / C12 step logic:
 * C11 transfers until `B11.0` (C12 exit) sees a packet. C11 always moves its whole load into an empty C12 (operator rule).
 
 **Proposal (to agree):** on link conveyors, the **count moves with the load**: at the start of the C11 → C12 transfer (`M59.3` rising edge), `CONV_12_COUNT := CONV_11_COUNT`, and C12 no longer counts up from `B10.7`. No sensor timing involved. Same for C21 → C22 if needed. This is the redesign principle (spec §5).
+
+### 16.7 FC1208 v0.11: C12/C22 count up = what C11/C21 count down
+Operator (2026-11-18): C11/C21 load = 6 and their **count-down is fine**; C12/C22 **count-up** is the problem. C12's infeed sensor **is** C11's exit sensor (`B10.7`), and C22's is C21's (`B15.4`). The count-down on that sensor works (butted rule), the count-up on the same sensor does not (needs a 300 ms gap).
+
+**v0.11:**
+* In the C11 network, the count before and after C11's FC8 call is compared: every packet **C11 counts down** (seen leaving at `B10.7`) goes into `#C11_OUT` (never negative; a reset to 0 is already in `CONV_11_COUNT`, so it gives no change).
+* The C12 network starts with `CONV_12_COUNT := CONV_12_COUNT + #C11_OUT` (FC8 takes it over), and C12's own count-up is off (`Bit_0` = 0).
+* At the end of C11's transfer (`M59.4`, where `CONV_11_COUNT` was already set to 0), any count C11 still holds (last packet, gap not yet confirmed) is **added to C12 first**. A transfer is always complete (operator rule).
+* The same for C21 → C22 (`B15.4`, `#C21_OUT`, `M79.4`).
+
+New temps `C11_BEFORE`, `C11_OUT`, `C21_BEFORE`, `C21_OUT` (VAR_TEMP, no interface change). **Test:** VAT `CONV_11_COUNT`, `CONV_12_COUNT` (and 21/22) during a transfer: C11 goes 6 → 0 while C12 goes 0 → 6.
