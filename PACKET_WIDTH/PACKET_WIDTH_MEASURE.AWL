@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.1
+VERSION : 0.2
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -22,12 +22,17 @@ VERSION : 0.1
    Last_Width_mm : INT ;	//Last Packet Width [mm]
    Sag_Max_mm : INT ;	//Longest Sag [mm]
    Gap_Min_mm : INT ;	//Shortest Real Gap Between Packets [mm]
+   Time_ms : DINT ;	//Time Since Packet Front [mS]
+   Fall_ms : DINT ;	//Time at Last OFF [mS]
+   Width_Sum_ms : DINT ;	//Sum of Widths [mS]
+   Width_Avg_ms : INT ;	//Average Width [mS] @ C10 Fast = C11/C12/C21/C22 Speed
+   Last_Width_ms : INT ;	//Last Packet Width [mS]
   END_STRUCT ;
 END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.1
+VERSION : 0.2
 
   STRUCT
    Gap_Min_mm : INT  := 100;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -42,8 +47,9 @@ VERSION : 0.1
    Spare_3 : BOOL ;
    C10_Count_Start : INT ;	//C10 Packet Count at Transfer Start
    Width_mm : INT ;	//VERIFIED Packet Width [mm]
-   Width_ms_31 : INT ;	//Width @ 31.0 m/min (C10 Fast, C11/C12, C21/C22) [mS]
-   Width_ms_237 : INT ;	//Width @ 23.7 m/min (C13/C23) [mS]
+   Width_ms_31 : INT ;	//MEASURED Width [mS] @ C10 Fast = C11/C12/C21/C22 Speed
+   Width_ms_237 : INT ;	//Width [mS] @ 23.7 m/min (C13/C23) = Width_ms_31 x 31 / 23.7
+   Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (31 m/min = 517)
    Good_Count : INT ;	//Transfers Verified
    Bad_Count : INT ;	//Transfers Rejected
    S5 : UDT 10;	//B10.5 C10 Full Sens
@@ -57,8 +63,10 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //Measures every packet passing one sensor with the C10 encoder (0.31 mm/pulse).
 //An OFF shorter than Gap_Min = Sag inside the same packet (U-Shape / low
 //packet), an OFF longer than Gap_Min = real gap: the packet is closed.
+//The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
+//C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.1
+VERSION : 0.2
 
 
 VAR_INPUT
@@ -68,6 +76,7 @@ VAR_INPUT
   Stop : BOOL ;	//First Scan After Transfer
   Enc : DINT ;	//Encoder Counter [Pulses]
   Gap_Min_Pulse : DINT ;	//Real Gap Minimum [Pulses]
+  Scan_mS : INT ;	//PLC Scan Time [mS]
 END_VAR
 VAR_IN_OUT
   Data : UDT 10;	
@@ -94,6 +103,9 @@ TITLE =Transfer Start - Reset
       T     #Data.Sag_Max_mm; 
       L     L#0; 
       T     #Data.Width_Sum_mm; 
+      T     #Data.Width_Sum_ms; 
+      T     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
       L     32767; 
       T     #Data.Width_Min_mm; 
       T     #Data.Gap_Min_mm; 
@@ -206,8 +218,32 @@ S014: SET   ;
       R     #Data.Skip; 
       L     #Enc; 
       T     #Data.Start_Pos; 
+      L     L#0; 
+      T     #Data.Time_ms; 
 
 S010: NOP   0; 
+NETWORK
+TITLE =Packet Time [mS] - Front to Now (Sags Included)
+
+      A     #RUN; 
+      A     #Data.Open; 
+      JCN   S015; 
+
+      L     #Data.Time_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #Data.Time_ms; 
+//;
+      L     #Data.Time_ms; 
+      L     L#30000; 
+      >D    ; // Clamp 30s
+      JCN   S015; 
+
+      L     L#30000; 
+      T     #Data.Time_ms; 
+
+S015: NOP   0; 
 NETWORK
 TITLE =Sensor OFF - Remember Position
 
@@ -219,6 +255,8 @@ TITLE =Sensor OFF - Remember Position
 
       L     #Enc; 
       T     #Data.Fall_Pos; 
+      L     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
       SET   ; 
       S     #Data.Low; 
 
@@ -327,6 +365,16 @@ S044: L     #Data.Width_Sum_mm;
       ITD   ; 
       /D    ; 
       T     #Data.Width_Avg_mm; 
+//;
+      L     #Data.Fall_ms; // Width [mS] = Front -> End
+      T     #Data.Last_Width_ms; 
+      L     #Data.Width_Sum_ms; 
+      +D    ; 
+      T     #Data.Width_Sum_ms; 
+      L     #Data.Count; 
+      ITD   ; 
+      /D    ; 
+      T     #Data.Width_Avg_ms; 
 
 S049: SET   ; 
       R     #Data.Open; 
@@ -350,7 +398,7 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //average widths within Tolerance_Pct) -> Width_mm is VERIFIED and converted
 //to mS for the link (31.0 m/min) and delivery (23.7 m/min) conveyors.
 //Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.1
+VERSION : 0.2
 
 
 VAR_TEMP
@@ -406,6 +454,7 @@ TITLE =B10.5 C10 Full Sens
            Stop                     := #STOP,
            Enc                      := "FM350 DB".ACT_CNTV5,
            Gap_Min_Pulse            := #GAP_P,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
            Data                     := "PACKET WIDTH DB".S5);
 NETWORK
 TITLE =B10.6 C10 Exit Sens
@@ -417,6 +466,7 @@ TITLE =B10.6 C10 Exit Sens
            Stop                     := #STOP,
            Enc                      := "FM350 DB".ACT_CNTV5,
            Gap_Min_Pulse            := #GAP_P,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
            Data                     := "PACKET WIDTH DB".S6);
 NETWORK
 TITLE =Transfer End - Verify (Both Sensors Agree) and Store
@@ -489,22 +539,36 @@ W002: L     "PACKET WIDTH DB".S5.Width_Avg_mm;
       /I    ; 
       T     "PACKET WIDTH DB".Width_mm; 
 //;
-      L     "PACKET WIDTH DB".Width_mm; // mm / (31.0 m/min) = mm x 60 / 31 [mS]
-      ITD   ; 
-      L     L#60; 
-      *D    ; 
-      L     L#31; 
-      /D    ; 
+      L     "PACKET WIDTH DB".S5.Width_Avg_ms; // MEASURED mS @ C10 Fast
+      L     "PACKET WIDTH DB".S6.Width_Avg_ms; 
+      +I    ; 
+      L     2; 
+      /I    ; 
       T     "PACKET WIDTH DB".Width_ms_31; 
 //;
-      L     "PACKET WIDTH DB".Width_mm; // mm / (23.7 m/min) = mm x 600 / 237 [mS]
+      L     "PACKET WIDTH DB".Width_ms_31; // x 31.0 / 23.7 for C13/C23
       ITD   ; 
-      L     L#600; 
+      L     L#310; 
       *D    ; 
       L     L#237; 
       /D    ; 
       T     "PACKET WIDTH DB".Width_ms_237; 
 //;
+      L     "PACKET WIDTH DB".Width_ms_31; // Check: Speed = mm x 1000 / mS
+      L     0; 
+      >I    ; 
+      JCN   W004; 
+
+      L     "PACKET WIDTH DB".Width_mm; 
+      ITD   ; 
+      L     L#1000; 
+      *D    ; 
+      L     "PACKET WIDTH DB".Width_ms_31; 
+      ITD   ; 
+      /D    ; 
+      T     "PACKET WIDTH DB".Speed_mm_s; 
+
+W004: NOP   0; 
       SET   ; 
       S     "PACKET WIDTH DB".Valid; 
       L     "PACKET WIDTH DB".Good_Count; 

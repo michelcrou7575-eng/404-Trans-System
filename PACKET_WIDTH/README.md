@@ -1,4 +1,4 @@
-# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.1
+# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.2
 
 Operator idea (2026-11-18): measure the packet width with **two independent sensors** at the end of C10 while it transfers, compare them to get a **verified** width, then use it later for **sensor blanking** on the C11/C12/C13 and C21/C22/C23 counters (same speed).
 
@@ -7,8 +7,9 @@ Facts from the operator: `B10.5`/`B10.6` are mounted a little lower than the C23
 ## How it measures
 * Window: C10 transferring (`M55.5 AN M55.6`). Encoder `"FM350 DB".ACT_CNTV5`, **0.31 mm/pulse**: independent of speed and stops.
 * For each sensor: front of a packet = sensor ON, end = sensor OFF **for longer than `Gap_Min_mm`** (default 100 mm). A shorter OFF is a **sag** (U-shape / low packet) inside the same packet; it is counted and its length kept (`Sag_Count`, `Sag_Max_mm`).
+* **v0.2: the width is also measured in mS** (time from packet front to packet end, sags included), because C11…C23 have no encoder. C10 fast runs at the C11/C12/C21/C22 speed, so this is the time their sensors will see. `Speed_mm_s` (= mm × 1000 / mS) checks it: 31 m/min = 517 mm/s.
 * A packet already covering the sensor when the transfer starts is partial → not measured (`Skipped`).
-* End of transfer: **verified** only if both sensors measured packets, saw the same number (= C10 count), and their average widths agree within `Tolerance_Pct` (10%). Then `Width_mm`, `Width_ms_31`, `Width_ms_237` are written, `Valid` = 1, `Good_Count` +1. Otherwise `Bad_Count` +1 and the last verified width is kept.
+* End of transfer: **verified** only if both sensors measured packets, saw the same number (= C10 count), and their average widths agree within `Tolerance_Pct` (10%). Then `Width_mm` (encoder), `Width_ms_31` (**measured** mS, average of both sensors), `Width_ms_237` (= `Width_ms_31` × 31 / 23.7 for C13/C23) and `Speed_mm_s` are written, `Valid` = 1, `Good_Count` +1. Otherwise `Bad_Count` +1 and the last verified width is kept.
 * **Writes only DB30.** Nothing else on the machine changes.
 
 ## Blocks (all free in the project)
@@ -36,6 +37,9 @@ Facts from the operator: `B10.5`/`B10.6` are mounted a little lower than the C23
 | `.S5.Sag_Count`, `.S5.Sag_Max_mm`, `.S6.Sag_Count`, `.S6.Sag_Max_mm` | **Sags** (U-shape) seen inside packets |
 | `.S5.Gap_Min_mm`, `.S6.Gap_Min_mm` | Shortest real gap between packets |
 | `.Gap_Min_mm` (setting) | Raise it if `Sag_Max_mm` comes close to it. It must stay below `S5/S6.Gap_Min_mm` |
-| `.Width_ms_31`, `.Width_ms_237` | Width in mS for the link / delivery conveyors (for the later blanking) |
+| `.Width_ms_31` | **Measured width [mS]** at C10 fast = C11/C12/C21/C22 speed (for the blanking) |
+| `.Width_ms_237` | Width [mS] for C13/C23 (23.7 m/min) |
+| `.Speed_mm_s` | Check: C10 fast speed measured. 517 mm/s = 31 m/min. If far off, C10 stopped during the transfer or the speeds differ |
+| `.S5.Width_Avg_ms`, `.S6.Width_Avg_ms`, `.S5.Last_Width_ms` | Width in mS per sensor |
 
 **Goal of this step:** a few orders, normal and U-shape, with `Width_mm` within a few % of the tape measure, `Last_OK` = 1, and `Sag_Max_mm` well below the real gaps. Only then: step 2 = blanking on C11…C23 (same change on low and high level).
