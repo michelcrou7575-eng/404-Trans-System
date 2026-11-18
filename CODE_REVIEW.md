@@ -621,3 +621,9 @@ No change to FC8, the conveyors or the DBs. Download FC1208 only, between shifts
 **Check with a VAT** during one delivery: `"DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.Bit1_Exit_mS`, `.Exit_Window_mS`, `.Count_Result`, `B 15.7`, `A 54.0`, `M 70.0`. After the fix, `Bit1_Exit_mS` must stop increasing while `A54.0` = 0.
 
 **If it still counts 2 with the belt running all the time:** the delivery speed (slow, `A54.2`) is lower than the 23.7 m/min `DIM_237` is scaled to, so a single packet stays on the sensor longer than `DIM_237 + 300 ms`. Then read `Exit_Window_mS` and the highest `Bit1_Exit_mS` for one packet, and correct the scaling of `DIM_237`.
+
+## 17. New block numbers FC911…FC986 with an old/new switch (2026-11-18)
+
+Agreed with the operator: the fixed program blocks get new numbers (FC10xx → FC9xx). OB1 calls the old or the new block depending on one bit per block (`M280.0`…`M282.4`). All bits at 0 = exactly today's machine. Rollback = reset the bit, no download. Details, the table and the steps are in `NEW_FC9xx/README.md`.
+
+Blocks with real changes: **FC911** clearing (§14), **FC924** C3, **FC938** C6, **FC978** C21 (init fixes). The 17 other FC9xx are unchanged copies of the running code (verified line by line against the export). The OB1 for this step keeps `>D` so that its download changes nothing. FC1208 v0.4 (§16) stays a direct FC1208 download.
