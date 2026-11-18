@@ -698,3 +698,6 @@ Line-by-line check (addresses masked) of FC958/962/966 against FC978/982/986, an
 | C12 / C22 | Identical (only the unused temp `BARRIER_BLINKER` in C12) |
 | C11 / C21 | Same logic. C21's steps reset also clears `MB81`, C11 does not clear `MB61`. Nothing writes `MB61`/`MB81` (only LAUER reads them), so no effect. C21 got the `R #INITIALISATION` fix that C11 already had |
 | C13 / C23 | **One real difference:** the "Delivery Conveyor Ready" fault (`M66.7` / `M86.7`) is reset by `M9.1` (all reset PBs: `S0.7`, `S2.7`, HMI `E34.1`) on C13 but only by `S2.7` (feeder box) on C23. **Fixed in FC986** (and the repo `CONVEYOR 23` working copy): C23 now uses `M9.1` like C13 |
+
+### 16.8 Back to FC1208 v0.3 (operator, 2026-11-18)
+The operator put **FC1208 v0.3** back (the version running since September, `PLC_EXPORT_2026-11-17/FC1208 …`): **it works better** than v0.4–v0.11. All C12/C13/C22/C23 counter changes are withdrawn. Open: the C23 (and C13) double count-down with U-shape packets, and the C12/C22 half count-up. No new counter change without first measuring on the machine (VAT values during a transfer and a delivery).
