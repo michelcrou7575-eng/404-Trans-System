@@ -99,6 +99,8 @@ One **FB "TS_STATION"** with one instance DB per station (or one DB of instances
 - **Interlocks:** reversing outputs always cross-locked; VFD ready (`M11.1`) gating; door / safety-relay states as enable inputs.
 - **Station-specific parts** (pusher, pivot, flipper, turntable, elevator, collator surface counting) stay in small FCs called by, or calling, the standard FB.
 
+**Instance DB vs. today's FCs.** Today every station is an **FC with no DB of its own**: its memory is global (M-bit steps, S5 timers, `DB UTILITY`, `HMI_DB`, …). That is why the FC9xx copies (`NEW_FC9xx/`) can be switched old/new at any time with one bit: both versions share the same memory. The FB keeps its memory (steps, handshake, count, timers) in **its own instance DB**, so old FC and new FB do **not** share state. Therefore the old/new switch for phases 3–5 is only changed while the station is **empty and idle**. The FB starts in `Empty`, and the old FC's step register is reset (its existing INIT / steps-reset) before switching back.
+
 ---
 
 ## 6. HMI and alarms (target)
