@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.2
+VERSION : 0.3
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -32,7 +32,7 @@ END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.2
+VERSION : 0.3
 
   STRUCT
    Gap_Min_mm : INT  := 100;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -48,7 +48,6 @@ VERSION : 0.2
    C10_Count_Start : INT ;	//C10 Packet Count at Transfer Start
    Width_mm : INT ;	//VERIFIED Packet Width [mm]
    Width_ms_31 : INT ;	//MEASURED Width [mS] @ 31 m/min: C11/C12/C21/C22 + C13/C23 LOADING
-   Width_ms_237 : INT ;	//Width [mS] @ 23.7 m/min: C13/C23 DELIVERY (slow) = Width_ms_31 x 31 / 23.7
    Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (31 m/min = 517)
    Good_Count : INT ;	//Transfers Verified
    Bad_Count : INT ;	//Transfers Rejected
@@ -66,7 +65,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.2
+VERSION : 0.3
 
 
 VAR_INPUT
@@ -395,10 +394,10 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //on the machine. While C10 transfers (M55.5), every packet passing B10.5 and
 //B10.6 is measured with the C10 encoder (FM350 ch5). At the end of the
 //transfer both sensors must agree (same number of packets, = C10 count, and
-//average widths within Tolerance_Pct) -> Width_mm is VERIFIED and converted
-//to mS for the link (31.0 m/min) and delivery (23.7 m/min) conveyors.
+//average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
+//(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
 //Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.2
+VERSION : 0.3
 
 
 VAR_TEMP
@@ -545,14 +544,6 @@ W002: L     "PACKET WIDTH DB".S5.Width_Avg_mm;
       L     2; 
       /I    ; 
       T     "PACKET WIDTH DB".Width_ms_31; 
-//;
-      L     "PACKET WIDTH DB".Width_ms_31; // x 31.0 / 23.7 for C13/C23
-      ITD   ; 
-      L     L#310; 
-      *D    ; 
-      L     L#237; 
-      /D    ; 
-      T     "PACKET WIDTH DB".Width_ms_237; 
 //;
       L     "PACKET WIDTH DB".Width_ms_31; // Check: Speed = mm x 1000 / mS
       L     0; 
