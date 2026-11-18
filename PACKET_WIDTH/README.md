@@ -6,7 +6,7 @@ Facts from the operator: C13/C23 **load** at the same speed (31 m/min), only the
 
 ## How it measures
 * Window: C10 transferring (`M55.5 AN M55.6`). Encoder `"FM350 DB".ACT_CNTV5`, **0.31 mm/pulse**: independent of speed and stops.
-* For each sensor: front of a packet = sensor ON, end = sensor OFF **for longer than `Gap_Min_mm`** (default 100 mm). A shorter OFF is a **sag** (U-shape / low packet) inside the same packet; it is counted and its length kept (`Sag_Count`, `Sag_Max_mm`).
+* For each sensor: front of a packet = sensor ON, end = sensor OFF **for longer than `Gap_Min_mm`** (default **150 mm**). A shorter OFF is a **sag** (U-shape / low packet) inside the same packet; it is counted and its length kept (`Sag_Count`, `Sag_Max_mm`).
 * **v0.2: the width is also measured in mS** (time from packet front to packet end, sags included), because C11…C23 have no encoder. C10 fast runs at the C11/C12/C21/C22 speed, so this is the time their sensors will see. `Speed_mm_s` (= mm × 1000 / mS) checks it: 31 m/min = 517 mm/s.
 * A packet already covering the sensor when the transfer starts is partial → not measured (`Skipped`).
 * End of transfer: **verified** only if both sensors measured packets, saw the same number (= C10 count), and their average widths agree within `Tolerance_Pct` (10%). Then `Width_mm` (encoder), `Width_ms_31` (**measured** mS, average of both sensors) and `Speed_mm_s` are written, `Valid` = 1, `Good_Count` +1. Otherwise `Bad_Count` +1 and the last verified width is kept.
@@ -42,3 +42,16 @@ Facts from the operator: C13/C23 **load** at the same speed (31 m/min), only the
 | `.S5.Width_Avg_ms`, `.S6.Width_Avg_ms`, `.S5.Last_Width_ms` | Width in mS per sensor |
 
 **Goal of this step:** a few orders, normal and U-shape, with `Width_mm` within a few % of the tape measure, `Last_OK` = 1, and `Sag_Max_mm` well below the real gaps. Only then: step 2 = blanking on C11…C23 (same change on low and high level).
+
+## Desk check (no PLCSIM available, 2026-11-18)
+The FC1211 logic was replayed step by step in a model (10 ms scan, 517 mm/s, 600 mm packets, 300 mm gaps):
+
+| Case | Result |
+|---|---|
+| 6 flat packets | 6 measured, 600 mm, 1171 ms (exact: 1161 ms, +1 scan) |
+| 6 U-shape, sag 120 mm, `Gap_Min` 150 | 6 measured, 600 mm, 6 sags seen, `Sag_Max` 119 |
+| Gaps 250–350, sag 100 | 6 measured, 600 mm, `Gap_Min` seen 248 |
+| First packet already covering the sensor | 5 measured + 1 skipped (counted as seen) |
+| **Sag 200 mm, `Gap_Min` 150 (too small)** | **12 "packets" of 200 mm**: transfer rejected (`Last_OK` = 0), and `S5/S6.Gap_Min_mm` shows ≈ the sag length → **raise `Gap_Min_mm`** above it, below the real gap |
+
+**Runtime safety without PLCSIM:** FC1210/1211 write only DB30. No division by zero (divisions only after a packet is counted, or by constants). OB121/OB122 exist, so a programming/access error would not stop the CPU. Download order: UDT10 → DB30 → FC1211 → FC1210 (nothing calls them yet) → **then** the `CALL FC 1210` in OB1. Check the CPU diagnostic buffer and cycle time after. Rollback = remove the call from OB1.

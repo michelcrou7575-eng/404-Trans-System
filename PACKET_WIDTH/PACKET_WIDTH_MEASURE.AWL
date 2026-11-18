@@ -35,7 +35,7 @@ TITLE =Packet Width Measure
 VERSION : 0.3
 
   STRUCT
-   Gap_Min_mm : INT  := 100;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
+   Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
    Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
    Active : BOOL ;	//C10 Transfering
    FP_Start : BOOL ;	//Edge Memory
