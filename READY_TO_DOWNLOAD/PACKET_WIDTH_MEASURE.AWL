@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.4
+VERSION : 0.5
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -32,11 +32,14 @@ END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.4
+VERSION : 0.5
 
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
    Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
+   Enc_Direct : BOOL  := FALSE;	//0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS) / 1 = PID Direct (Every Scan)
+   Enc_PID_Addr : INT  := 340;	//FM350-2 Ch5 Direct Address (Module 320: Try 340, Else 348)
+   Enc_Live : DINT ;	//Encoder Value Used This Scan
    Active : BOOL ;	//C10 Transfering
    FP_Start : BOOL ;	//Edge Memory
    FN_End : BOOL ;	//Edge Memory
@@ -76,7 +79,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.4
+VERSION : 0.5
 
 
 VAR_INPUT
@@ -410,7 +413,7 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
 //(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
 //Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.4
+VERSION : 0.5
 
 
 VAR_TEMP
@@ -423,6 +426,7 @@ VAR_TEMP
   DIFF : INT ;	
   TOLMM : INT ;	
   D : DINT ;	
+  PTR : DWORD ;	
 END_VAR
 BEGIN
 NETWORK
@@ -458,6 +462,25 @@ TITLE =Gap Minimum mm -> Encoder Pulses
       RND   ; 
       T     #GAP_P; 
 NETWORK
+TITLE =Encoder Source - Read Job Value or Direct Peripheral (Every Scan)
+//ACT_CNTV5 comes from the CNT2_RD job 101, fired once per 100 mS (M6.0), so it
+//can be 100 mS or more old (51 mm @ 30.6 m/min). Direct PID read = this scan.
+
+      A     "PACKET WIDTH DB".Enc_Direct; 
+      JCN   E001; 
+
+      L     "PACKET WIDTH DB".Enc_PID_Addr; 
+      SLD   3; // Byte Address -> Pointer
+      T     #PTR; 
+      L     PID [#PTR]; 
+      T     "PACKET WIDTH DB".Enc_Live; 
+      JU    E002; 
+
+E001: L     "FM350 DB".ACT_CNTV5; 
+      T     "PACKET WIDTH DB".Enc_Live; 
+
+E002: NOP   0; 
+NETWORK
 TITLE =B10.5 C10 Full Sens
 
       CALL FC 1211 (
@@ -465,7 +488,7 @@ TITLE =B10.5 C10 Full Sens
            Active                   := "PACKET WIDTH DB".Active,
            Start                    := #START,
            Stop                     := #STOP,
-           Enc                      := "FM350 DB".ACT_CNTV5,
+           Enc                      := "PACKET WIDTH DB".Enc_Live,
            Gap_Min_Pulse            := #GAP_P,
            Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
            Data                     := "PACKET WIDTH DB".S5);
@@ -477,7 +500,7 @@ TITLE =B10.6 C10 Exit Sens
            Active                   := "PACKET WIDTH DB".Active,
            Start                    := #START,
            Stop                     := #STOP,
-           Enc                      := "FM350 DB".ACT_CNTV5,
+           Enc                      := "PACKET WIDTH DB".Enc_Live,
            Gap_Min_Pulse            := #GAP_P,
            Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
            Data                     := "PACKET WIDTH DB".S6);
@@ -512,7 +535,7 @@ K001: A     "PACKET WIDTH DB".Active;
       A     "PACKET WIDTH DB".Pend; 
       JCN   K002; 
 
-      L     "FM350 DB".ACT_CNTV5; 
+      L     "PACKET WIDTH DB".Enc_Live; 
       L     "PACKET WIDTH DB".Pend_Enc; 
       -D    ; 
       T     #D; 
@@ -544,7 +567,7 @@ K003: L     "PACKET WIDTH DB".Cal_Pulse_Sum;
 K002: A     "PACKET WIDTH DB".S5.Front; 
       JCN   K090; 
 
-      L     "FM350 DB".ACT_CNTV5; 
+      L     "PACKET WIDTH DB".Enc_Live; 
       T     "PACKET WIDTH DB".Pend_Enc; 
       L     "PACKET WIDTH DB".T_ms; 
       T     "PACKET WIDTH DB".Pend_T; 

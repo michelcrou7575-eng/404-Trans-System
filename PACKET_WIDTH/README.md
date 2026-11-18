@@ -1,4 +1,4 @@
-# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.4
+# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.5
 
 Operator idea (2026-11-18): measure the packet width with **two independent sensors** at the end of C10 while it transfers, compare them to get a **verified** width, then use it later for **sensor blanking** on the C11/C12/C13 and C21/C22/C23 counters (same speed).
 
@@ -80,3 +80,20 @@ With the first transfer (≈ 1797 pulses/s, 855 ms per packet):
 * Encoder factor ≈ 510 / 1797 = **0.284 mm/pulse** (code: 0.31, +9 %). A Ø 92 mm wheel with single counting would give 0.48: the wheel in the photo is probably not on the C10 encoder, or there is a ratio. `Cal_mm_Pulse` (v0.4) will confirm it.
 * Optical width = 855 ms × 510 mm/s = **436 mm** for a **407 mm** sack: the light barriers see about **+29 mm** (beam + response + sack edges). C11…C23 sensors see the same, so `Width_ms_31` is the right value for the blanking.
 * Expected v0.4 values: `Cal_Speed_mm_s` ≈ 510, `Cal_mm_Pulse` ≈ 0.284, `Width_mm_Cal` ≈ 436.
+
+## v0.5: encoder read directly from the module (operator idea)
+FC1300 reads the FM350-2 count values with **read jobs**: `CNT2_RD` job 100 (ch 0–3) on the rising edge of `M6.0` (100 mS clock) and job 101 (ch 4–7) on the falling edge, **called once only**. `CNT2_RD` is asynchronous, so `ACT_CNTV5` can be **100 mS or more old** (≥ 51 mm at 30.6 m/min). This also affects the C4/C10 measurements in FC1031/FC1054.
+
+In another project the operator reads the FM350-2 directly: `L PID 264` = channel 0 count value. v0.5 can do the same, **switchable online** (no download):
+| DB30 | |
+|---|---|
+| `Enc_Direct` | 0 = `ACT_CNTV5` (as before) / **1 = direct `PID` read every scan** |
+| `Enc_PID_Addr` | Channel 5 address. Module at **320**: try **340** (ch0 at +0); if wrong, **348** (ch0 at +8, as `PID 264` suggests if that module was at 256) |
+| `Enc_Live` | Value used this scan |
+
+**Try (online, no download):**
+1. VAT: `PID 340`, `PID 348`, `"FM350 DB".ACT_CNTV5`. With C10 running, the right address **changes smoothly every refresh** and follows `ACT_CNTV5`.
+2. Set `Enc_PID_Addr` to that address, then `Enc_Direct` = 1. `Enc_Live` must follow.
+3. Compare `Cal_mm_Pulse`, `Cal_Speed_mm_s` (≈ 510) and `Width_mm_Cal` (≈ 436 for the 407 mm sacks) with `Enc_Direct` = 0 and = 1.
+
+A wrong address only gives an access error (OB122 exists, the CPU stays in RUN, see the diagnostic buffer).

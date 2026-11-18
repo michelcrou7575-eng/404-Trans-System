@@ -11,7 +11,7 @@ This folder always holds the **latest** version of each block to load. Older ver
 | 2 | [OB0001 - CYCLIC (FC9xx switches).AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/OB0001%20-%20CYCLIC%20%28FC9xx%20switches%29.AWL) | OB1 | 2026-11-18 | ✅ PLCSIM OK | Old/new switch per block (`M280.0`…`M282.4`, all 0 = as today) + `CALL FC 1210` (width measure). **Compile #6 first** | same |
 | 3 | [NEW_FC9xx_SYMBOLS.asc](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/NEW_FC9xx_SYMBOLS.asc) | Symbols | 2026-11-18 | — | Names for FC911…FC986 and the switch bits | same |
 | 4 | [FC1208 - HMI PACKET COUNTER NEW v0.8.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC1208%20-%20HMI%20PACKET%20COUNTER%20NEW%20v0.8.AWL) | FC1208 | **v0.8** | ⏳ to test | **= running v0.3 + C13/C23 only**: count down only a packet the exit sensor (`B11.2` / `B15.7`) saw on the edge and saw leaving, once per delivery (U-shape double count). C12/C22 unchanged (as v0.3) | [CODE_REVIEW.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/CODE_REVIEW.md) §16.3–16.7 |
-| 6 | [PACKET_WIDTH_MEASURE.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/PACKET_WIDTH_MEASURE.AWL) | UDT10, DB30, FC1211, FC1210 | v0.4 | ⏳ not compiled yet | **Measurement only:** packet width at C10 transfer with B10.5 + B10.6, in **mm (encoder) and mS (measured, for C11…C23 which have no encoder)**, verified. Writes only DB30 | [PACKET_WIDTH/README.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/PACKET_WIDTH/README.md) |
+| 6 | [PACKET_WIDTH_MEASURE.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/PACKET_WIDTH_MEASURE.AWL) | UDT10, DB30, FC1211, FC1210 | v0.5 | ⏳ not compiled yet | **Measurement only:** packet width at C10 transfer with B10.5 + B10.6, in **mm (encoder) and mS (measured, for C11…C23 which have no encoder)**, verified. Writes only DB30 | [PACKET_WIDTH/README.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/PACKET_WIDTH/README.md) |
 | 7 | [PACKET_WIDTH_SYMBOLS.asc](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/PACKET_WIDTH_SYMBOLS.asc) | Symbols | v0.1 | — | **Import before compiling #6** | same |
 
 ## Order (one per shift window, ~10 min)
@@ -22,6 +22,7 @@ This folder always holds the **latest** version of each block to load. Older ver
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-18 | Packet width v0.5 | Encoder source switchable online: `ACT_CNTV5` (read job, ~100 mS old) or direct `PID` (every scan), address in DB30 |
 | 2026-11-18 | Packet width v0.4 | Encoder factor + C10 speed calibrated on every transfer from the B10.5→B10.6 distance (527 mm). UDT10/DB30 changed: download UDT10, DB30, FC1211, FC1210 together |
 | 2026-11-18 | Packet width v0.3 | Delivery width (`Width_ms_237`) removed: not needed |
 | 2026-11-18 | Packet width v0.2 | Width also measured in mS (C11…C23 have no encoder) + speed check |
