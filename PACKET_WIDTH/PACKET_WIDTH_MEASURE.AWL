@@ -1,12 +1,12 @@
 TYPE UDT 10
-VERSION : 0.3
+VERSION : 0.4
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
    Open : BOOL ;	//Packet in Progress
    Low : BOOL ;	//Sensor OFF Inside a Packet (Sag or Gap - Not Decided Yet)
    Skip : BOOL ;	//Packet Already Covering at Start = Partial, Not Recorded
-   Spare_1 : BOOL ;
+   Front : BOOL ;	//New Packet Front This Scan (Pulse)
    Spare_2 : BOOL ;
    Spare_3 : BOOL ;
    Spare_4 : BOOL ;
@@ -32,7 +32,7 @@ END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.3
+VERSION : 0.4
 
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -51,6 +51,17 @@ VERSION : 0.3
    Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (31 m/min = 517)
    Good_Count : INT ;	//Transfers Verified
    Bad_Count : INT ;	//Transfers Rejected
+   Sensor_Dist_mm : INT  := 527;	//Distance B10.5 -> B10.6 Beams [mm] (Tape, 2026-11-18)
+   Pend : BOOL ;	//A B10.5 Front Waits for B10.6
+   T_ms : DINT ;	//Time Since Transfer Start [mS]
+   Pend_Enc : DINT ;	//Encoder at B10.5 Front
+   Pend_T : DINT ;	//Time at B10.5 Front
+   Cal_Pulse_Sum : DINT ;	//Pulses B10.5 -> B10.6 (Sum)
+   Cal_ms_Sum : DINT ;	//mS B10.5 -> B10.6 (Sum)
+   Cal_Count : INT ;	//Fronts Seen at Both Sensors This Transfer
+   Cal_mm_Pulse : REAL ;	//CALIBRATED Encoder Factor [mm/pulse] (Code Uses 0.31)
+   Cal_Speed_mm_s : INT ;	//CALIBRATED C10 Fast Speed [mm/s] (31 m/min = 517)
+   Width_mm_Cal : INT ;	//Verified Width with Calibrated Factor [mm]
    S5 : UDT 10;	//B10.5 C10 Full Sens
    S6 : UDT 10;	//B10.6 C10 Exit Sens
   END_STRUCT ;
@@ -65,7 +76,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_INPUT
@@ -123,6 +134,7 @@ TITLE =Only While Transfering (or Last Scan)
 
       CLR   ; 
       =     #CLOSE; 
+      =     #Data.Front; 
 //;
       A(    ; 
       O     #Active; 
@@ -212,6 +224,7 @@ S015: L     #D;
       T     #Data.Gap_Min_mm; 
 
 S014: SET   ; 
+      S     #Data.Front; // New Packet Front
       S     #Data.Open; 
       R     #Data.Low; 
       R     #Data.Skip; 
@@ -397,7 +410,7 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
 //(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
 //Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_TEMP
@@ -409,6 +422,7 @@ VAR_TEMP
   C6 : INT ;	
   DIFF : INT ;	
   TOLMM : INT ;	
+  D : DINT ;	
 END_VAR
 BEGIN
 NETWORK
@@ -467,6 +481,77 @@ TITLE =B10.6 C10 Exit Sens
            Gap_Min_Pulse            := #GAP_P,
            Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
            Data                     := "PACKET WIDTH DB".S6);
+NETWORK
+TITLE =Calibration - Same Packet Front at B10.5 then B10.6
+//Pitch (packet + gap, ~650 mm) > Sensor_Dist (527 mm): the first front at B10.6
+//after a front at B10.5 is the SAME packet. Pulses and mS between the two give
+//the real mm/pulse and the real C10 speed - every transfer, no jog needed.
+
+      A     #START; 
+      JCN   K001; 
+
+      L     L#0; 
+      T     "PACKET WIDTH DB".T_ms; 
+      T     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      T     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     0; 
+      T     "PACKET WIDTH DB".Cal_Count; 
+      CLR   ; 
+      =     "PACKET WIDTH DB".Pend; 
+
+K001: A     "PACKET WIDTH DB".Active; 
+      JCN   K090; 
+
+      L     "PACKET WIDTH DB".T_ms; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "PACKET WIDTH DB".T_ms; 
+//;
+      A     "PACKET WIDTH DB".S6.Front; // B10.6 First (Same Scan Case)
+      A     "PACKET WIDTH DB".Pend; 
+      JCN   K002; 
+
+      L     "FM350 DB".ACT_CNTV5; 
+      L     "PACKET WIDTH DB".Pend_Enc; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    K003; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+K003: L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     #D; 
+      +D    ; 
+      T     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     "PACKET WIDTH DB".T_ms; 
+      L     "PACKET WIDTH DB".Pend_T; 
+      -D    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      +D    ; 
+      T     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Cal_Count; 
+      SET   ; 
+      R     "PACKET WIDTH DB".Pend; 
+
+K002: A     "PACKET WIDTH DB".S5.Front; 
+      JCN   K090; 
+
+      L     "FM350 DB".ACT_CNTV5; 
+      T     "PACKET WIDTH DB".Pend_Enc; 
+      L     "PACKET WIDTH DB".T_ms; 
+      T     "PACKET WIDTH DB".Pend_T; 
+      SET   ; 
+      S     "PACKET WIDTH DB".Pend; 
+
+K090: NOP   0; 
 NETWORK
 TITLE =Transfer End - Verify (Both Sensors Agree) and Store
 
@@ -574,4 +659,63 @@ W003: L     "PACKET WIDTH DB".Bad_Count;
       T     "PACKET WIDTH DB".Bad_Count; 
 
 W090: NOP   0; 
+NETWORK
+TITLE =Transfer End - Calibration Result
+
+      A     #STOP; 
+      JCN   K190; 
+
+      L     "PACKET WIDTH DB".Cal_Count; 
+      L     0; 
+      >I    ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     L#0; 
+      >D    ; 
+      )     ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     L#0; 
+      >D    ; 
+      )     ; 
+      JCN   K190; 
+
+      L     "PACKET WIDTH DB".Sensor_Dist_mm; // mm/pulse = Dist x Count / Pulses
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      ITD   ; 
+      DTR   ; 
+      *R    ; 
+      L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      DTR   ; 
+      /R    ; 
+      T     "PACKET WIDTH DB".Cal_mm_Pulse; 
+//;
+      L     "PACKET WIDTH DB".Sensor_Dist_mm; // mm/s = Dist x Count x 1000 / mS
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      ITD   ; 
+      DTR   ; 
+      *R    ; 
+      L     1.000000e+003; 
+      *R    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      DTR   ; 
+      /R    ; 
+      RND   ; 
+      T     "PACKET WIDTH DB".Cal_Speed_mm_s; 
+//;
+      L     "PACKET WIDTH DB".Width_mm; // Width with the Calibrated Factor
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_mm_Pulse; 
+      *R    ; 
+      L     3.100000e-001; 
+      /R    ; 
+      RND   ; 
+      T     "PACKET WIDTH DB".Width_mm_Cal; 
+
+K190: NOP   0; 
 END_FUNCTION

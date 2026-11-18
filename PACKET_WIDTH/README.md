@@ -1,4 +1,4 @@
-# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.3
+# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.4
 
 Operator idea (2026-11-18): measure the packet width with **two independent sensors** at the end of C10 while it transfers, compare them to get a **verified** width, then use it later for **sensor blanking** on the C11/C12/C13 and C21/C22/C23 counters (same speed).
 
@@ -55,3 +55,22 @@ The FC1211 logic was replayed step by step in a model (10 ms scan, 517 mm/s, 600
 | **Sag 200 mm, `Gap_Min` 150 (too small)** | **12 "packets" of 200 mm**: transfer rejected (`Last_OK` = 0), and `S5/S6.Gap_Min_mm` shows ≈ the sag length → **raise `Gap_Min_mm`** above it, below the real gap |
 
 **Runtime safety without PLCSIM:** FC1210/1211 write only DB30. No division by zero (divisions only after a packet is counted, or by constants). OB121/OB122 exist, so a programming/access error would not stop the CPU. Download order: UDT10 → DB30 → FC1211 → FC1210 (nothing calls them yet) → **then** the `CALL FC 1210` in OB1. Check the CPU diagnostic buffer and cycle time after. Rollback = remove the call from OB1.
+
+## v0.4: encoder calibration on every transfer (no jog)
+First live result (2026-11-18): `Width_mm` 477, real sack **407 mm**, `Speed_mm_s` 557. FM350 ch5 = **single** counting, OMRON E6C2-CWZ6C 600 P/R, wheel Ø 91–93 mm (≈ 300 mm standard wheel → 0.5 mm/pulse). The code factor 0.31 fits neither, and time/speed (855 ms × 517 mm/s = 442 mm) fits the sack better than the encoder.
+
+**Calibration:** the `B10.5` and `B10.6` beams are **527 mm** apart (`Sensor_Dist_mm`). The pitch (packet + gap ≈ 650 mm) is longer, so the first packet front at `B10.6` after a front at `B10.5` is the **same packet**. For each such pair: pulses and mS between the two sensors. At the end of the transfer:
+* `Cal_mm_Pulse` = 527 × pairs / pulses → **real encoder factor** (the code uses 0.31)
+* `Cal_Speed_mm_s` = 527 × pairs × 1000 / mS → **real C10 fast speed** (31 m/min = 517)
+* `Width_mm_Cal` = verified width with the real factor (compare with 407 mm minus the light-barrier extra)
+
+Desk check (`desk_check_calibration.py`): 6 packets, gaps 163–217 → factor 0.2878 for a true 0.288, speed 517 for 517. Also correct with a packet between the sensors at start, and with U-shape sags.
+
+| VAT | |
+|---|---|
+| `.Cal_Count` | Pairs used (≈ packets) |
+| `.Cal_mm_Pulse` | Real mm/pulse |
+| `.Cal_Speed_mm_s` | Real C10 fast speed |
+| `.Width_mm_Cal` | Width with the real factor |
+
+If `Cal_mm_Pulse` is stable over a few transfers, the same correction applies to C10's own width measurement (FC1054 uses 0.31 for "Collator Full"): to decide after the data.
