@@ -365,7 +365,7 @@ A name used in the sources that isn't in the table stops the source from compili
 | `M90.0` | FEEDER TEST with 506 Power Off | The feeder light-curtain "buffer" is a **test bypass**. It must never be settable in production. FC300 "LIGHT CURTAIN - SAFETY" (not in the repo) is the likely writer, so review it. |
 | `E9.0`, `E12.5`, `E4.6` | SAFETY RELAY – DOOR CLOSED | See the update in §3.8. |
 | `E34.1` | PB NEW HMI – SIGNAL | Used as one of the three fault-reset inputs (`M9.1`). |
-| `M333.3`, `M400.1` | not in table | Absolute test bits in OB1 and FC1208. Give them symbols or remove them. |
+| `M333.3`, `M400.1` | not in table | `M333.3`: **removed** (2026-11-18), OB1 calls FC1208 directly. `M400.1`: give it a symbol or remove it. |
 
 ### 10.3 Blocks that exist in the PLC but not in the repo
 FC1 LAUER CALL, FC2 SETUP, FC3/FC9 SENSOR CHECK, FC5 SENSOR DE-BOUNCER, **FC6 DE-BOUNCER OLD**, FC10/FC105 SCALER, FC100–103 LAUER comms, FC190–201 LAUER, **FC211 CONTROL** (start-up routine, probably calls HMI COMMS/CONTROL, LIGHT BAR and FC212), FC245 BLINKER, **FC300 LIGHT CURTAIN - SAFETY**, FC350/351 FM350, FC1046 CONV 8 - TURNTABLE WIP, FC1205 HMI PACKET COUNTER, FC1300 FM350 COUNTERS, FC1500 ELEVATOR TEST FUNCTION. Also OB35 (100 ms), OB82/86/100/121/122, DB2/3/5/10/12/14/18/22/50 and all 5 UDTs.
@@ -432,7 +432,7 @@ This fixes P1–P8 from §9. It also fixes the "count-down freezes" problem (§1
 * Packet dimensions: C4/C5/C6 use `HOUSE_KEEPING DB.C4_Packet_Length_mS`. C10–C12 and C21–C22 use the C10 width scaled 27→31 m/min. C13/C23 use the width scaled 27→23.7 m/min.
 * The test leftovers (`TESTM 400.0`, `M400.1`, `<>R`) are removed.
 
-**OB1:** `M333.3` now **selects** the counter (0 = FC1206 + FC6, 1 = FC1208 + FC8), and only one of them runs. Both hand the count over through `HMI_DB`, so you can switch online in either direction without losing counts.
+**OB1 (historical, superseded 2026-11-18: `M333.3` removed, FC1208 called directly, FC1206 deleted):** `M333.3` then **selected** the counter (0 = FC1206 + FC6, 1 = FC1208 + FC8), and only one of them runs. Both hand the count over through `HMI_DB`, so you can switch online in either direction without losing counts.
 
 ### 12.2 What is needed to compile
 Nothing can be compiled here: STEP 7 runs on Windows and the full project isn't in the repo. In the **S7 project** (SIMATIC Manager → S7 Program → Sources → *Insert → External Source*), compile in this order:

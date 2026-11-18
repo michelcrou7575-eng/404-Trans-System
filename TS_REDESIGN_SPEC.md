@@ -111,12 +111,12 @@ One **FB "TS_STATION"** with one instance DB per station (or one DB of instances
 
 ## 7. Migration plan: trials between shifts
 
-Each trial: **one small download, done between shifts, with an immediate rollback** (a fallback switch bit, or the previous block kept as a copy in the project).
+Each trial: **one small download, done between shifts (≈ 10 min window), with an immediate rollback** (the previous block kept as a copy in the project). One block per window, so any change in behaviour points to one block.
 
 | Phase | What | Trial between shifts | Rollback |
 |---|---|---|---|
 | **0 (now)** | Fixed `CONVEYORS CLEARING` (FC1011): `T33_DN`, C10 proven empty, S3.2 always | Download **FC1011 only**, while clearing is **off** (`M10.0` = 0). Then run a clearing with **C4 empty** (see below) | Re-download the saved old FC1011 |
-| 0b | FC1208 + FC8 counter (`M333.3`) | Set `M333.3` = 1, watch one C4 collate + transfer | `M333.3` = 0 |
+| 0b | FC1208 v0.4 (C13/C23 count-down only while the belt runs) | Download **FC1208 only**. Watch one C23 delivery: 6 > 5 > 4 … > 0 | Re-download the saved FC1208 v0.3 (FC1208 + FC8 already run since 2026-09; `M333.3` selector and FC1206 are gone) |
 | 1 | Specification agreed (this document) | none | none |
 | 2 | Standard FB + order tracking, tested in **PLCSIM** with a simulated line | none (office) | none |
 | 3 | One simple station (e.g. C12/C22 link) moved to the FB, with a switch old/new | 1 shift change per station | Switch back to the old FC |
@@ -139,7 +139,7 @@ Each trial: **one small download, done between shifts, with an immediate rollbac
 
 | # | Question | Answer |
 |---|---|---|
-| 1 | Window between shifts / conveyors may run empty | ✅ Conveyors **may run empty** during the window. ❓ Window length (minutes) still unknown |
+| 1 | Window between shifts / conveyors may run empty | ✅ Conveyors **may run empty** during the window. ✅ Window ≈ **10 minutes**: enough for 1 FC download + a quick check. The real test of FC1011 happens at the next order change (F4) |
 | 2 | Order identity | ✅ **F4 moment only** → internal order counter (§4). ✅ All order-A packets are out of the 2145 at F4 |
 | 3 | Lengths / speeds | ✅ **10 s of fast running clears any conveyor** → used as the standard "proven empty" / clearing time (tunable per station). Lengths are not needed |
 | 4 | S7-1500 / TIA later | ✅ **No.** Target stays **S7-300 CPU 315-2 DP, STEP 7 Classic**. The FB is written in STL with symbolic access, and no TIA-only features are used |

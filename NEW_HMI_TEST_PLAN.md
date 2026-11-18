@@ -35,7 +35,6 @@ Watch these while testing:
 | `M 7.3` | Turntable direction memory (1 = reverse) |
 | `M 10.0` | Clearing active |
 | `M 11.1` | VFD not all ready (latched) |
-| `M 333.3` | 1 = FC1208 + FC8 packet counter, 0 = FC1206 + FC6 |
 | `"HMI_DB".CONV_4_COUNT` … `CONV_23_COUNT` | Packet counts shown on the HMI |
 
 ---
@@ -83,7 +82,7 @@ Test with the station **empty and stopped**, one conveyor at a time.
 ### 3.4 Displays
 | # | Item | How to test | Known issue |
 |---|---|---|---|
-| D1 | Packet counts C3–C23 | Compare the HMI with the real packets on each conveyor over one order | With `M333.3` = 1, FC1208 is the new counter (see `CODE_REVIEW.md` §12) |
+| D1 | Packet counts C3–C23 | Compare the HMI with the real packets on each conveyor over one order | Counts by FC1208 + FC8 (only counter since FC1206 was deleted). C13/C23 ×2 count-down fixed in FC1208 v0.4 (`CODE_REVIEW.md` §16) |
 | D2 | Motor / VFD fault colours | Trip a VFD in service and check its colour | C2 fault colour fixed (`M22.7`) |
 | D3 | Doors / E-stops | Open each door and press each E-stop | Clears up to 1.8 s late after reset |
 | D4 | Light barriers / proxies | Block each sensor | Up to 1.8 s late |
@@ -111,7 +110,7 @@ Test with the station **empty and stopped**, one conveyor at a time.
 - [ ] All lines in §3 ✅ on at least 3 shifts
 - [ ] H1–H4 fixed and tested
 - [ ] H8 decided (fixed or feature removed from the HMI)
-- [ ] Packet counts (D1) correct for a full day with `M333.3` = 1
+- [ ] Packet counts (D1) correct for a full day (after FC1208 v0.4)
 - [ ] `M140.3` stays 1 through production for a full shift (after the H1 fix)
 - [ ] Operators trained: service pages, INIT, fault reset (SIGNAL `E34.1`, `S0.7`, `S2.7`)
 - [ ] Only then: disable the LAUER inputs (`M152.x`, `M150.x`, `M190.x`), or unplug the panel
