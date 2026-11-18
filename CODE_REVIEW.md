@@ -666,3 +666,13 @@ VAT (operator, 2026-11-18): after C11 → C12, C12 shows 3 instead of 6 (C13/C21
 **FC1208 v0.9:** C12 passes `LowSpd_Dimension_mS := #DIM_31` (the same dimension that makes C11's count-down correct), and C12's count-up is gated with `A "A 48.6"` (belt running), so a packet parked on `B10.7` is not counted again and again.
 
 **Download:** FC8 and FC1208 together in the same window. **Test:** VAT `B 10.7`, `…Conveyor_C12_Link.Count_Result`, `.Bit0_Entry_mS`, `CONV_11_COUNT`, `CONV_12_COUNT`: after C11 → C12, C12 = the C11 count before transfer. If the same happens on C22 (or C13/C23 count-up), give them `#DIM_31` / `#DIM_237` the same way.
+
+### 16.6 v0.9 was worse (C12 = 1): withdrawn, FC1208 v0.10 = v0.8 for C12
+Operator VAT after v0.9: C12 = 1. **My reasoning in §16.5 was wrong:** C11 reaching 0 does **not** prove its count-down works. FC1208 forces `CONV_11_COUNT` to 0 at C11's steps reset (`M59.4`). FC1208 v0.10 puts C12 back as in v0.8 (`LowSpd_Dimension_mS := 0`, no `A48.6` gate). FC8 v0.8 is withdrawn from `READY_TO_DOWNLOAD` (with 0 it behaves as v0.7, so it is harmless if already loaded).
+
+Facts from the C11 / C12 step logic:
+* C11 stops filling when its first packet reaches `B10.7` → that packet is **parked on `B10.7`** before C11 transfers.
+* C12 starts filling (`M63.1`) as soon as C11 is full, and its count-up (`B10.7` gated by `M63.1 AN M63.2`) starts **on the parked packet**.
+* C11 transfers until `B11.0` (C12 exit) sees a packet. C11 always moves its whole load into an empty C12 (operator rule).
+
+**Proposal (to agree):** on link conveyors, the **count moves with the load**: at the start of the C11 → C12 transfer (`M59.3` rising edge), `CONV_12_COUNT := CONV_11_COUNT`, and C12 no longer counts up from `B10.7`. No sensor timing involved. Same for C21 → C22 if needed. This is the redesign principle (spec §5).

@@ -3,7 +3,7 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-VERSION : 0.9
+VERSION : 0.10
 
 
 VAR_TEMP
@@ -320,7 +320,6 @@ TITLE =Packet Counter - Link Conveyor 12 (Low)
       A     "B 10.7"; 
       A     "M 63.1"; 
       AN    "M 63.2"; 
-      A     "A 48.6"; // C12 Belt Runs (no parked packet counted)
       =     #BIT0; 
 //;
       A     "M 63.3"; 
@@ -336,7 +335,7 @@ TITLE =Packet Counter - Link Conveyor 12 (Low)
            ReSample_DX              := 85,
            Conveyor_Type            := 3,
            Preset_MIN_mS            := 300,
-           LowSpd_Dimension_mS      := #DIM_31,
+           LowSpd_Dimension_mS      := 0,
            HighSpd_Dimension_mS     := #DIM_31,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
