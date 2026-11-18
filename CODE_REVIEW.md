@@ -624,6 +624,6 @@ No change to FC8, the conveyors or the DBs. Download FC1208 only, between shifts
 
 ## 17. New block numbers FC911…FC986 with an old/new switch (2026-11-18)
 
-Agreed with the operator: the fixed program blocks get new numbers (FC10xx → FC9xx). OB1 calls the old or the new block depending on one bit per block (`M280.0`…`M282.4`). All bits at 0 = exactly today's machine. Rollback = reset the bit, no download. Details, the table and the steps are in `NEW_FC9xx/README.md`.
+Agreed with the operator: the fixed program blocks get new numbers (FC10xx → FC9xx). OB1 calls the old or the new block depending on one bit per block (`M280.0`…`M282.4`). All bits at 0 = exactly today's machine. Rollback = reset the bit, no download. Details, the table and the steps are in `NEW_FC9xx/README.md`. **PLCSIM test OK (2026-11-18):** compiles, no CPU stop, every switch on/off.
 
 Blocks with real changes: **FC911** clearing (§14), **FC924** C3, **FC938** C6, **FC978** C21 (init fixes). The 17 other FC9xx are unchanged copies of the running code (verified line by line against the export). The OB1 for this step keeps `>D` so that its download changes nothing. FC1208 v0.4 (§16) stays a direct FC1208 download.
