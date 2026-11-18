@@ -2,7 +2,7 @@
 
 Operator idea (2026-11-18): measure the packet width with **two independent sensors** at the end of C10 while it transfers, compare them to get a **verified** width, then use it later for **sensor blanking** on the C11/C12/C13 and C21/C22/C23 counters (same speed).
 
-Facts from the operator: `B10.5`/`B10.6` are mounted a little lower than the C23 sensor. Packets are **separated by about half a packet** during the transfer. The C10 count is correct. The C10 encoder counts during the transfer (not used today). C10 fast = C11/C12 = C21/C22 speed (31 m/min), C13/C23 slower (23.7 m/min).
+Facts from the operator: C13/C23 **load** at the same speed (31 m/min), only their **delivery** is slower. `B10.5`/`B10.6` are mounted a little lower than the C23 sensor. Packets are **separated by about half a packet** during the transfer. The C10 count is correct. The C10 encoder counts during the transfer (not used today). C10 fast = C11/C12 = C21/C22 speed (31 m/min), C13/C23 slower (23.7 m/min).
 
 ## How it measures
 * Window: C10 transferring (`M55.5 AN M55.6`). Encoder `"FM350 DB".ACT_CNTV5`, **0.31 mm/pulse**: independent of speed and stops.
@@ -37,8 +37,8 @@ Facts from the operator: `B10.5`/`B10.6` are mounted a little lower than the C23
 | `.S5.Sag_Count`, `.S5.Sag_Max_mm`, `.S6.Sag_Count`, `.S6.Sag_Max_mm` | **Sags** (U-shape) seen inside packets |
 | `.S5.Gap_Min_mm`, `.S6.Gap_Min_mm` | Shortest real gap between packets |
 | `.Gap_Min_mm` (setting) | Raise it if `Sag_Max_mm` comes close to it. It must stay below `S5/S6.Gap_Min_mm` |
-| `.Width_ms_31` | **Measured width [mS]** at C10 fast = C11/C12/C21/C22 speed (for the blanking) |
-| `.Width_ms_237` | Width [mS] for C13/C23 (23.7 m/min) |
+| `.Width_ms_31` | **Measured width [mS]** at 31 m/min: C11/C12/C21/C22 **and C13/C23 loading** (for the blanking) |
+| `.Width_ms_237` | Width [mS] for the C13/C23 **delivery** (slow, 23.7 m/min assumed: to confirm) |
 | `.Speed_mm_s` | Check: C10 fast speed measured. 517 mm/s = 31 m/min. If far off, C10 stopped during the transfer or the speeds differ |
 | `.S5.Width_Avg_ms`, `.S6.Width_Avg_ms`, `.S5.Last_Width_ms` | Width in mS per sensor |
 

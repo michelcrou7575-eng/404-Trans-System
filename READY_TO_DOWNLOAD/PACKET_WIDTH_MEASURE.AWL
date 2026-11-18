@@ -47,8 +47,8 @@ VERSION : 0.2
    Spare_3 : BOOL ;
    C10_Count_Start : INT ;	//C10 Packet Count at Transfer Start
    Width_mm : INT ;	//VERIFIED Packet Width [mm]
-   Width_ms_31 : INT ;	//MEASURED Width [mS] @ C10 Fast = C11/C12/C21/C22 Speed
-   Width_ms_237 : INT ;	//Width [mS] @ 23.7 m/min (C13/C23) = Width_ms_31 x 31 / 23.7
+   Width_ms_31 : INT ;	//MEASURED Width [mS] @ 31 m/min: C11/C12/C21/C22 + C13/C23 LOADING
+   Width_ms_237 : INT ;	//Width [mS] @ 23.7 m/min: C13/C23 DELIVERY (slow) = Width_ms_31 x 31 / 23.7
    Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (31 m/min = 517)
    Good_Count : INT ;	//Transfers Verified
    Bad_Count : INT ;	//Transfers Rejected
