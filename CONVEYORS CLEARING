@@ -534,13 +534,17 @@ P002: L     #ENC_W; // Pulses Since Last Scan (INT Subtraction = Wrap-Safe)
       T     #D_ENC; 
       L     #ENC_W; 
       T     MW   288; // Last Encoder Word (Free)
-      L     #D_ENC; 
-      L     L#0; 
-      >=D   ; 
-      JC    P003; 
+      L     #D_ENC; // Counter Restart (Gate 5 Reopened, e.g. Every 500 mS in
+      L     L#0; // Clearing) = Negative or Big Jump -> Not Travel: Ignore
+      <D    ; 
+      JC    P006; 
 
-      L     #D_ENC; // Absolute Travel
-      NEGD  ; 
+      L     #D_ENC; 
+      L     L#300; // Max Plausible Pulses per Scan
+      >D    ; 
+      JCN   P003; 
+
+P006: L     L#0; 
       T     #D_ENC; 
 
 P003: AN    "B 10.6"; // C10 Exit Sens Clear

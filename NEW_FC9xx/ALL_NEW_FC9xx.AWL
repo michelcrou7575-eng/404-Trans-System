@@ -7,8 +7,10 @@ TITLE =NEW FC911 (was FC1011) - Conveyors - Clearing Function
 //Surface_Length_10 (no more waiting for the bottomer). T137 no longer used.
 //v0.3 2026-11-19: C10 empty proof by ENCODER TRAVEL (PIW 334 direct), not time:
 //travel >= Surface_Length_10 + 20 % with exit clear, added up (MD284, MW288).
+//v0.4 2026-11-19: encoder steps < 0 or > 300 pulses/scan ignored (Ch5 restarts
+//from 0 when its gate reopens, every 500 mS while clearing) - no false proof.
 NAME : CLEARING
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_TEMP
@@ -540,13 +542,17 @@ P002: L     #ENC_W; // Pulses Since Last Scan (INT Subtraction = Wrap-Safe)
       T     #D_ENC; 
       L     #ENC_W; 
       T     MW   288; // Last Encoder Word (Free)
-      L     #D_ENC; 
-      L     L#0; 
-      >=D   ; 
-      JC    P003; 
+      L     #D_ENC; // Counter Restart (Gate 5 Reopened, e.g. Every 500 mS in
+      L     L#0; // Clearing) = Negative or Big Jump -> Not Travel: Ignore
+      <D    ; 
+      JC    P006; 
 
-      L     #D_ENC; // Absolute Travel
-      NEGD  ; 
+      L     #D_ENC; 
+      L     L#300; // Max Plausible Pulses per Scan
+      >D    ; 
+      JCN   P003; 
+
+P006: L     L#0; 
       T     #D_ENC; 
 
 P003: AN    "B 10.6"; // C10 Exit Sens Clear
@@ -2502,8 +2508,10 @@ END_FUNCTION
 
 FUNCTION FC 924 : VOID
 TITLE =NEW FC924 (was FC1024) - Slat Conveyor 3 Pos.5
+//v0.1 2026-11-19: C3 encoder Ch0 read DIRECT every scan: PIW 328 (HW Config
+//User_Type1 right) instead of "FM350 DB".ACT_CNTV0 (read job, ~100 mS old).
 NAME : POS_5
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -2548,14 +2556,14 @@ TITLE =Packet Length Measurements [mm] - While Collating
       JC    PRNT; 
       JU    RPRT; 
 
-PRNT: L     "FM350 DB".ACT_CNTV0; 
+PRNT: L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old)
       T     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
 
 RPRT: AN    "B 6.2"; // C3 InFeed Sens - New Packet End
       FP    "FP 227.2"; 
       JCN   NTKE; 
 
-      L     "FM350 DB".ACT_CNTV0; 
+      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old)
       L     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C3_Packet_Length_ep; 
@@ -2605,7 +2613,7 @@ TITLE =Slat Conveyor 3 - Surface Length Manager (PulseUnit)
 
       A     "M 166.0"; // Start Count (100mS Pulse)
       A(    ; 
-      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -2624,7 +2632,7 @@ TITLE =Soft Timer 27 Add - FM350 needs a 100mS Pulse !
 
       A     "M 166.0"; 
       A(    ; 
-      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -2654,7 +2662,7 @@ TITLE =Slat Conveyor 3 - Surface Length Manager
 
       A     "M 166.0"; 
       A(    ; 
-      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -2694,7 +2702,7 @@ TITLE =Slat Conveyor - Clearing
       A     "M 26.6"; 
       JNB   M266; 
       A(    ; 
-      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
+      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
       L     10000; 
       >I    ; 
       )     ; 
@@ -2840,8 +2848,10 @@ END_FUNCTION
 FUNCTION FC 931 : VOID
 TITLE =NEW FC931 (was FC1031) - Collator Conveyor 4 Pos.6
 //Collator Conveyor 4 - Is On Both Service Pages 1 & 2
+//v0.1 2026-11-19: C4 encoders read DIRECT every scan: Ch2 = PIW 332, Ch3 = PIW 330
+//(HW Config) instead of ACT_CNTV2/3 (read job, ~100 mS old).
 NAME : POS_6
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -3002,7 +3012,7 @@ NCNT: A     "M 166.2"; // Counter 2
       AN    "B 6.4"; 
       AN    "B 6.7"; 
       JNB   B067; 
-      L     "FM350 DB".ACT_CNTV2; // C4 Length Count
+      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old) C4 Length Count
       T     "COLLATORS DB".PacketLength_C4; // Encoder Pulses - Length
       T     #PACKET_LENGTH_4; 
 //;
@@ -3048,7 +3058,7 @@ TITLE =Packet Length Measurements [mm] - While Collating
       A     "A 44.3"; 
       JCN   NPRT; 
 
-      L     "FM350 DB".ACT_CNTV3; 
+      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
       T     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
 
 //NPRT: A     "HOUSE_KEEPING DB".C4_First_Collating
@@ -3056,7 +3066,7 @@ NPRT: AN    "B 6.7"; // C4 InFeed Sens - New Packet End
       FP    "FP 226.2"; 
       JCN   NTKE; 
 
-      L     "FM350 DB".ACT_CNTV3; 
+      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
       L     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C4_Packet_Length_ep; // C4 Packet Length [ep] 
@@ -3108,8 +3118,8 @@ TITLE =Between Packets Spaces - Measurements [mm]
       FP    "FP 226.5"; 
       JCN   N1ST; 
 
-      L     "FM350 DB".ACT_CNTV3; 
-      L     "FM350 DB".ACT_CNTV2; 
+      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
+      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old)
       -I    ; 
       T     "HOUSE_KEEPING DB".C4_RampDown_Dx_ep; 
 
@@ -3132,7 +3142,7 @@ TITLE =Conveyor 4 - Surface Length Left (PulseUnit) - Measurements
       A     "M 31.1"; 
       JNB   M663; 
       L     "COLLATORS DB".Surface_Length_C4; 
-      L     "FM350 DB".ACT_CNTV3; 
+      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
       -D    ; 
       T     "COLLATORS DB".Surface_Left_C4; 
       L     0; 
@@ -3292,7 +3302,7 @@ TITLE =Collator Conveyor 4 - Clearing Surface - Run 2K Encoder Counts
       A     "M 0.3"; 
       JNB   M305; 
       A(    ; 
-      L     "FM350 DB".ACT_CNTV2; 
+      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old)
       L     2000; 
       >I    ; 
       )     ; 
@@ -5574,8 +5584,10 @@ END_FUNCTION
 
 FUNCTION FC 954 : VOID
 TITLE =NEW FC954 (was FC1054) - Pivot Conveyor 10 - Collator
+//v0.1 2026-11-19: C10 encoder Ch5 read DIRECT every scan: PIW 334 (HW Config) instead
+//of ACT_CNTV5. Ch4 (width gate) stays ACT_CNTV4: not in the direct area.
 NAME : POS_12
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -5709,14 +5721,14 @@ TITLE =Conveyor 10 - Packet Width Measurements [mm] - While Collating
       A     "A 48.0"; 
       JCN   NPRT; 
 
-      L     "FM350 DB".ACT_CNTV5; // C10 Encoder Counter
+      L     PIW  334; // Direct Ch5 (was ACT_CNTV5, ~100 mS old) C10 Encoder Counter
       T     "HOUSE_KEEPING DB".C10_Encoder_READ_Mem; 
 
 NPRT: AN    "B 10.4"; // C10 InFeed Sens - New Packet End
       FP    "M 188.6"; 
       JCN   NTKE; 
 
-      L     "FM350 DB".ACT_CNTV5; // C10 Encoder Counter
+      L     PIW  334; // Direct Ch5 (was ACT_CNTV5, ~100 mS old) C10 Encoder Counter
       L     "HOUSE_KEEPING DB".C10_Encoder_READ_Mem; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C10_Packet_Width_ep; // C4 Packet Length [ep] 
@@ -5742,7 +5754,7 @@ TITLE =Conveyor 10 - Surface Length Left (PulseUnit) - Measurements
       A     "M 166.5"; 
       JNB   M665; 
       L     "COLLATORS DB".Surface_Length_10; 
-      L     "FM350 DB".ACT_CNTV5; 
+      L     PIW  334; // Direct Ch5 (was ACT_CNTV5, ~100 mS old)
       -D    ; 
       T     #SURFACE_LENGTH_LEFT_10; 
       L     0; 

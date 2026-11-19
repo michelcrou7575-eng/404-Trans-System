@@ -13,14 +13,14 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 | FC1016 ELEVATOR + PUSHER 1 | FC916 | `M280.2` | none (copy) |
 | FC1018 CONVEYOR 1 | FC918 | `M280.3` | none (copy) |
 | FC1022 CONVEYOR 2 | FC922 | `M280.4` | none (copy) |
-| FC1024 CONVEYOR 3 | **FC924** | `M280.5` | `R #INITIALISATION` |
-| FC1031 CONVEYOR 4 | FC931 | `M280.6` | none (copy) |
+| FC1024 CONVEYOR 3 | **FC924** | `M280.5` | `R #INITIALISATION`. **v0.1:** encoder Ch0 direct `PIW 328` |
+| FC1031 CONVEYOR 4 | **FC931** | `M280.6` | **v0.1:** encoders Ch2/Ch3 direct `PIW 332`/`PIW 330` |
 | FC1034 CONVEYOR 5 | FC934 | `M280.7` | none (copy) |
 | FC1038 CONVEYOR 6 | **FC938** | `M281.0` | `CLR / = #INITIALISATION` |
 | FC1042 CONVEYOR 7 | FC942 | `M281.1` | none (copy) |
 | FC1048 CONVEYOR 8 | FC948 | `M281.2` | none (copy) |
 | FC1050 CONVEYOR 9 | FC950 | `M281.3` | none (copy) |
-| FC1054 CONVEYOR 10 | FC954 | `M281.4` | none (copy) |
+| FC1054 CONVEYOR 10 | **FC954** | `M281.4` | **v0.1:** encoder Ch5 direct `PIW 334` (Ch4 unchanged) |
 | FC1058 CONVEYOR 11 | **FC958** | `M281.5` | **2026-11-19:** clearing trigger `M9.3` only if pivot LOW (`P15.1`) |
 | FC1062 CONVEYOR 12 | FC962 | `M281.6` | none (copy) |
 | FC1066 CONVEYOR 13 | FC966 | `M281.7` | none (copy) |
@@ -95,3 +95,7 @@ The whole TS now runs FC911–FC986. Behaviour differs from the old blocks only 
 ### 2026-11-19: first real order change with FC911 v0.1 — PASSED
 F4 → clearing (C4 empty did not stop it, only the pivot-side conveyor started) → C10 proven empty (waited for C21 to call again: one run had stopped at 7.3 s) → `M8.4`/`M8.5` → order B fed → **S3.2 lamp solid** (held, not ready) → bottomer finished order A, C11…C23 + loader empty → **lamp blinking** → S3.2. Working as intended (operator).
 Open: FC911 v0.3 (encoder-travel proof, ends the clearing sooner) — optional.
+
+### 2026-11-19: C3/C4/C10 direct encoder reads (FC924, FC931, FC954 v0.1) — to try
+Every `ACT_CNTVn` read in these blocks works in 16 bits (`-I`, `>=I`, `>I`, or a transfer into an INT/WORD), so the live low word of the direct area is a drop-in replacement: C3 Ch0 → `PIW 328`, C4 Ch2 → `PIW 332`, Ch3 → `PIW 330`, C10 Ch5 → `PIW 334`. C10 Ch4 (width gate, `SW_GATE4`) is not in the direct area and stays `ACT_CNTV4`. The counters still restart when their software gate opens, exactly as before.
+**Try (one at a time):** download the single file, switch stays 1 (already ON). Watch: C3 surface / slat clearing (`M26.7`), C4 length (`"HOUSE_KEEPING DB".C4_Packet_Length_mm`) and "full", C10 width (`C10_Packet_Width_mm`) and "Collator Full". Rollback: download the previous version (v0.0), or switch the station to its old FC10xx (`M280.5` / `M280.6` / `M281.4` = 0).
