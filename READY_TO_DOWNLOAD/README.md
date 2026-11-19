@@ -22,6 +22,7 @@ This folder always holds the **latest** version of each block to load. Older ver
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-19 | Packet width v0.6 | `Enc_Direct` initial value = TRUE (direct `PIW 334` by default) |
 | 2026-11-19 | Packet width v0.6 | Direct read = 16-bit word `PIW 334` (Ch5, after HW config), wrap-safe. Order confirmed: right column = lower address (`PIW 328` = Ch0 today) |
 | 2026-11-18 | Packet width v0.5 | Encoder source switchable online: `ACT_CNTV5` (read job, ~100 mS old) or direct `PID` (every scan), address in DB30 |
 | 2026-11-18 | Packet width v0.4 | Encoder factor + C10 speed calibrated on every transfer from the B10.5→B10.6 distance (527 mm). UDT10/DB30 changed: download UDT10, DB30, FC1211, FC1210 together |

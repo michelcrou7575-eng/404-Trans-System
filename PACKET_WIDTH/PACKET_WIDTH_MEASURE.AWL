@@ -37,7 +37,7 @@ VERSION : 0.6
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
    Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
-   Enc_Direct : BOOL  := FALSE;	//0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS) / 1 = PIW Direct Word (Every Scan)
+   Enc_Direct : BOOL  := TRUE;	//1 = PIW 334 Direct Word, Every Scan (Default, HW Config 2026-11-19) / 0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS)
    Enc_PIW_Addr : INT  := 334;	//FM350-2 Direct Low Word of Ch5 (C10) - User_Type2 Right=334 (After HW Config)
    Enc_Word_Last : INT ;	//Last Direct Word Read (Wrap Handling)
    Enc_Direct_Mem : BOOL ;	//Direct Mode Last Scan (First Scan Init)
