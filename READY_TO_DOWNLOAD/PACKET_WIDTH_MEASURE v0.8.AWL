@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.7
+VERSION : 0.8
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -30,9 +30,31 @@ VERSION : 0.7
   END_STRUCT ;
 END_TYPE
 
+TYPE UDT 11
+VERSION : 0.1
+
+
+  STRUCT 
+   Was_On : BOOL ;	//Sensor State Last Scan
+   Pulse : BOOL ;	//Cleaned Packet Pulse (Info)
+   Spare_1 : BOOL ;	
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Spare_5 : BOOL ;	
+   Spare_6 : BOOL ;	
+   T_ms : DINT  := L#60000;	//Belt Run Time Since Last Counted Packet [mS]
+   Pulse_ms : INT ;	//Pulse Time Left [mS]
+   Count : INT ;	//Packets Counted (Cleaned) - Total
+   Raw : INT ;	//Raw Sensor Fronts - Total
+   Sag : INT ;	//Fronts Ignored (Inside Blanking = Sag of a U-Shape) - Total
+   Butt : INT ;	//Butted Packets Counted (Sensor Never Cleared) - Total
+  END_STRUCT ;
+END_TYPE
+
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.7
+VERSION : 0.8
 
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -57,7 +79,7 @@ VERSION : 0.7
    Good_Count : INT ;	//Transfers Verified
    Bad_Count : INT ;	//Transfers Rejected (Packets Seen but Not Verified)
    Empty_Count : INT ;	//Transfers Without Any Packet (e.g. Clearing Re-Call of C10)
-   Sensor_Dist_mm : INT  := 527;	//Distance B10.5 -> B10.6 Beams [mm] (Tape, 2026-11-18)
+   Sensor_Dist_mm : INT  := 568;	//EFFECTIVE Distance B10.5 -> B10.6 [mm] (Tape 527, Calibrated 568 = 510 mm/s, 2026-11-19)
    Pend : BOOL ;	//A B10.5 Front Waits for B10.6
    T_ms : DINT ;	//Time Since Transfer Start [mS]
    Pend_Enc : DINT ;	//Encoder at B10.5 Front
@@ -74,6 +96,24 @@ VERSION : 0.7
 BEGIN
 END_DATA_BLOCK
 
+DATA_BLOCK DB 31
+TITLE =Packet Blanking - Shadow Counters
+VERSION : 0.1
+
+  STRUCT 
+   Width_ms : INT ;	//Packet Time Used [mS] (DB30 Width_ms_31, Else 855)
+   Blank_Pct : INT  := 90;	//TUNE - Blanking After a Front [% of Packet Time]
+   Butt_Pct : INT  := 140;	//TUNE - Sensor Still ON -> Butted Packet [% of Packet Time]
+   Pulse_ms : INT  := 400;	//Cleaned Pulse Length [mS] (FC8: > 300 ON, Gap > 300)
+   C10_Exit_B10_6 : UDT 11;	//C10 Exit = C11 / C21 InFeed (Run: C10 Fast A48.0+A48.1)
+   C11_Exit_B10_7 : UDT 11;	//C11 Exit = C12 InFeed (Run: C11 A48.3)
+   C12_Exit_B11_0 : UDT 11;	//C12 Exit = C13 InFeed (Run: C12 A48.6)
+   C21_Exit_B15_4 : UDT 11;	//C21 Exit = C22 InFeed (Run: C21 A53.4)
+   C22_Exit_B15_5 : UDT 11;	//C22 Exit = C23 InFeed (Run: C22 A53.6)
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
+
 FUNCTION FC 1211 : VOID
 TITLE =Width Sensor - One Sensor, Encoder Based
 //Measures every packet passing one sensor with the C10 encoder (0.31 mm/pulse).
@@ -82,7 +122,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.7
+VERSION : 0.8
 
 
 VAR_INPUT
@@ -407,6 +447,170 @@ TITLE =Sensor State for Next Scan
       =     #Data.Was_On; 
 END_FUNCTION
 
+FUNCTION FC 1212 : VOID
+TITLE =Packet Blanking - One Sensor (Shadow)
+//v0.1 2026-11-19: one count per packet from a raw sensor, with the packet time
+//measured at C10 (DB30 Width_ms_31, same speed on C11/C12/C21/C22).
+//- Front (OFF->ON) counts if the belt has run >= Blank_Pct of a packet time
+//  since the last count; an earlier front = sag of a U-Shape -> ignored.
+//- Sensor still ON after Butt_Pct of a packet time = butted packet -> +1.
+//- Time only runs while the belt runs (Run): a stop does not open the window.
+//- Pulse: Pulse_ms long per counted packet (for FC8 later).
+VERSION : 0.1
+
+
+VAR_INPUT
+  Sensor : BOOL ;	//Raw Packet Sensor
+  Run : BOOL ;	//Belt Under the Sensor Runs
+  Width_ms : INT ;	//Packet Time [mS]
+  Blank_Pct : INT ;	//Blanking [%]
+  Butt_Pct : INT ;	//Butted [%]
+  Pulse_Len : INT ;	//Pulse [mS]
+  Scan_mS : INT ;	//PLC Scan [mS]
+END_VAR
+VAR_OUTPUT
+  Pulse : BOOL ;	//One Pulse per Counted Packet
+END_VAR
+VAR_IN_OUT
+  D : UDT 11;	
+END_VAR
+VAR_TEMP
+  BLANK : DINT ;	
+  BUTT : DINT ;	
+  CNT : BOOL ;	
+  BTD : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Belt Run Time Since Last Count
+
+      CLR   ; 
+      =     #CNT; 
+      =     #BTD; 
+//;
+      A     #Run; 
+      JCN   B001; 
+
+      L     #D.T_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #D.T_ms; 
+      L     #D.T_ms; 
+      L     L#60000; 
+      >D    ; // Clamp 60s
+      JCN   B001; 
+
+      L     L#60000; 
+      T     #D.T_ms; 
+
+B001: NOP   0; 
+NETWORK
+TITLE =Windows [mS]
+
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Blank_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BLANK; 
+//;
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Butt_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BUTT; 
+NETWORK
+TITLE =Front - Count, or Ignore Inside Blanking (Sag)
+
+      A     #Sensor; 
+      AN    #D.Was_On; 
+      JCN   B010; 
+
+      L     #D.Raw; 
+      L     1; 
+      +I    ; 
+      T     #D.Raw; 
+//;
+      L     #D.T_ms; 
+      L     #BLANK; 
+      >=D   ; 
+      =     #CNT; // Front Counts
+      JC    B010; 
+
+      L     #D.Sag; // Front Inside Blanking = Sag
+      L     1; 
+      +I    ; 
+      T     #D.Sag; 
+
+B010: NOP   0; 
+NETWORK
+TITLE =Sensor Still ON - Butted Packet
+
+      A     #Sensor; 
+      A     #Run; 
+      AN    #CNT; 
+      JCN   B020; 
+
+      L     #D.T_ms; 
+      L     #BUTT; 
+      >=D   ; 
+      JCN   B020; 
+
+      L     #D.Butt; 
+      L     1; 
+      +I    ; 
+      T     #D.Butt; 
+      SET   ; 
+      =     #CNT; 
+      =     #BTD; // Next Butted Packet One Packet Time Later
+
+B020: NOP   0; 
+NETWORK
+TITLE =Count + Pulse
+
+      A     #CNT; 
+      JCN   B030; 
+
+      L     #D.Count; 
+      L     1; 
+      +I    ; 
+      T     #D.Count; 
+      L     L#0; 
+      T     #D.T_ms; 
+      A     #BTD; 
+      JCN   B032; 
+
+      L     #BUTT; // Butted: T = Butt - Packet Time
+      L     #Width_ms; 
+      ITD   ; 
+      -D    ; 
+      T     #D.T_ms; 
+
+B032: L     #Pulse_Len; 
+      T     #D.Pulse_ms; 
+
+B030: L     #D.Pulse_ms; 
+      L     0; 
+      >I    ; 
+      =     #Pulse; 
+      =     #D.Pulse; 
+      JCN   B031; 
+
+      L     #D.Pulse_ms; 
+      L     #Scan_mS; 
+      -I    ; 
+      T     #D.Pulse_ms; 
+
+B031: A     #Sensor; 
+      =     #D.Was_On; 
+END_FUNCTION
+
 FUNCTION FC 1210 : VOID
 TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //MEASUREMENT ONLY (v0.1): writes only "PACKET WIDTH DB" (DB30), changes nothing
@@ -415,8 +619,9 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //transfer both sensors must agree (same number of packets, = C10 count, and
 //average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
 //(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
-//Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.7
+//v0.8 2026-11-19: also runs the packet BLANKING in shadow (FC1212 / DB31): one
+//cleaned count per packet at the C10/C11/C12/C21/C22 exits, NOT used by FC1208 yet.
+VERSION : 0.8
 
 
 VAR_TEMP
@@ -430,6 +635,9 @@ VAR_TEMP
   TOLMM : INT ;	
   D : DINT ;	
   PTR : DWORD ;	
+  WB : INT ;	
+  RUNB : BOOL ;	
+  PLS : BOOL ;	
   W : INT ;	
 END_VAR
 BEGIN
@@ -786,4 +994,103 @@ TITLE =Transfer End - Calibration Result
       T     "PACKET WIDTH DB".Width_mm_Cal; 
 
 K190: NOP   0; 
+NETWORK
+TITLE =Blanking (Shadow) - Packet Time to Use
+
+      L     "PACKET WIDTH DB".Width_ms_31; 
+      T     #WB; 
+      A     "PACKET WIDTH DB".Valid; 
+      A(    ; 
+      L     #WB; 
+      L     300; 
+      >I    ; 
+      )     ; 
+      A(    ; 
+      L     #WB; 
+      L     5000; 
+      <I    ; 
+      )     ; 
+      JC    K201; 
+
+      L     855; // Default (Measured 2026-11-19)
+      T     #WB; 
+
+K201: L     #WB; 
+      T     "BLANKING DB".Width_ms; 
+NETWORK
+TITLE =Blanking (Shadow) - C10 Exit B10.6
+
+      A     "A 48.0"; 
+      A     "A 48.1"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 10.6",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C10_Exit_B10_6);
+NETWORK
+TITLE =Blanking (Shadow) - C11 Exit B10.7
+
+      A     "A 48.3"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 10.7",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C11_Exit_B10_7);
+NETWORK
+TITLE =Blanking (Shadow) - C12 Exit B11.0
+
+      A     "A 48.6"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 11.0",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C12_Exit_B11_0);
+NETWORK
+TITLE =Blanking (Shadow) - C21 Exit B15.4
+
+      A     "A 53.4"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 15.4",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C21_Exit_B15_4);
+NETWORK
+TITLE =Blanking (Shadow) - C22 Exit B15.5
+
+      A     "A 53.6"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 15.5",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C22_Exit_B15_5);
 END_FUNCTION
