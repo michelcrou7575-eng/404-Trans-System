@@ -2,7 +2,7 @@ FUNCTION FC 978 : VOID
 TITLE =NEW FC978 (was FC1078) - Conveyor 21 - Link 1H Pos. 13 High Leve
 //
 NAME : POS_13_H
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -14,6 +14,7 @@ END_VAR
 BEGIN
 NETWORK
 TITLE =Conveyor 21 - Service
+//v0.1 2026-11-19: clearing trigger M9.3 only if pivot HIGH (P15.0).
 
       A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
       A     "HMI_DB".CONVEYOR_21_SERVICE_SW; 

@@ -2,7 +2,7 @@ FUNCTION FC 911 : VOID
 TITLE =NEW FC911 (was FC1011) - Conveyors - Clearing Function
 //New Order Sequence
 NAME : CLEARING
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -16,6 +16,8 @@ END_VAR
 BEGIN
 NETWORK
 TITLE =HMI Clearing Call
+//v0.1 2026-11-19: hold released at clearing start (FP M283.4); S3.2 lamp steady
+//while held / blinking when ready; S3.2 held 3s releases the hold (T140).
 
       A     "M 140.3"; 
       A     "HMI_DB".CLEARING_SSW_MAIN; 
@@ -6192,7 +6194,7 @@ FUNCTION FC 958 : VOID
 TITLE =NEW FC958 (was FC1058) - Conveyor 11 - Link 1L Pos. 13 Low Level
 //
 NAME : POS_13_L
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -6204,6 +6206,7 @@ END_VAR
 BEGIN
 NETWORK
 TITLE =Conveyor 11 - Service
+//v0.1 2026-11-19: clearing trigger M9.3 only if pivot LOW (P15.1).
 
       A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
       A     "HMI_DB".CONVEYOR_11_SERVICE_SW; 
@@ -7549,7 +7552,7 @@ FUNCTION FC 978 : VOID
 TITLE =NEW FC978 (was FC1078) - Conveyor 21 - Link 1H Pos. 13 High Leve
 //
 NAME : POS_13_H
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -7561,6 +7564,7 @@ END_VAR
 BEGIN
 NETWORK
 TITLE =Conveyor 21 - Service
+//v0.1 2026-11-19: clearing trigger M9.3 only if pivot HIGH (P15.0).
 
       A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
       A     "HMI_DB".CONVEYOR_21_SERVICE_SW; 

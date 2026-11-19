@@ -2,7 +2,7 @@ FUNCTION FC 911 : VOID
 TITLE =NEW FC911 (was FC1011) - Conveyors - Clearing Function
 //New Order Sequence
 NAME : CLEARING
-VERSION : 0.0
+VERSION : 0.1
 
 
 VAR_TEMP
@@ -16,6 +16,8 @@ END_VAR
 BEGIN
 NETWORK
 TITLE =HMI Clearing Call
+//v0.1 2026-11-19: hold released at clearing start (FP M283.4); S3.2 lamp steady
+//while held / blinking when ready; S3.2 held 3s releases the hold (T140).
 
       A     "M 140.3"; 
       A     "HMI_DB".CLEARING_SSW_MAIN; 
