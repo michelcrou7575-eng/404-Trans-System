@@ -120,3 +120,6 @@ A wrong address only gives an access error (OB122 exists, the CPU stays in RUN, 
 
 FC1210 v0.6: `Enc_Direct` = 1 reads **`PIW [Enc_PIW_Addr]`** (default **334**). The word wraps at 65536, so only the **difference to the last scan** (INT subtraction, wrap-safe up to 32767 pulses per scan) is added to `Enc_Live` (DINT). The rest of the measure is unchanged. Switching `Enc_Direct` online is bumpless (`Enc_Live` continues from its last value).
 **Order:** HW Config change first (User_Type2 = Ch5 | Ch2), check `PIW 334` follows `ACT_CNTV5`, then `Enc_Direct` = 1.
+
+### 2026-11-19: new HW Config active, confirmed online
+Before the change, with the gates forced: `PIW 332` = Ch2 (`SW_GATE2`), `PIW 334` = Ch3 (`SW_GATE3`), `PIW 330` = 0 (Ch1). After the change: **`PIW 334` follows C10 (`ACT_CNTV5`)**. Direct area now: 328 = Ch0 (C3), 330 = Ch3 (C4 surface), 332 = Ch2 (C4 length), **334 = Ch5 (C10)**. Next: width measure v0.6 with `Enc_Direct` = 1.
