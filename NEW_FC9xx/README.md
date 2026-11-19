@@ -88,3 +88,6 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 **Step 3:** `M280.5`, `M281.0`, `M282.4` = 1 (C3, C6, C23).
 **Step 4 (after weeks without problems):** make it permanent: OB1 calls FC9xx directly (no switch), `MB280`–`282` no longer needed; then delete FC1011–FC1086 (frees ~25–30 KB load memory).
 ⚠️ `MB280`–`282` are probably not retentive: after a power-off the old blocks run until the bits are set again.
+
+### 2026-11-19: ALL 21 switches ON (`MB280`–`MB282` all 1)
+The whole TS now runs FC911–FC986. Behaviour differs from the old blocks only in: FC911 v0.1 (clearing), FC958/FC978 v0.1 (clearing trigger on pivot side), FC924/FC938/FC978 (service INIT fix), FC986 (C23 fault reset `M9.1`). The 15 other blocks are identical copies. If a problem appears, reset the switch of the station concerned first (the old block runs again).
