@@ -704,3 +704,6 @@ The operator put **FC1208 v0.3** back (the version running since September, `PLC
 
 ## 19. Clearing fix validated in production (2026-11-19)
 FC911 v0.1 (switch `M280.0`) ran a real order change: clearing finished with C4 empty (the S5 `Timer 33` root cause, §14.5, is fixed), C10 proven empty before "clearing done", order B held on C10, S3.2 lamp solid then blinking, released by S3.2. See `NEW_FC9xx/README.md`.
+
+### 16.9 FC1208 v0.8 in the PLC (2026-11-19)
+v0.3 + C13/C23 count-down only (§16.3/16.4). Under test in production. Rollback = FC1208 v0.3.
