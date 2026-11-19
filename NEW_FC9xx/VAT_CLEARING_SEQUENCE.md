@@ -1,4 +1,4 @@
-# VAT "Clearing sequence" (FC911 v0.1): bits in the order they turn on
+# VAT "Clearing sequence" (FC911 v0.2): bits in the order they turn on
 
 Paste the list at the end into the VAT **Address** column (absolute addresses, English mnemonics: `P`/`B`/`S` symbols are inputs `I`, `K`/`H`/`A` are outputs `Q`). Display BOOL, timers SIMATIC_TIME.
 
@@ -21,8 +21,8 @@ Paste the list at the end into the VAT **Address** column (absolute addresses, E
 | 14 | `M 79.1` **or** `M 59.1` | C21 / C11 filling = calls C10 | `M 9.3` / `M 58.2` on its pivot side | **Only one of the two** |
 | 15 | `M 55.5` | C10 transferring | Called by C11/C21, `M8.4` = 0 | C10 belt fast (`A 48.0` + `A 48.1`) |
 | 16 | `M 55.6`, `M 58.3` | C10 steps reset / all steps reset memory | Transfer done | — |
-| 17 | `T 137` | C10 proven empty, 10 s (v0) | C10 belt fast, exit `B 10.6` clear | Any packet seen restarts it |
-| 18 | `M 10.7` | **C10 proven empty** | `T 137` done | If not: C10 called again (`M 58.2`) |
+| 17 | `MD 284` (DEC) | C10 empty proof time **added up** [ms] (v0.2) | Counts while C10 runs fast with exit `B 10.6` clear, **also over several runs** | Any packet seen → 0. Proven at `Surface_Length_10` × 0.549 + 1000 ms (3…15 s) |
+| 18 | `M 10.7` | **C10 proven empty** | `MD 284` ≥ proof time | If not: C10 called again (`M 58.2`) |
 | 19 | `M 10.6` | **C10 cleared** | `M 10.7` + C10 steps reset + C5/C6 OK | → clearing done |
 | 20 | `M 8.4`, `M 8.5` | **C10 HOLD + clearing done** | With `M 10.6` | Stay ON until S3.2 |
 | 21 | `MB 10` = 0 → `M 10.0` OFF | Clearing end | `M 10.6` (clearing abort path) | `K41.0` back ON: **feeding order B restarts**. F4 reset |
@@ -70,7 +70,8 @@ M 59.1
 M 79.1
 M 55.5
 M 55.6
-T 137
+MD 284
+"COLLATORS DB".Surface_Length_10
 M 10.7
 M 10.6
 M 8.4

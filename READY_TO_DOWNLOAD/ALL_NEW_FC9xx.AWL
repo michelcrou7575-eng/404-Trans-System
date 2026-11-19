@@ -3,8 +3,10 @@ TITLE =NEW FC911 (was FC1011) - Conveyors - Clearing Function
 //New Order Sequence
 //v0.1 2026-11-19: hold released at clearing start (FP M283.4); S3.2 lamp steady
 //while held / blinking when ready; S3.2 held 3s releases the hold (T140).
+//v0.2 2026-11-19: C10 empty proof added up over several runs (MD284), time from
+//Surface_Length_10 (no more waiting for the bottomer). T137 no longer used.
 NAME : CLEARING
-VERSION : 0.1
+VERSION : 0.2
 
 
 VAR_TEMP
@@ -14,6 +16,7 @@ VAR_TEMP
   EMPTY_13_23 : BOOL ;	//Empty Conveyor 13 & 23
   C10_EMPTY_TEST : BOOL ;	
   CLEARING_ABORT : BOOL ;	
+  PROOF_MS : DINT ;	//C10 Empty Proof Time [mS]
 END_VAR
 BEGIN
 NETWORK
@@ -490,29 +493,77 @@ TITLE =Conveyors 3, 4, 5, 6, 7, 8, 9 - Clearing - Cleared / Ready
       L     S5T#1S; 
       SE    "Timer 58"; // UpStream Cleared - Pulse 1s 
 NETWORK
-TITLE =Clearing - C10 Proven Empty (Exit Sens Clear While Belt Runs Fast)
+TITLE =Clearing - C10 Proven Empty (Belt Travel With Nothing Seen, Added Up)
 //Fix: Clearing used to end with packets left on C10 (nothing checked C10 itself).
-//C10 is proven empty when its Exit Sens B10.6 stays clear while the belt runs
-//FAST (transfer) for the time a packet needs to cross the whole belt.
-//TUNE: C10 belt length / 0.52 m/s (31 m/min) + margin.  10s = about 5 m.
+//v0.2 2026-11-19: the run time is ADDED UP over several C10 runs (MD284), so a
+//short run (C11/C21 full) is not lost: the clearing no longer waits for the
+//bottomer. Proof time from the C10 collating surface (Surface_Length_10 pulses
+//x 0.280 mm/pulse / 510 mm/s = x 0.549 mS) + 1 s. Range 3...15 s, 10 s if 0.
 //Any packet seen on C10 (B10.3 / B10.4 / B10.5 / B10.6) or a Pusher 2 push
-//cancels the proof (a pushed packet can sit at the infeed without C10 starting).
-      A     "M 10.0"; // Clearing CMD
+//restarts the proof (a pushed packet can sit at the infeed without C10 starting).
+
+      L     "COLLATORS DB".Surface_Length_10; // C10 Surface [Pulses] (WORD)
+      L     L#549; 
+      *D    ; 
+      L     L#1000; 
+      /D    ; 
+      L     L#1000; // + 1s Margin
+      +D    ; 
+      T     #PROOF_MS; 
+//;
+      L     #PROOF_MS; 
+      L     L#3000; 
+      <D    ; // Surface Unknown (0) or Too Small
+      JCN   P001; 
+
+      L     L#10000; 
+      T     #PROOF_MS; 
+
+P001: L     #PROOF_MS; 
+      L     L#15000; 
+      >D    ; 
+      JCN   P002; 
+
+      L     L#15000; 
+      T     #PROOF_MS; 
+
+P002: A     "M 10.0"; // Clearing CMD
       A     "A 48.0"; // C10 Belt Running
       A     "A 48.1"; // C10 Fast = Transfer
       AN    "B 10.6"; // C10 Exit Sens Clear
-      L     S5T#10S; // TUNE - Belt Length @ Fast
-      SD    T    137; 
-//;
-      A     T    137; 
-      S     "M 10.7"; // C10 Proven Empty - Set
-//;
-      A(    ; 
+      JCN   P003; 
+
+      L     MD   284; // Proof Time Added Up [mS] (Free)
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     MD   284; 
+
+P003: A(    ; 
       O     "B 10.3"; // Pusher Extended - Packet Sens (C10 Infeed)
       O     "M 51.7"; // Pusher 2 FWD - Packet Being Pushed
       O     "B 10.4"; // C10 InFeed Sens
       O     "B 10.5"; // C10 Full Sens
       O     "B 10.6"; // C10 Exit Sens
+      )     ; 
+      ON    "M 10.0"; // No Clearing
+      JCN   P004; 
+
+      L     L#0; // Packet Seen - Proof Restarts
+      T     MD   284; 
+
+P004: L     MD   284; 
+      L     #PROOF_MS; 
+      >=D   ; 
+      A     "M 10.0"; 
+      S     "M 10.7"; // C10 Proven Empty - Set
+//;
+      A(    ; 
+      O     "B 10.3"; 
+      O     "M 51.7"; 
+      O     "B 10.4"; 
+      O     "B 10.5"; 
+      O     "B 10.6"; 
       )     ; 
       R     "M 10.7"; // Packet Seen - Not Empty
 NETWORK

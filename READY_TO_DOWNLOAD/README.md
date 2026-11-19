@@ -3,7 +3,7 @@
 **Branch:** `claude/quirky-maxwell-k2oybu` (not `main`). On GitHub: *Code* → branch selector (top left, says `main`) → choose **`claude/quirky-maxwell-k2oybu`** → open the folder **`READY_TO_DOWNLOAD`**.
 Or open the pull request **#1** → tab *Files changed*: https://github.com/michelcrou7575-eng/404-Trans-System/pull/1
 
-This folder always holds the **latest** version of each block to load. **Every modified block gets a new `VERSION`** (and the version in its file name); the PLC copy can be checked in the block properties. In the PLC now: FC911 / FC958 / FC978 **v0.1**, other FC9xx **v0.0** (2026-11-19). Older versions are only in the git history.
+This folder always holds the **latest** version of each block to load. **Every modified block gets a new `VERSION`** (and the version in its file name); the PLC copy can be checked in the block properties. In the PLC now: FC911 **v0.1** (v0.2 to load) / FC958 / FC978 **v0.1**, other FC9xx **v0.0** (2026-11-19). Older versions are only in the git history.
 
 | # | File | Block | Version | Status | What it fixes | Details |
 |---|---|---|---|---|---|---|
@@ -13,7 +13,7 @@ This folder always holds the **latest** version of each block to load. **Every m
 | 4 | [FC1208 - HMI PACKET COUNTER NEW v0.8.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC1208%20-%20HMI%20PACKET%20COUNTER%20NEW%20v0.8.AWL) | FC1208 | **v0.8** | ⏳ to test | **= running v0.3 + C13/C23 only**: count down only a packet the exit sensor (`B11.2` / `B15.7`) saw on the edge and saw leaving, once per delivery (U-shape double count). C12/C22 unchanged (as v0.3) | [CODE_REVIEW.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/CODE_REVIEW.md) §16.3–16.7 |
 | 6 | [PACKET_WIDTH_MEASURE.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/PACKET_WIDTH_MEASURE.AWL) | UDT10, DB30, FC1211, FC1210 | v0.7 | ⏳ not compiled yet | **Measurement only:** packet width at C10 transfer with B10.5 + B10.6, in **mm (encoder) and mS (measured, for C11…C23 which have no encoder)**, verified. Writes only DB30 | [PACKET_WIDTH/README.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/PACKET_WIDTH/README.md) |
 | 7 | [PACKET_WIDTH_SYMBOLS.asc](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/PACKET_WIDTH_SYMBOLS.asc) | Symbols | v0.1 | — | **Import before compiling #6** | same |
-| — | [FC0911 - NEW CLEARING v0.1.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC0911%20-%20NEW%20CLEARING%20v0.1.AWL) | FC911 | **v0.1** | ⏳ not compiled yet | **Single block (update):** Clearing fixes + **hold released at clearing start** + **S3.2 lamp steady while held / blinking when ready** + **S3.2 held 3 s releases the hold**. Switch `M280.0` | `NEW_FC9xx/README.md` |
+| — | [FC0911 - NEW CLEARING v0.2.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC0911%20-%20NEW%20CLEARING%20v0.2.AWL) | FC911 | **v0.2** | ⏳ not compiled yet | **Single block (update):** Clearing fixes + **hold released at clearing start** + **S3.2 lamp steady while held / blinking when ready** + **S3.2 held 3 s releases the hold**. Switch `M280.0` | `NEW_FC9xx/README.md` |
 | — | [FC0958 - NEW C11 v0.1.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC0958%20-%20NEW%20C11%20v0.1.AWL) | FC958 | **v0.1** | ⏳ not compiled yet | **Single block (update):** Clearing trigger `M9.3` only if pivot LOW. Switch `M281.5` | `NEW_FC9xx/README.md` |
 | — | [FC0978 - NEW C21 v0.1.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/claude/quirky-maxwell-k2oybu/READY_TO_DOWNLOAD/FC0978%20-%20NEW%20C21%20v0.1.AWL) | FC978 | **v0.1** | ⏳ not compiled yet | **Single block (update):** Clearing trigger `M9.3` only if pivot HIGH + init fix. Switch `M282.2` | `NEW_FC9xx/README.md` |
 
@@ -25,6 +25,7 @@ This folder always holds the **latest** version of each block to load. **Every m
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-19 | FC911 v0.2 | C10 empty proof **added up over several runs** (`MD284`), proof time from `Surface_Length_10` (×0.549 ms + 1 s, 3…15 s). Live: clearing waited for the bottomer because one C10 run stopped at 7.3 s. `T137` freed |
 | 2026-11-19 | **IN THE PLC** | FC911 v0.1, FC958 v0.1, FC978 v0.1 downloaded (switches still 0) |
 | 2026-11-19 | FC911 v0.1, FC958 v0.1, FC978 v0.1 | Versions set (were 0.0 = PLC). Change notes in each block header |
 | 2026-11-19 | FC911 | S3.2 lamp **steady** while C10 is held and not ready (was OFF), **blinking** when S3.2 can be pressed. **S3.2 held 3 s** releases the hold (`T140`, free) without resetting C11…C22. Single-block files for FC911/FC958/FC978 |
