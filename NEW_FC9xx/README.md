@@ -76,7 +76,7 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 | FC986 C23 | `M282.4` | v0.0 | Fault reset `M9.1` like C13. Low risk |
 | 15 other FC9xx | — | v0.0 | Identical copies of the running code. No reason to switch yet |
 
-**Step 1 (between shifts):** compile `FC0911 v0.1`, `FC0958 v0.1`, `FC0978 v0.1`, download. Check the versions in the block properties.
+**Step 1 ✅ 2026-11-19:** FC911, FC958, FC978 **v0.1** downloaded.
 **Step 2 (production trial, 3–5 order changes):** `M280.0` = `M281.5` = `M282.2` = 1 before F4. Check each time:
 - [ ] Clearing finishes by itself, C10 empty (`M10.7`), no packets left on C10
 - [ ] During clearing only the conveyor on the pivot side starts (C11 if `P15.1`, C21 if `P15.0`)

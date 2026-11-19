@@ -3,7 +3,7 @@
 **Branch:** `claude/quirky-maxwell-k2oybu` (not `main`). On GitHub: *Code* → branch selector (top left, says `main`) → choose **`claude/quirky-maxwell-k2oybu`** → open the folder **`READY_TO_DOWNLOAD`**.
 Or open the pull request **#1** → tab *Files changed*: https://github.com/michelcrou7575-eng/404-Trans-System/pull/1
 
-This folder always holds the **latest** version of each block to load. **Every modified block gets a new `VERSION`** (and the version in its file name); the PLC copy can be checked in the block properties. In the PLC now: FC911–FC986 **v0.0**. Older versions are only in the git history.
+This folder always holds the **latest** version of each block to load. **Every modified block gets a new `VERSION`** (and the version in its file name); the PLC copy can be checked in the block properties. In the PLC now: FC911 / FC958 / FC978 **v0.1**, other FC9xx **v0.0** (2026-11-19). Older versions are only in the git history.
 
 | # | File | Block | Version | Status | What it fixes | Details |
 |---|---|---|---|---|---|---|
@@ -25,6 +25,7 @@ This folder always holds the **latest** version of each block to load. **Every m
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-19 | **IN THE PLC** | FC911 v0.1, FC958 v0.1, FC978 v0.1 downloaded (switches still 0) |
 | 2026-11-19 | FC911 v0.1, FC958 v0.1, FC978 v0.1 | Versions set (were 0.0 = PLC). Change notes in each block header |
 | 2026-11-19 | FC911 | S3.2 lamp **steady** while C10 is held and not ready (was OFF), **blinking** when S3.2 can be pressed. **S3.2 held 3 s** releases the hold (`T140`, free) without resetting C11…C22. Single-block files for FC911/FC958/FC978 |
 | 2026-11-19 | FC911, FC958, FC978 | FC911: hold/new-order chain released at clearing start (F4 while C10 held = stuck). FC958/FC978: clearing trigger `M9.3` only on the pivot side (C11 and C21 no longer both run). Switches: `M280.0`, `M281.5`, `M282.2` |
