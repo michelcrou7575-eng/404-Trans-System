@@ -22,6 +22,7 @@ This folder always holds the **latest** version of each block to load. Older ver
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-19 | FC911, FC958, FC978 | FC911: hold/new-order chain released at clearing start (F4 while C10 held = stuck). FC958/FC978: clearing trigger `M9.3` only on the pivot side (C11 and C21 no longer both run). Switches: `M280.0`, `M281.5`, `M282.2` |
 | 2026-11-19 | Packet width v0.7 | Transfers with no packet (clearing re-call of C10) counted in `Empty_Count`, not `Bad_Count`. DB30 changed: download DB30 + FC1210, then **check `Enc_Direct` actual = TRUE** |
 | 2026-11-19 | **IN THE PLC** | New FM350-2 HW Config (`PIW 334` = C10), width measure v0.6 (UDT10, DB30, FC1211, FC1210), **FC911–FC986 + OB1** (all switches 0). Downloaded during maintenance |
 | 2026-11-19 | Packet width v0.6 | `Enc_Direct` initial value = TRUE (direct `PIW 334` by default) |

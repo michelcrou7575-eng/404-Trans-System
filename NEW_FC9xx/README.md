@@ -8,7 +8,7 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 
 | Old | New | Switch | Changes in the new block |
 |---|---|---|---|
-| FC1011 CONVEYORS CLEARING | **FC911** | `M280.0` | **§14 fixes:** `T33_DN` (root cause), C10 proven empty 10 s (`T137`, `M10.7`), C10 re-call, S3.2 always, abort fix |
+| FC1011 CONVEYORS CLEARING | **FC911** | `M280.0` | **§14 fixes:** `T33_DN` (root cause), C10 proven empty 10 s (`T137`, `M10.7`), C10 re-call, S3.2 always, abort fix. **2026-11-19:** hold + new-order chain released at every clearing start (`FP M283.4`) |
 | FC1012 CONVEYOR 0 + PUSHER 0 | FC912 | `M280.1` | none (copy) |
 | FC1016 ELEVATOR + PUSHER 1 | FC916 | `M280.2` | none (copy) |
 | FC1018 CONVEYOR 1 | FC918 | `M280.3` | none (copy) |
@@ -21,12 +21,12 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 | FC1048 CONVEYOR 8 | FC948 | `M281.2` | none (copy) |
 | FC1050 CONVEYOR 9 | FC950 | `M281.3` | none (copy) |
 | FC1054 CONVEYOR 10 | FC954 | `M281.4` | none (copy) |
-| FC1058 CONVEYOR 11 | FC958 | `M281.5` | none (copy) |
+| FC1058 CONVEYOR 11 | **FC958** | `M281.5` | **2026-11-19:** clearing trigger `M9.3` only if pivot LOW (`P15.1`) |
 | FC1062 CONVEYOR 12 | FC962 | `M281.6` | none (copy) |
 | FC1066 CONVEYOR 13 | FC966 | `M281.7` | none (copy) |
 | FC1070 LOADER FINGERS | FC970 | `M282.0` | none (copy) |
 | FC1074 LOADER LIFT | FC974 | `M282.1` | none (copy) |
-| FC1078 CONVEYOR 21 | **FC978** | `M282.2` | `R #INITIALISATION` |
+| FC1078 CONVEYOR 21 | **FC978** | `M282.2` | `R #INITIALISATION`. **2026-11-19:** clearing trigger `M9.3` only if pivot HIGH (`P15.0`) |
 | FC1082 CONVEYOR 22 | FC982 | `M282.3` | none (copy) |
 | FC1086 CONVEYOR 23 | **FC986** | `M282.4` | Fault reset by `M9.1` (all reset PBs) like C13; was `S2.7` only |
 
@@ -60,3 +60,9 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 ## Status
 * **2026-11-19: downloaded to the PLC** (maintenance), all switches 0. Next: `M280.0` = 1 at an order change (clearing trial).
 * 2026-11-18: compiled and tested in **S7-PLCSIM**: no errors and no CPU stop, with every switch bit on or off. Next: download between shifts (step 5), then the clearing trial (step 6).
+
+## Maintenance test 2026-11-19 (lone packet, `M280.0` = 1)
+* Clearing with C4 empty: **finished** (`M8.4`/`M8.5` set). Old bug (clearing stops by itself) did not occur.
+* **Found:** F4 pressed again while C10 still held the previous new order (`M8.4`, S3.2 not pressed) → C10 may not transfer, the clearing can never finish. **Fix in FC911:** at every clearing start (rising `M10.0`) `M7.4`…`M8.5` are reset.
+* **Found:** during clearing, `M9.3` (Timer 58 pulse + `M10.0`) started **C11 and C21 together**. C10 can only transfer to the side the pivot is on (step 11N6), so the other one always ran empty until its timeout. **Fix in FC958/FC978 (identical):** `M9.3` only with `P15.1` (C11) / `P15.0` (C21).
+* To use: download FC911, FC958, FC978. FC958/FC978 need their switches `M281.5` / `M282.2` = 1.

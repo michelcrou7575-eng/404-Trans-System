@@ -103,6 +103,7 @@ TITLE =Step 22N2 - Conveyor 21 - Packet Filling & Trig Conveyor 10
       AN    "M 79.1"; // If Not Filling
       O     ; 
       A     "M 9.3"; // C10 Clearing - Transfer Trigger 
+      A     "P 15.0"; // Fix: Only if the Pivot is HIGH (C10 can only transfer to C21)
       )     ; 
       O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
       A     "M 78.0"; 

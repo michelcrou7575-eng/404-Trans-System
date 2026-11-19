@@ -294,6 +294,29 @@ TITLE =Conveyors Clearing - Cmd
       )     ; 
       =     #CLEARING_ABORT; 
 NETWORK
+TITLE =Clearing Start - Release a Hold Left from the Previous Clearing
+//Fix 2026-11-19: F4 pressed while C10 still held a new order (M8.4, S3.2 not
+//pressed yet) -> C10 could not transfer, the clearing could never finish.
+//F4 = clear everything: at every clearing start the hold and the new-order
+//sequence are reset. They are set again when this clearing is done.
+
+      A     "M 10.0"; // Clearing CMD
+      FP    M    283.4; // Edge Memory (Free)
+      JCN   CST1; 
+
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.2"; 
+      R     "M 8.3"; 
+      R     "M 8.4"; // C10 Hold - Released
+      R     "M 8.5"; // Clearing Done - Reset
+
+CST1: NOP   0; 
+NETWORK
 TITLE =Conveyors Clearing Conveyors 1,2,3,4 - TimeOut 30S
 
       A     "M 10.0"; 
@@ -6229,6 +6252,7 @@ TITLE =Step 12N2 - Conveyor 11 - Packet Filling & Trig Conveyor 10
       AN    "M 59.1"; // If Not Filling
       O     ; 
       A     "M 9.3"; // C10 Clearing - Transfer Trigger 
+      A     "P 15.1"; // Fix: Only if the Pivot is LOW (C10 can only transfer to C11)
       )     ; 
       O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
       A     "M 58.0"; 
@@ -7588,6 +7612,7 @@ TITLE =Step 22N2 - Conveyor 21 - Packet Filling & Trig Conveyor 10
       AN    "M 79.1"; // If Not Filling
       O     ; 
       A     "M 9.3"; // C10 Clearing - Transfer Trigger 
+      A     "P 15.0"; // Fix: Only if the Pivot is HIGH (C10 can only transfer to C21)
       )     ; 
       O     #SERVICE_RUN; // Drive Test - Logic : DON'T CARE!
       A     "M 78.0"; 
