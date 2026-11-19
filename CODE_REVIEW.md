@@ -701,3 +701,6 @@ Line-by-line check (addresses masked) of FC958/962/966 against FC978/982/986, an
 
 ### 16.8 Back to FC1208 v0.3 (operator, 2026-11-18)
 The operator put **FC1208 v0.3** back (the version running since September, `PLC_EXPORT_2026-11-17/FC1208 …`): **it works better** than v0.4–v0.11. All C12/C13/C22/C23 counter changes are withdrawn. Open: the C23 (and C13) double count-down with U-shape packets, and the C12/C22 half count-up. No new counter change without first measuring on the machine (VAT values during a transfer and a delivery).
+
+## 19. Clearing fix validated in production (2026-11-19)
+FC911 v0.1 (switch `M280.0`) ran a real order change: clearing finished with C4 empty (the S5 `Timer 33` root cause, §14.5, is fixed), C10 proven empty before "clearing done", order B held on C10, S3.2 lamp solid then blinking, released by S3.2. See `NEW_FC9xx/README.md`.

@@ -91,3 +91,7 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 
 ### 2026-11-19: ALL 21 switches ON (`MB280`–`MB282` all 1)
 The whole TS now runs FC911–FC986. Behaviour differs from the old blocks only in: FC911 v0.1 (clearing), FC958/FC978 v0.1 (clearing trigger on pivot side), FC924/FC938/FC978 (service INIT fix), FC986 (C23 fault reset `M9.1`). The 15 other blocks are identical copies. If a problem appears, reset the switch of the station concerned first (the old block runs again).
+
+### 2026-11-19: first real order change with FC911 v0.1 — PASSED
+F4 → clearing (C4 empty did not stop it, only the pivot-side conveyor started) → C10 proven empty (waited for C21 to call again: one run had stopped at 7.3 s) → `M8.4`/`M8.5` → order B fed → **S3.2 lamp solid** (held, not ready) → bottomer finished order A, C11…C23 + loader empty → **lamp blinking** → S3.2. Working as intended (operator).
+Open: FC911 v0.3 (encoder-travel proof, ends the clearing sooner) — optional.
