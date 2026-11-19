@@ -58,4 +58,5 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 ⚠️ `MB280–282` are probably **not retentive**: after a power-off the old blocks run again. When a new block is accepted, make it permanent (in OB1, call FC9xx without the switch, or make the bit retentive in the CPU properties).
 
 ## Status
+* **2026-11-19: downloaded to the PLC** (maintenance), all switches 0. Next: `M280.0` = 1 at an order change (clearing trial).
 * 2026-11-18: compiled and tested in **S7-PLCSIM**: no errors and no CPU stop, with every switch bit on or off. Next: download between shifts (step 5), then the clearing trial (step 6).
