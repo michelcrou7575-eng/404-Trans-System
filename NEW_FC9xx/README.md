@@ -66,3 +66,25 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 * **Found:** F4 pressed again while C10 still held the previous new order (`M8.4`, S3.2 not pressed) → C10 may not transfer, the clearing can never finish. **Fix in FC911:** at every clearing start (rising `M10.0`) `M7.4`…`M8.5` are reset.
 * **Found:** during clearing, `M9.3` (Timer 58 pulse + `M10.0`) started **C11 and C21 together**. C10 can only transfer to the side the pivot is on (step 11N6), so the other one always ran empty until its timeout. **Fix in FC958/FC978 (identical):** `M9.3` only with `P15.1` (C11) / `P15.0` (C21).
 * To use: download FC911, FC958, FC978. FC958/FC978 need their switches `M281.5` / `M282.2` = 1.
+
+## Commissioning status and plan (2026-11-19)
+| Block | Switch | In PLC | Status |
+|---|---|---|---|
+| **FC911** clearing | `M280.0` | v0.0 | Lone-packet test OK (clearing finished with C4 empty). **v0.1** (hold release at F4, lamp steady/blink, S3.2 3 s) **to compile + download** |
+| **FC958 / FC978** C11 / C21 | `M281.5` / `M282.2` | v0.0 | **v0.1** (clearing trigger on pivot side only) **to compile + download** |
+| FC924 C3, FC938 C6 | `M280.5`, `M281.0` | v0.0 | Init fix only (service INIT). Low risk |
+| FC986 C23 | `M282.4` | v0.0 | Fault reset `M9.1` like C13. Low risk |
+| 15 other FC9xx | — | v0.0 | Identical copies of the running code. No reason to switch yet |
+
+**Step 1 (between shifts):** compile `FC0911 v0.1`, `FC0958 v0.1`, `FC0978 v0.1`, download. Check the versions in the block properties.
+**Step 2 (production trial, 3–5 order changes):** `M280.0` = `M281.5` = `M282.2` = 1 before F4. Check each time:
+- [ ] Clearing finishes by itself, C10 empty (`M10.7`), no packets left on C10
+- [ ] During clearing only the conveyor on the pivot side starts (C11 if `P15.1`, C21 if `P15.0`)
+- [ ] Order B stops on C10, S3.2 lamp **steady**, then **blinking** when ready
+- [ ] Nothing leaves C10 before S3.2; short S3.2 when blinking releases it
+- [ ] F4 pressed while C10 still holds: hold released, clearing runs
+- [ ] (if the chain is stuck) S3.2 held 3 s releases the hold
+- [ ] S3.2 lamp hardware OK (see the `Q49.5` LED on the output card while blinking)
+**Step 3:** `M280.5`, `M281.0`, `M282.4` = 1 (C3, C6, C23).
+**Step 4 (after weeks without problems):** make it permanent: OB1 calls FC9xx directly (no switch), `MB280`–`282` no longer needed; then delete FC1011–FC1086 (frees ~25–30 KB load memory).
+⚠️ `MB280`–`282` are probably not retentive: after a power-off the old blocks run until the bits are set again.
