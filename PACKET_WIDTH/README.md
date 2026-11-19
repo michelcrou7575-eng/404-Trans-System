@@ -101,3 +101,9 @@ A wrong address only gives an access error (OB122 exists, the CPU stays in RUN, 
 ### From project 410 (same FM350-2)
 `FC120`: `L PID 264` = channel 0 `ACT_CNTV`, **module base 256 + offset 8**, input area **PIW 256…271 (16 bytes)**, confirmed live. For 404 (module 320, `MOD_ADR` = `W#16#140`): **channel 0 = `PID 328`**, input area 320…335. 340/348 are outside it (access error), so the default is now 328.
 **Open:** C10 is **channel 5**. With 16 input bytes there is room for 2 count values only (+8, +12). **Check online:** VAT `PID 328`, `PID 332` and `"FM350 DB".ACT_CNTV0` … `ACT_CNTV7` with C10 running: which channel do they follow? If channel 5 is not there, the fix is in FC1300 instead: call `CNT2_RD` until the job is done (`BUSY` = 0) and only then start the next one.
+
+## FM350-2 hardware setup (operator screenshots, 2026-11-19)
+* Module address **320** (`MOD_ADR` = `W#16#140`). Channels 0–7 as **single counters**, encoders **pulse & direction**. Ch 0: single counting, ch 2 and ch 5: **continuous counting**. No hardware gate, no interrupts, outputs **no comparison**.
+* Program use (whole export): ch 0 = C3 slat, ch 2/3 = C4, ch 4/5 = C10, all through `ACT_CNTV` (read jobs in FC1300). Ch 1, 6, 7 unused. **Nothing reads the direct area** (no `PID`/`PIW`/`USER_STAT_WORD` access).
+* **Direct area ("Specify Channels")**: User_Type1 (`PID 328`) = Word ch1 low + Word ch0 low; User_Type2 (`PID 332`) = Word ch3 low + Word ch2 low. **Channel 5 (C10) is not in it.**
+* **Plan:** User_Type2 → **DWORD, Channel 5, Count Value** ⇒ `PID 332` = C10 count live, then DB30 `Enc_PID_Addr` = 332, `Enc_Direct` = 1. HW config download = CPU STOP for a moment, line empty (counters restart). First check the principle online: `PIW 328` / `PIW 330` follow `ACT_CNTV0` (C3) low word.
