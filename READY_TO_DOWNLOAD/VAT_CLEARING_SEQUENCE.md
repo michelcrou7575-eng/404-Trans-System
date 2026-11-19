@@ -1,6 +1,6 @@
 # VAT "Clearing sequence" (FC911 v0.1): bits in the order they turn on
 
-Paste the **Address** column into a VAT (one per line), display BOOL (timers: SIMATIC_TIME).
+Paste the list at the end into the VAT **Address** column (absolute addresses, English mnemonics: `P`/`B`/`S` symbols are inputs `I`, `K`/`H`/`A` are outputs `Q`). Display BOOL, timers SIMATIC_TIME.
 
 ## A. Clearing (after F4)
 | # | Address | Symbol / meaning | Turns ON when | Then |
@@ -64,8 +64,8 @@ M 10.5
 M 58.2
 T 58
 M 9.3
-P 15.0
-P 15.1
+I 15.0
+I 15.1
 M 59.1
 M 79.1
 M 55.5
@@ -88,5 +88,5 @@ M 8.2
 I 3.2
 M 8.3
 T 140
-K 41.0
+Q 41.0
 ```
