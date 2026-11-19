@@ -5,8 +5,10 @@ TITLE =NEW FC911 (was FC1011) - Conveyors - Clearing Function
 //while held / blinking when ready; S3.2 held 3s releases the hold (T140).
 //v0.2 2026-11-19: C10 empty proof added up over several runs (MD284), time from
 //Surface_Length_10 (no more waiting for the bottomer). T137 no longer used.
+//v0.3 2026-11-19: C10 empty proof by ENCODER TRAVEL (PIW 334 direct), not time:
+//travel >= Surface_Length_10 + 20 % with exit clear, added up (MD284, MW288).
 NAME : CLEARING
-VERSION : 0.2
+VERSION : 0.3
 
 
 VAR_TEMP
@@ -16,7 +18,9 @@ VAR_TEMP
   EMPTY_13_23 : BOOL ;	//Empty Conveyor 13 & 23
   C10_EMPTY_TEST : BOOL ;	
   CLEARING_ABORT : BOOL ;	
-  PROOF_MS : DINT ;	//C10 Empty Proof Time [mS]
+  PROOF_P : DINT ;	//C10 Empty Proof Travel [Pulses]
+  D_ENC : DINT ;	//Encoder Pulses This Scan
+  ENC_W : INT ;	//Encoder Word PIW 334
 END_VAR
 BEGIN
 NETWORK
@@ -493,67 +497,80 @@ TITLE =Conveyors 3, 4, 5, 6, 7, 8, 9 - Clearing - Cleared / Ready
       L     S5T#1S; 
       SE    "Timer 58"; // UpStream Cleared - Pulse 1s 
 NETWORK
-TITLE =Clearing - C10 Proven Empty (Belt Travel With Nothing Seen, Added Up)
+TITLE =Clearing - C10 Proven Empty (Encoder Travel With Nothing Seen, Added Up)
 //Fix: Clearing used to end with packets left on C10 (nothing checked C10 itself).
-//v0.2 2026-11-19: the run time is ADDED UP over several C10 runs (MD284), so a
-//short run (C11/C21 full) is not lost: the clearing no longer waits for the
-//bottomer. Proof time from the C10 collating surface (Surface_Length_10 pulses
-//x 0.280 mm/pulse / 510 mm/s = x 0.549 mS) + 1 s. Range 3...15 s, 10 s if 0.
+//v0.3 2026-11-19: proof by ENCODER TRAVEL, not time (C10 accelerates between
+//B10.4 and B10.6). C10 encoder read directly every scan: PIW 334 = FM350-2 Ch5
+//low word (HW Config 2026-11-19), wrap-safe difference per scan. Travel is
+//ADDED UP over several runs (MD284) while the exit B10.6 is clear. Proven when
+//travel >= C10 surface (Surface_Length_10, pulses) + 20 %. 0 -> 18000 p (5 m).
 //Any packet seen on C10 (B10.3 / B10.4 / B10.5 / B10.6) or a Pusher 2 push
 //restarts the proof (a pushed packet can sit at the infeed without C10 starting).
 
       L     "COLLATORS DB".Surface_Length_10; // C10 Surface [Pulses] (WORD)
-      L     L#549; 
+      L     L#12; 
       *D    ; 
-      L     L#1000; 
+      L     L#10; // + 20 %
       /D    ; 
-      L     L#1000; // + 1s Margin
-      +D    ; 
-      T     #PROOF_MS; 
+      T     #PROOF_P; 
 //;
-      L     #PROOF_MS; 
-      L     L#3000; 
+      L     #PROOF_P; 
+      L     L#1000; 
       <D    ; // Surface Unknown (0) or Too Small
       JCN   P001; 
 
-      L     L#10000; 
-      T     #PROOF_MS; 
+      L     L#18000; // ~5 m @ 0.28 mm/pulse
+      T     #PROOF_P; 
 
-P001: L     #PROOF_MS; 
-      L     L#15000; 
-      >D    ; 
-      JCN   P002; 
+P001: L     PIW  334; // C10 Encoder - Direct, Every Scan
+      T     #ENC_W; 
+      A     "M 10.0"; // Clearing CMD
+      JC    P002; 
 
-      L     L#15000; 
-      T     #PROOF_MS; 
+      L     #ENC_W; // No Clearing: Follow Encoder, Proof = 0
+      T     MW   288; 
+      L     L#0; 
+      T     MD   284; 
+      JU    P004; 
 
-P002: A     "M 10.0"; // Clearing CMD
-      A     "A 48.0"; // C10 Belt Running
-      A     "A 48.1"; // C10 Fast = Transfer
-      AN    "B 10.6"; // C10 Exit Sens Clear
-      JCN   P003; 
-
-      L     MD   284; // Proof Time Added Up [mS] (Free)
-      L     "DB UTILITY".Scan_Cycle_Previous; 
+P002: L     #ENC_W; // Pulses Since Last Scan (INT Subtraction = Wrap-Safe)
+      L     MW   288; 
+      -I    ; 
       ITD   ; 
+      T     #D_ENC; 
+      L     #ENC_W; 
+      T     MW   288; // Last Encoder Word (Free)
+      L     #D_ENC; 
+      L     L#0; 
+      >=D   ; 
+      JC    P003; 
+
+      L     #D_ENC; // Absolute Travel
+      NEGD  ; 
+      T     #D_ENC; 
+
+P003: AN    "B 10.6"; // C10 Exit Sens Clear
+      JCN   P004; 
+
+      L     MD   284; // Travel With Exit Clear, Added Up [Pulses] (Free)
+      L     #D_ENC; 
       +D    ; 
       T     MD   284; 
 
-P003: A(    ; 
+P004: A(    ; 
       O     "B 10.3"; // Pusher Extended - Packet Sens (C10 Infeed)
       O     "M 51.7"; // Pusher 2 FWD - Packet Being Pushed
       O     "B 10.4"; // C10 InFeed Sens
       O     "B 10.5"; // C10 Full Sens
       O     "B 10.6"; // C10 Exit Sens
       )     ; 
-      ON    "M 10.0"; // No Clearing
-      JCN   P004; 
+      JCN   P005; 
 
       L     L#0; // Packet Seen - Proof Restarts
       T     MD   284; 
 
-P004: L     MD   284; 
-      L     #PROOF_MS; 
+P005: L     MD   284; 
+      L     #PROOF_P; 
       >=D   ; 
       A     "M 10.0"; 
       S     "M 10.7"; // C10 Proven Empty - Set
