@@ -234,11 +234,49 @@ TITLE =Conveyor 10 Clearing Enable after New Order
 NETWORK
 TITLE =New Order - Status Lamp
 
+//2026-11-19: BLINK = S3.2 can be pressed now (M8.2). STEADY = C10 held for the
+//new order, not ready yet (M8.4 without M8.2) - before, the lamp stayed OFF.
+      A(    ; 
       A     "M 8.2"; // New Order - Feeder Empty / Ready
       AN    "M 8.3"; // New Order - Operator Not Enabled Yet
-      A     "M 145.0"; 
-      O     "Timer 0"; 
+      A     "M 145.0"; // Blink
+      )     ; 
+      O(    ; 
+      A     "M 8.4"; // C10 Hold - Waiting New Order
+      AN    "M 8.2"; // Not Ready Yet
+      AN    "M 10.0"; // Not While Clearing
+      )     ; 
+      O     "Timer 0"; // Lamp Test
       =     "H 49.5"; // Feeder Enable PB Lamp  (Amber)
+NETWORK
+TITLE =S3.2 Held 3s - Release the Hold (Sequence Not Complete)
+//2026-11-19: Before, S3.2 only worked with M8.2 (whole new-order chain done).
+//If the chain got stuck, the TS waited with no way out but SIGNAL/F4.
+//S3.2 held 3s releases the hold only (C11...C22 steps NOT reset: they may
+//still carry the previous order).
+
+      A     "S 3.2"; // Operator PB
+      A     "M 8.4"; // C10 Hold Active
+      AN    "M 10.0"; // Not While Clearing
+      L     S5T#3S; 
+      SD    T    140; // Hold 3s (Free Timer)
+//;
+      A     T    140; 
+      A     "M 0.3"; 
+      JCN   S321; 
+
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.2"; 
+      R     "M 8.3"; 
+      R     "M 8.4"; // C10 Hold - Released
+      R     "M 8.5"; // Clearing Done - Reset
+
+S321: NOP   0; 
 NETWORK
 TITLE =Conveyors Clearing Blink
 

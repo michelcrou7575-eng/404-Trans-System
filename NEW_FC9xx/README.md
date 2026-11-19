@@ -8,7 +8,7 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 
 | Old | New | Switch | Changes in the new block |
 |---|---|---|---|
-| FC1011 CONVEYORS CLEARING | **FC911** | `M280.0` | **§14 fixes:** `T33_DN` (root cause), C10 proven empty 10 s (`T137`, `M10.7`), C10 re-call, S3.2 always, abort fix. **2026-11-19:** hold + new-order chain released at every clearing start (`FP M283.4`) |
+| FC1011 CONVEYORS CLEARING | **FC911** | `M280.0` | **§14 fixes:** `T33_DN` (root cause), C10 proven empty 10 s (`T137`, `M10.7`), C10 re-call, S3.2 always, abort fix. **2026-11-19:** hold + new-order chain released at every clearing start (`FP M283.4`); S3.2 lamp steady while held / blinking when ready; S3.2 held 3 s releases the hold (`T140`) |
 | FC1012 CONVEYOR 0 + PUSHER 0 | FC912 | `M280.1` | none (copy) |
 | FC1016 ELEVATOR + PUSHER 1 | FC916 | `M280.2` | none (copy) |
 | FC1018 CONVEYOR 1 | FC918 | `M280.3` | none (copy) |
