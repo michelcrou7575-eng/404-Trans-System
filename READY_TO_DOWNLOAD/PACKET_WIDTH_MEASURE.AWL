@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.6
+VERSION : 0.7
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -32,7 +32,7 @@ END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.6
+VERSION : 0.7
 
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -55,7 +55,8 @@ VERSION : 0.6
    Width_ms_31 : INT ;	//MEASURED Width [mS] @ 31 m/min: C11/C12/C21/C22 + C13/C23 LOADING
    Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (Real 30.6 m/min = 510)
    Good_Count : INT ;	//Transfers Verified
-   Bad_Count : INT ;	//Transfers Rejected
+   Bad_Count : INT ;	//Transfers Rejected (Packets Seen but Not Verified)
+   Empty_Count : INT ;	//Transfers Without Any Packet (e.g. Clearing Re-Call of C10)
    Sensor_Dist_mm : INT  := 527;	//Distance B10.5 -> B10.6 Beams [mm] (Tape, 2026-11-18)
    Pend : BOOL ;	//A B10.5 Front Waits for B10.6
    T_ms : DINT ;	//Time Since Transfer Start [mS]
@@ -81,7 +82,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.6
+VERSION : 0.7
 
 
 VAR_INPUT
@@ -415,7 +416,7 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
 //(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
 //Later use: sensor blanking for the C11/C12/C13 and C21/C22/C23 counters.
-VERSION : 0.6
+VERSION : 0.7
 
 
 VAR_TEMP
@@ -615,6 +616,24 @@ TITLE =Transfer End - Verify (Both Sensors Agree) and Store
       L     "PACKET WIDTH DB".S6.Skipped; 
       +I    ; 
       T     #C6; 
+//;
+      L     #C5; // No Packet at Both Sensors = Empty Transfer, Not Rejected
+      L     0; 
+      ==I   ; 
+      A(    ; 
+      L     #C6; 
+      L     0; 
+      ==I   ; 
+      )     ; 
+      JCN   W005; 
+
+      L     "PACKET WIDTH DB".Empty_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Empty_Count; 
+      JU    W090; 
+
+W005: NOP   0; 
       L     "PACKET WIDTH DB".S5.Width_Avg_mm; 
       L     "PACKET WIDTH DB".S6.Width_Avg_mm; 
       -I    ; 
