@@ -1,4 +1,4 @@
-# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.5
+# Packet width measure (C10 transfer, B10.5 + B10.6) — MEASUREMENT ONLY v0.6
 
 Operator idea (2026-11-18): measure the packet width with **two independent sensors** at the end of C10 while it transfers, compare them to get a **verified** width, then use it later for **sensor blanking** on the C11/C12/C13 and C21/C22/C23 counters (same speed).
 
@@ -107,3 +107,16 @@ A wrong address only gives an access error (OB122 exists, the CPU stays in RUN, 
 * Program use (whole export): ch 0 = C3 slat, ch 2/3 = C4, ch 4/5 = C10, all through `ACT_CNTV` (read jobs in FC1300). Ch 1, 6, 7 unused. **Nothing reads the direct area** (no `PID`/`PIW`/`USER_STAT_WORD` access).
 * **Direct area ("Specify Channels")**: User_Type1 (`PID 328`) = Word ch1 low + Word ch0 low; User_Type2 (`PID 332`) = Word ch3 low + Word ch2 low. **Channel 5 (C10) is not in it.**
 * **Plan:** User_Type2 → **DWORD, Channel 5, Count Value** ⇒ `PID 332` = C10 count live, then DB30 `Enc_PID_Addr` = 332, `Enc_Direct` = 1. HW config download = CPU STOP for a moment, line empty (counters restart). First check the principle online: `PIW 328` / `PIW 330` follow `ACT_CNTV0` (C3) low word.
+
+## v0.6: direct read as a 16-bit word (2026-11-19)
+**Confirmed online:** `PIW 328` increases with C3 (`DB2.DBD 148` = `ACT_CNTV0`) with today's configuration, so in "Specify Channels" the **right-hand column is the lower address**. With the new configuration (User_Type1 = Ch3 | Ch0, User_Type2 = Ch5 | Ch2):
+
+| Address | Channel | Conveyor |
+|---|---|---|
+| `PIW 328` | Ch 0 | C3 |
+| `PIW 330` | Ch 3 | C4 surface |
+| `PIW 332` | Ch 2 | C4 length |
+| **`PIW 334`** | **Ch 5** | **C10** |
+
+FC1210 v0.6: `Enc_Direct` = 1 reads **`PIW [Enc_PIW_Addr]`** (default **334**). The word wraps at 65536, so only the **difference to the last scan** (INT subtraction, wrap-safe up to 32767 pulses per scan) is added to `Enc_Live` (DINT). The rest of the measure is unchanged. Switching `Enc_Direct` online is bumpless (`Enc_Live` continues from its last value).
+**Order:** HW Config change first (User_Type2 = Ch5 | Ch2), check `PIW 334` follows `ACT_CNTV5`, then `Enc_Direct` = 1.
