@@ -77,7 +77,7 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 | 15 other FC9xx | — | v0.0 | Identical copies of the running code. No reason to switch yet |
 
 **Step 1 ✅ 2026-11-19:** FC911, FC958, FC978 **v0.1** downloaded.
-**Step 2 (production trial, 3–5 order changes):** `M280.0` = `M281.5` = `M282.2` = 1 before F4. Check each time:
+**Step 2 — ACTIVE since 2026-11-19 (`M280.0`, `M281.5`, `M282.2` = 1, VAT "VAT_NewConveyors"). Production trial, 3–5 order changes:** `M280.0` = `M281.5` = `M282.2` = 1 before F4. Check each time:
 - [ ] Clearing finishes by itself, C10 empty (`M10.7`), no packets left on C10
 - [ ] During clearing only the conveyor on the pivot side starts (C11 if `P15.1`, C21 if `P15.0`)
 - [ ] Order B stops on C10, S3.2 lamp **steady**, then **blinking** when ready
