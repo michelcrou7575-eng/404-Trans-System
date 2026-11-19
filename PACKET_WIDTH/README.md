@@ -123,3 +123,17 @@ FC1210 v0.6: `Enc_Direct` = 1 reads **`PIW [Enc_PIW_Addr]`** (default **334**). 
 
 ### 2026-11-19: new HW Config active, confirmed online
 Before the change, with the gates forced: `PIW 332` = Ch2 (`SW_GATE2`), `PIW 334` = Ch3 (`SW_GATE3`), `PIW 330` = 0 (Ch1). After the change: **`PIW 334` follows C10 (`ACT_CNTV5`)**. Direct area now: 328 = Ch0 (C3), 330 = Ch3 (C4 surface), 332 = Ch2 (C4 length), **334 = Ch5 (C10)**. Next: width measure v0.6 with `Enc_Direct` = 1.
+
+## Live results 2026-11-19 (sack width 409 mm, 6 packets/transfer)
+| | Read job (`Enc_Direct` = 0) | **Direct `PIW 334`** (`Enc_Direct` = 1) |
+|---|---|---|
+| B10.5 widths (min–max) | 447–509 mm (**62 mm spread**) | 489–497 mm (**8 mm spread**) |
+| B10.6 widths (min–max) | 448–508 mm | 464–473 mm (**9 mm**) |
+| `Width_ms_31` | 856 ms | 855 ms (B10.5 881 / B10.6 829) |
+| `Cal_mm_Pulse` / `Cal_Speed_mm_s` | 0.259 / 474 | 0.257 / 473 |
+
+* **Direct read: spread per sensor ÷ 7.** The read-job delay was the main source of scatter.
+* **B10.5 always sees ~27 mm / ~52 ms more than B10.6** (6 %): a fixed sensor difference (switching point, beam height or angle). Both stay within the 10 % tolerance.
+* **Speed 473 by the sensors vs 510 measured on the belt (−7 %).** The two beams' *effective* distance is larger than the 527 mm tape distance because the sensors switch before/after the beam axis (B10.5 early, as its longer readings show). With 510 mm/s the effective distance is ≈ 510 × 1.114 s ≈ **568 mm**, and the real encoder factor ≈ **0.277 mm/pulse** (code: 0.31, +12 %). Optical width at 510 mm/s ≈ 449 (B10.5) / 423 (B10.6) mm for a 409 mm sack.
+* **Not affected:** the blanking uses mS. The C10 collator ("Collator Full") compares pulses with pulses, so the 0.31 factor only changes the mm display; the read-job delay, however, scatters its pulse measurements (→ FC954 direct read later).
+* Option: set `Sensor_Dist_mm` = 568 (effective) so that `Cal_Speed_mm_s` ≈ 510 and `Cal_mm_Pulse` ≈ 0.277.
