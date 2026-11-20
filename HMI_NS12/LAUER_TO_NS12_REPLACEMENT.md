@@ -11,7 +11,7 @@
 | # | LAUER item | PLC bit | What depends on it | Without LAUER | NS12 today |
 |---|---|---|---|---|---|
 | **B1** | **CLR key = fault reset** | `M171.5` | Fault latches that **only CLR can reset**: C0 `M30.1`, Pusher 0 `M30.2`, C2 angle `M22.7`, C4 collator `M30.0` (FC1300), C8 turntable `M48.6`, pivot conflict `M98.2`, elevator (FC916), flipper (FC942), loader lift (FC974), clearing new-order hold `M7.4` | **These faults can no longer be reset → machine stays stopped** | SIGNAL `E34.1` → `M9.1` resets only `M0.7` (and the FC8 counters) |
-| **B2** | **F19 = "Link 508 feed by 2145" (label: "F19 doivent toujours être en fonction")** | `M153.7` | C0: eject step, F5/F18 reset, feed path (FC912) | Keeps its last state (MW152 is saved/restored through MW120). Lost after a CPU memory reset → **feeding to 508 stops** | Not on NS12 |
+| **B2** ✅ OB35 v0.2 | **F19 = "Link 508 feed by 2145" (label: "F19 doivent toujours être en fonction")** | `M153.7` | C0: eject step, F5/F18 reset, feed path (FC912) | Keeps its last state (MW152 is saved/restored through MW120). Lost after a CPU memory reset → **feeding to 508 stops** | Not on NS12 |
 | **B3** | ENT + CLR together | `M171.4` + `M171.5` | Clearing abort (FC911, 2×), turntable service (FC948) | Not possible | Clearing abort exists (`CLEARING_SSW_MAIN` off → `M5.4`). Turntable: NS12 service page |
 | **B4** | E-stop / door latches `M1.0–M1.3`, `M1.5–M1.7` | `M171.5` OR `S2.0` / `S2.7` / `M0.2` | FC212 | Still reset by the desk buttons | OK, no action |
 
@@ -55,7 +55,7 @@ Key bits are **toggles** (press = on, press again = off), kept in `MW150` / `MW1
 ## 4. Proposed steps
 
 1. **B1, CLR reset** (one network, low risk): in each block that uses `A "M 171.5"` for a reset, change to `O "M 171.5"  O "M 9.1"`, so the SIGNAL button (`E34.1`), `S0.7` and `S2.7` reset everything CLR resets. Works with LAUER still connected.
-2. **B2, F19:** NS12 switch "Link 508 feed by 2145" on the run screen, **or** force it in the PLC (`SET` / `= "M 153.7"` after the LAUER call) if it really must always be on.
+2. **B2, F19:** ✅ always ON in the PLC (OB35 v0.2): operators control the 508 feed at the 2145 Tuber.
 3. **H1** from `NEW_HMI_TEST_PLAN.md`: `M140.3` = NS12 ON only (position times then always from the NS12).
 4. **NS12 alarm list** from §5 (Alarm.csv): needs the NS12 address format for the PLC (export one object with an address).
 5. Run 3 shifts with LAUER still connected but not touched.
