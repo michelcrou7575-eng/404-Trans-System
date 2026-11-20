@@ -111,3 +111,6 @@ The direct-read versions are separate blocks (operator's numbering); FC924/FC931
 | C4 | `DB111.DBX0.6` | `DB111.DBX2.6` | 0/x: FC1031 · 1/0: FC931 · **1/1: FC932** |
 | C10 | `DB111.DBX1.4` | `DB111.DBX2.7` | 0/x: FC1054 · 1/0: FC954 · **1/1: FC955** |
 Test switches start at 0. Set one at a time (C10 first), watch, reset to 0 to go back instantly.
+
+### 2026-11-20: PIW direct reads checked online
+`PIW 328` = `ACT_CNTV0` (C3), `PIW 332` = `ACT_CNTV2` and `PIW 330` = `ACT_CNTV3` (C4), `PIW 334` = `ACT_CNTV5` (C10; live value 43 pulses ahead of the read job while running). Operator: "seems to work". C10 width at B10.4: 1328 pulses = 412 mm with 0.31 (display), ≈ 372 mm with the calibrated 0.280.
