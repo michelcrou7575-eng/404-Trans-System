@@ -99,3 +99,6 @@ Open: FC911 v0.3 (encoder-travel proof, ends the clearing sooner) — optional.
 ### 2026-11-19: C3/C4/C10 direct encoder reads (FC924, FC931, FC954 v0.1) — to try
 Every `ACT_CNTVn` read in these blocks works in 16 bits (`-I`, `>=I`, `>I`, or a transfer into an INT/WORD), so the live low word of the direct area is a drop-in replacement: C3 Ch0 → `PIW 328`, C4 Ch2 → `PIW 332`, Ch3 → `PIW 330`, C10 Ch5 → `PIW 334`. C10 Ch4 (width gate, `SW_GATE4`) is not in the direct area and stays `ACT_CNTV4`. The counters still restart when their software gate opens, exactly as before.
 **Try (one at a time):** download the single file, switch stays 1 (already ON). Watch: C3 surface / slat clearing (`M26.7`), C4 length (`"HOUSE_KEEPING DB".C4_Packet_Length_mm`) and "full", C10 width (`C10_Packet_Width_mm`) and "Collator Full". Rollback: download the previous version (v0.0), or switch the station to its old FC10xx (`M280.5` / `M280.6` / `M281.4` = 0).
+
+### 2026-11-20: switches moved to DB111 (OB1 v0.1)
+The 21 switches are now `DB111.DBX0.0` … `DBX2.4` (same order as `M280.0` … `M282.4`), symbol names `SW_FC911` … `SW_FC986`, **initial value TRUE**. DB contents are kept at power-off, so the new blocks stay active after a restart. `MB280`–`MB282` are no longer read (free again). To switch a station back to its old block: write its DB111 bit = 0 (VAT).
