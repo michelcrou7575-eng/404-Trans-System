@@ -3,7 +3,8 @@ TITLE =FC9xx Switches - New / Old Program Blocks
 //v0.1 2026-11-20: replaces the switch bits MB280...MB282 (lost at power-off).
 //Same bit layout: M280.0 = DBX0.0 ... M282.4 = DBX2.4. DB values are kept at
 //power-off; initial value TRUE = all new blocks (state 2026-11-19).
-VERSION : 0.1
+//v0.2 2026-11-20: DBX2.5/2.6/2.7 = PIW test blocks FC925/FC932/FC955 (initial 0).
+VERSION : 0.2
 
 
   STRUCT 
@@ -28,9 +29,9 @@ VERSION : 0.1
    SW_FC978 : BOOL  := TRUE;	//DBX2.2 1 = NEW FC978 / 0 = OLD FC1078 (C21)
    SW_FC982 : BOOL  := TRUE;	//DBX2.3 1 = NEW FC982 / 0 = OLD FC1082 (C22)
    SW_FC986 : BOOL  := TRUE;	//DBX2.4 1 = NEW FC986 / 0 = OLD FC1086 (C23)
-   Spare_2_5 : BOOL ;	//DBX2.5
-   Spare_2_6 : BOOL ;	//DBX2.6
-   Spare_2_7 : BOOL ;	//DBX2.7
+   SW_FC925 : BOOL ;	//DBX2.5 1 = FC925 (PIW Test) / 0 = FC924 (C3) - Only if SW_FC924 = 1
+   SW_FC932 : BOOL ;	//DBX2.6 1 = FC932 (PIW Test) / 0 = FC931 (C4) - Only if SW_FC931 = 1
+   SW_FC955 : BOOL ;	//DBX2.7 1 = FC955 (PIW Test) / 0 = FC954 (C10) - Only if SW_FC954 = 1
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK

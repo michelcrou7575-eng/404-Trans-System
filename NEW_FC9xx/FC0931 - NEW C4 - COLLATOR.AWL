@@ -1,10 +1,8 @@
 FUNCTION FC 931 : VOID
 TITLE =NEW FC931 (was FC1031) - Collator Conveyor 4 Pos.6
 //Collator Conveyor 4 - Is On Both Service Pages 1 & 2
-//v0.1 2026-11-19: C4 encoders read DIRECT every scan: Ch2 = PIW 332, Ch3 = PIW 330
-//(HW Config) instead of ACT_CNTV2/3 (read job, ~100 mS old).
 NAME : POS_6
-VERSION : 0.1
+VERSION : 0.0
 
 
 VAR_TEMP
@@ -165,7 +163,7 @@ NCNT: A     "M 166.2"; // Counter 2
       AN    "B 6.4"; 
       AN    "B 6.7"; 
       JNB   B067; 
-      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old) C4 Length Count
+      L     "FM350 DB".ACT_CNTV2; // C4 Length Count
       T     "COLLATORS DB".PacketLength_C4; // Encoder Pulses - Length
       T     #PACKET_LENGTH_4; 
 //;
@@ -211,7 +209,7 @@ TITLE =Packet Length Measurements [mm] - While Collating
       A     "A 44.3"; 
       JCN   NPRT; 
 
-      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV3; 
       T     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
 
 //NPRT: A     "HOUSE_KEEPING DB".C4_First_Collating
@@ -219,7 +217,7 @@ NPRT: AN    "B 6.7"; // C4 InFeed Sens - New Packet End
       FP    "FP 226.2"; 
       JCN   NTKE; 
 
-      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV3; 
       L     "HOUSE_KEEPING DB".C4_Encoder_READ_Mem; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C4_Packet_Length_ep; // C4 Packet Length [ep] 
@@ -271,8 +269,8 @@ TITLE =Between Packets Spaces - Measurements [mm]
       FP    "FP 226.5"; 
       JCN   N1ST; 
 
-      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
-      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV3; 
+      L     "FM350 DB".ACT_CNTV2; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C4_RampDown_Dx_ep; 
 
@@ -295,7 +293,7 @@ TITLE =Conveyor 4 - Surface Length Left (PulseUnit) - Measurements
       A     "M 31.1"; 
       JNB   M663; 
       L     "COLLATORS DB".Surface_Length_C4; 
-      L     PIW  330; // Direct Ch3 (was ACT_CNTV3, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV3; 
       -D    ; 
       T     "COLLATORS DB".Surface_Left_C4; 
       L     0; 
@@ -455,7 +453,7 @@ TITLE =Collator Conveyor 4 - Clearing Surface - Run 2K Encoder Counts
       A     "M 0.3"; 
       JNB   M305; 
       A(    ; 
-      L     PIW  332; // Direct Ch2 (was ACT_CNTV2, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV2; 
       L     2000; 
       >I    ; 
       )     ; 

@@ -1,5 +1,5 @@
-FUNCTION FC 931 : VOID
-TITLE =NEW FC931 (was FC1031) - Collator Conveyor 4 Pos.6
+FUNCTION FC 932 : VOID
+TITLE =NEW FC932 (PIW test of FC931) - Collator Conveyor 4 Pos.6
 //Collator Conveyor 4 - Is On Both Service Pages 1 & 2
 //v0.1 2026-11-19: C4 encoders read DIRECT every scan: Ch2 = PIW 332, Ch3 = PIW 330
 //(HW Config) instead of ACT_CNTV2/3 (read job, ~100 mS old).

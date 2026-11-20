@@ -1,5 +1,5 @@
-FUNCTION FC 954 : VOID
-TITLE =NEW FC954 (was FC1054) - Pivot Conveyor 10 - Collator
+FUNCTION FC 955 : VOID
+TITLE =NEW FC955 (PIW test of FC954) - Pivot Conveyor 10 - Collator
 //v0.1 2026-11-19: C10 encoder Ch5 read DIRECT every scan: PIW 334 (HW Config) instead
 //of ACT_CNTV5. Ch4 (width gate) stays ACT_CNTV4: not in the direct area.
 NAME : POS_12

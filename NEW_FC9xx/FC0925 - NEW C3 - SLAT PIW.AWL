@@ -1,5 +1,5 @@
-FUNCTION FC 924 : VOID
-TITLE =NEW FC924 (was FC1024) - Slat Conveyor 3 Pos.5
+FUNCTION FC 925 : VOID
+TITLE =NEW FC925 (PIW test of FC924) - Slat Conveyor 3 Pos.5
 //v0.1 2026-11-19: C3 encoder Ch0 read DIRECT every scan: PIW 328 (HW Config
 //User_Type1 right) instead of "FM350 DB".ACT_CNTV0 (read job, ~100 mS old).
 NAME : POS_5

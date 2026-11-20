@@ -13,14 +13,14 @@ Both use the same M bits, timers and DBs, so switching is bumpless. **Rollback =
 | FC1016 ELEVATOR + PUSHER 1 | FC916 | `M280.2` | none (copy) |
 | FC1018 CONVEYOR 1 | FC918 | `M280.3` | none (copy) |
 | FC1022 CONVEYOR 2 | FC922 | `M280.4` | none (copy) |
-| FC1024 CONVEYOR 3 | **FC924** | `M280.5` | `R #INITIALISATION`. **v0.1:** encoder Ch0 direct `PIW 328` |
-| FC1031 CONVEYOR 4 | **FC931** | `M280.6` | **v0.1:** encoders Ch2/Ch3 direct `PIW 332`/`PIW 330` |
+| FC1024 CONVEYOR 3 | **FC924** | `M280.5` | `R #INITIALISATION` (v0.0). PIW test: **FC925** |
+| FC1031 CONVEYOR 4 | FC931 | `M280.6` | none (copy, v0.0). PIW test: **FC932** |
 | FC1034 CONVEYOR 5 | FC934 | `M280.7` | none (copy) |
 | FC1038 CONVEYOR 6 | **FC938** | `M281.0` | `CLR / = #INITIALISATION` |
 | FC1042 CONVEYOR 7 | FC942 | `M281.1` | none (copy) |
 | FC1048 CONVEYOR 8 | FC948 | `M281.2` | none (copy) |
 | FC1050 CONVEYOR 9 | FC950 | `M281.3` | none (copy) |
-| FC1054 CONVEYOR 10 | **FC954** | `M281.4` | **v0.1:** encoder Ch5 direct `PIW 334` (Ch4 unchanged) |
+| FC1054 CONVEYOR 10 | FC954 | `M281.4` | none (copy, v0.0). PIW test: **FC955** |
 | FC1058 CONVEYOR 11 | **FC958** | `M281.5` | **2026-11-19:** clearing trigger `M9.3` only if pivot LOW (`P15.1`) |
 | FC1062 CONVEYOR 12 | FC962 | `M281.6` | none (copy) |
 | FC1066 CONVEYOR 13 | FC966 | `M281.7` | none (copy) |
@@ -102,3 +102,12 @@ Every `ACT_CNTVn` read in these blocks works in 16 bits (`-I`, `>=I`, `>I`, or a
 
 ### 2026-11-20: switches moved to DB111 (OB1 v0.1)
 The 21 switches are now `DB111.DBX0.0` … `DBX2.4` (same order as `M280.0` … `M282.4`), symbol names `SW_FC911` … `SW_FC986`, **initial value TRUE**. DB contents are kept at power-off, so the new blocks stay active after a restart. `MB280`–`MB282` are no longer read (free again). To switch a station back to its old block: write its DB111 bit = 0 (VAT).
+
+### 2026-11-20: PIW test blocks FC925 / FC932 / FC955 (OB1 v0.2, DB111 v0.2)
+The direct-read versions are separate blocks (operator's numbering); FC924/FC931/FC954 stay as they are (v0.0). Three-way choice per station:
+| Station | Main switch | Test switch | Runs |
+|---|---|---|---|
+| C3 | `DB111.DBX0.5` | `DB111.DBX2.5` | 0/x: FC1024 · 1/0: FC924 · **1/1: FC925** |
+| C4 | `DB111.DBX0.6` | `DB111.DBX2.6` | 0/x: FC1031 · 1/0: FC931 · **1/1: FC932** |
+| C10 | `DB111.DBX1.4` | `DB111.DBX2.7` | 0/x: FC1054 · 1/0: FC954 · **1/1: FC955** |
+Test switches start at 0. Set one at a time (C10 first), watch, reset to 0 to go back instantly.

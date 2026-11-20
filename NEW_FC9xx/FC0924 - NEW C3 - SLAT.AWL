@@ -1,9 +1,7 @@
 FUNCTION FC 924 : VOID
 TITLE =NEW FC924 (was FC1024) - Slat Conveyor 3 Pos.5
-//v0.1 2026-11-19: C3 encoder Ch0 read DIRECT every scan: PIW 328 (HW Config
-//User_Type1 right) instead of "FM350 DB".ACT_CNTV0 (read job, ~100 mS old).
 NAME : POS_5
-VERSION : 0.1
+VERSION : 0.0
 
 
 VAR_TEMP
@@ -48,14 +46,14 @@ TITLE =Packet Length Measurements [mm] - While Collating
       JC    PRNT; 
       JU    RPRT; 
 
-PRNT: L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old)
+PRNT: L     "FM350 DB".ACT_CNTV0; 
       T     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
 
 RPRT: AN    "B 6.2"; // C3 InFeed Sens - New Packet End
       FP    "FP 227.2"; 
       JCN   NTKE; 
 
-      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old)
+      L     "FM350 DB".ACT_CNTV0; 
       L     "HOUSE_KEEPING DB".C3_Encoder_READ_Mem; 
       -I    ; 
       T     "HOUSE_KEEPING DB".C3_Packet_Length_ep; 
@@ -105,7 +103,7 @@ TITLE =Slat Conveyor 3 - Surface Length Manager (PulseUnit)
 
       A     "M 166.0"; // Start Count (100mS Pulse)
       A(    ; 
-      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -124,7 +122,7 @@ TITLE =Soft Timer 27 Add - FM350 needs a 100mS Pulse !
 
       A     "M 166.0"; 
       A(    ; 
-      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -154,7 +152,7 @@ TITLE =Slat Conveyor 3 - Surface Length Manager
 
       A     "M 166.0"; 
       A(    ; 
-      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
       L     "MW 212"; 
       >=I   ; 
       )     ; 
@@ -194,7 +192,7 @@ TITLE =Slat Conveyor - Clearing
       A     "M 26.6"; 
       JNB   M266; 
       A(    ; 
-      L     PIW  328; // Direct Ch0 (was ACT_CNTV0, ~100 mS old) C3 Surface Count
+      L     "FM350 DB".ACT_CNTV0; // C3 Surface Count
       L     10000; 
       >I    ; 
       )     ; 

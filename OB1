@@ -2,7 +2,8 @@ ORGANIZATION_BLOCK "CYCLIC"
 TITLE =Main Cycle
 //v0.1 2026-11-20: FC9xx switches read from DB111 (kept at power-off) instead of
 //MB280...MB282. Bit layout unchanged: M280.0 = DB111.DBX0.0 ... M282.4 = DBX2.4.
-VERSION : 0.1
+//v0.2 2026-11-20: PIW test blocks: DB111.DBX2.5 FC925 (C3), 2.6 FC932 (C4), 2.7 FC955 (C10).
+VERSION : 0.2
 
 
 VAR_TEMP
@@ -100,13 +101,25 @@ E022: NOP   0;
       JC    N024; 
       CALL "CONVEYOR 3 - SLAT" ;
       JU    E024; 
-N024: CALL FC 924 ;
+N024: A     DB111.DBX 2.5; // 1 = FC925 (PIW Test) / 0 = FC924
+      JC    P024; 
+
+      CALL FC 924 ;
+      JU    E024; 
+
+P024: CALL FC 925 ;
 E024: NOP   0; 
       A     DB111.DBX 0.6; // 1 = NEW FC931 / 0 = OLD FC1031 (DB111, was M 280.6)
       JC    N031; 
       CALL "CONVEYOR 4 - COLLATOR" ;
       JU    E031; 
-N031: CALL FC 931 ;
+N031: A     DB111.DBX 2.6; // 1 = FC932 (PIW Test) / 0 = FC931
+      JC    P031; 
+
+      CALL FC 931 ;
+      JU    E031; 
+
+P031: CALL FC 932 ;
 E031: NOP   0; 
       A     DB111.DBX 0.7; // 1 = NEW FC934 / 0 = OLD FC1034 (DB111, was M 280.7)
       JC    N034; 
@@ -145,7 +158,13 @@ E050: NOP   0;
       JC    N054; 
       CALL "CONVEYOR 10 - PIVOT" ;
       JU    E054; 
-N054: CALL FC 954 ;
+N054: A     DB111.DBX 2.7; // 1 = FC955 (PIW Test) / 0 = FC954
+      JC    P054; 
+
+      CALL FC 954 ;
+      JU    E054; 
+
+P054: CALL FC 955 ;
 E054: NOP   0; 
 
       CALL FC 1210 ; // PACKET WIDTH MEASURE - Measurement Only (DB30)
