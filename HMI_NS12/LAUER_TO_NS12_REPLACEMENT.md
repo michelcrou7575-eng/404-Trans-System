@@ -38,7 +38,7 @@ Key bits are **toggles** (press = on, press again = off), kept in `MW150` / `MW1
 | F16 | station de tournement 0-passage 1-tourner | `M152.2` | Turntable direction (FC948) | `TURNTABLE_SSW_MAIN` | ✅ covered |
 | F17 | "Paquet vers 504" (handwritten) | `M152.1` | **not used in the PLC** | — | Ignore (decided 2026-11-20) |
 | F18 | (Link feed by hand) | `M152.0` | C0 hand feed (FC912) | `MAN_FEED_SSW_MAIN` → `M110.0` | ✅ covered |
-| F19 | (must always be ON) | `M153.7` | C0 feed to 508 | — | ❌ **B2** |
+| F19 | (must always be ON) | `M153.7` | C0 feed to 508 | Always ON in PLC (OB35 v0.2) | ✅ B2 |
 | F20 | contrôle des lampes (lamp test) | `M153.6` | 5 s lamp test of the LAUER LEDs only | — | Ignore (decided 2026-11-20) |
 | + / − | (service jog) | `M161.0` / `M161.1` | LAUER service: C0, elevator, C5, flipper, C8, C9, pivot, loader | NS12 service pages (own buttons) | ✅ covered |
 | ENT / CLR | | `M171.4` / `M171.5` | see B1, B3 | | ❌ **B1** |

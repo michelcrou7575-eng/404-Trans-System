@@ -29,8 +29,8 @@ This folder always holds the **latest** version of each block to load. **Every m
 
 ## Change log (latest first)
 | Date | Block | Change |
-- **2026-11-20** OB35 v0.2: LAUER F19 (`M153.7`) set ON every 100 ms right after "LAUER CALL" (blocker B2 of the LAUER → NS12 replacement).
 |---|---|---|
+| 2026-11-20 | OB35 v0.2 | LAUER F19 (`M153.7`) set ON every 100 ms right after "LAUER CALL" (blocker B2 of the LAUER → NS12 replacement) |
 | 2026-11-20 | Width measure **v0.10** | Compile error fixed: FC1211 had jump label `S015` twice (block-wide labels), second one renamed `S016`. All sources re-checked for duplicate labels per block |
 | 2026-11-20 | FC925/FC932/FC955 v0.1, DB111 v0.2, OB1 v0.2 | Direct-read versions renumbered as **separate test blocks** (operator's numbers); FC924/FC931/FC954 stay **v0.0**. OB1: old FC10xx / FC9xx / PIW test block, chosen by DB111 (`DBX0.5`+`2.5` C3, `0.6`+`2.6` C4, `1.4`+`2.7` C10) |
 | 2026-11-20 | DB111 v0.1 + OB1 v0.1 | FC9xx switches moved from MB280–282 to **DB111** (kept at power-off, initial TRUE) |
