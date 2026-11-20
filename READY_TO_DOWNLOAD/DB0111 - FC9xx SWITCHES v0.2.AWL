@@ -1,0 +1,37 @@
+DATA_BLOCK DB 111
+TITLE =FC9xx Switches - New / Old Program Blocks
+//v0.1 2026-11-20: replaces the switch bits MB280...MB282 (lost at power-off).
+//Same bit layout: M280.0 = DBX0.0 ... M282.4 = DBX2.4. DB values are kept at
+//power-off; initial value TRUE = all new blocks (state 2026-11-19).
+//v0.2 2026-11-20: DBX2.5/2.6/2.7 = PIW test blocks FC925/FC932/FC955 (initial 0).
+VERSION : 0.2
+
+
+  STRUCT 
+   SW_FC911 : BOOL  := TRUE;	//DBX0.0 1 = NEW FC911 / 0 = OLD FC1011 (Clearing)
+   SW_FC912 : BOOL  := TRUE;	//DBX0.1 1 = NEW FC912 / 0 = OLD FC1012 (C0 + Pusher 0)
+   SW_FC916 : BOOL  := TRUE;	//DBX0.2 1 = NEW FC916 / 0 = OLD FC1016 (Elevator + Pusher 1)
+   SW_FC918 : BOOL  := TRUE;	//DBX0.3 1 = NEW FC918 / 0 = OLD FC1018 (C1)
+   SW_FC922 : BOOL  := TRUE;	//DBX0.4 1 = NEW FC922 / 0 = OLD FC1022 (C2)
+   SW_FC924 : BOOL  := TRUE;	//DBX0.5 1 = NEW FC924 / 0 = OLD FC1024 (C3)
+   SW_FC931 : BOOL  := TRUE;	//DBX0.6 1 = NEW FC931 / 0 = OLD FC1031 (C4)
+   SW_FC934 : BOOL  := TRUE;	//DBX0.7 1 = NEW FC934 / 0 = OLD FC1034 (C5)
+   SW_FC938 : BOOL  := TRUE;	//DBX1.0 1 = NEW FC938 / 0 = OLD FC1038 (C6)
+   SW_FC942 : BOOL  := TRUE;	//DBX1.1 1 = NEW FC942 / 0 = OLD FC1042 (C7)
+   SW_FC948 : BOOL  := TRUE;	//DBX1.2 1 = NEW FC948 / 0 = OLD FC1048 (C8)
+   SW_FC950 : BOOL  := TRUE;	//DBX1.3 1 = NEW FC950 / 0 = OLD FC1050 (C9)
+   SW_FC954 : BOOL  := TRUE;	//DBX1.4 1 = NEW FC954 / 0 = OLD FC1054 (C10)
+   SW_FC958 : BOOL  := TRUE;	//DBX1.5 1 = NEW FC958 / 0 = OLD FC1058 (C11)
+   SW_FC962 : BOOL  := TRUE;	//DBX1.6 1 = NEW FC962 / 0 = OLD FC1062 (C12)
+   SW_FC966 : BOOL  := TRUE;	//DBX1.7 1 = NEW FC966 / 0 = OLD FC1066 (C13)
+   SW_FC970 : BOOL  := TRUE;	//DBX2.0 1 = NEW FC970 / 0 = OLD FC1070 (Loader Fingers)
+   SW_FC974 : BOOL  := TRUE;	//DBX2.1 1 = NEW FC974 / 0 = OLD FC1074 (Loader Lift)
+   SW_FC978 : BOOL  := TRUE;	//DBX2.2 1 = NEW FC978 / 0 = OLD FC1078 (C21)
+   SW_FC982 : BOOL  := TRUE;	//DBX2.3 1 = NEW FC982 / 0 = OLD FC1082 (C22)
+   SW_FC986 : BOOL  := TRUE;	//DBX2.4 1 = NEW FC986 / 0 = OLD FC1086 (C23)
+   SW_FC925 : BOOL ;	//DBX2.5 1 = FC925 (PIW Test) / 0 = FC924 (C3) - Only if SW_FC924 = 1
+   SW_FC932 : BOOL ;	//DBX2.6 1 = FC932 (PIW Test) / 0 = FC931 (C4) - Only if SW_FC931 = 1
+   SW_FC955 : BOOL ;	//DBX2.7 1 = FC955 (PIW Test) / 0 = FC954 (C10) - Only if SW_FC954 = 1
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK

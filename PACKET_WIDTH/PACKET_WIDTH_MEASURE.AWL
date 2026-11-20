@@ -1,0 +1,1113 @@
+TYPE UDT 10
+VERSION : 0.10
+
+  STRUCT
+   Was_On : BOOL ;	//Sensor State Last Scan
+   Open : BOOL ;	//Packet in Progress
+   Low : BOOL ;	//Sensor OFF Inside a Packet (Sag or Gap - Not Decided Yet)
+   Skip : BOOL ;	//Packet Already Covering at Start = Partial, Not Recorded
+   Front : BOOL ;	//New Packet Front This Scan (Pulse)
+   Spare_2 : BOOL ;
+   Spare_3 : BOOL ;
+   Spare_4 : BOOL ;
+   Start_Pos : DINT ;	//Encoder at Packet Front [Pulses]
+   Fall_Pos : DINT ;	//Encoder at Last OFF [Pulses]
+   Count : INT ;	//Packets Measured This Transfer
+   Skipped : INT ;	//Partial Packets Not Measured (0 or 1)
+   Sag_Count : INT ;	//OFF Shorter than Gap_Min = Sag (U-Shape / Low Packet)
+   Width_Sum_mm : DINT ;	//Sum of Widths [mm]
+   Width_Min_mm : INT ;	//Smallest Width [mm]
+   Width_Max_mm : INT ;	//Largest Width [mm]
+   Width_Avg_mm : INT ;	//Average Width [mm]
+   Last_Width_mm : INT ;	//Last Packet Width [mm]
+   Sag_Max_mm : INT ;	//Longest Sag [mm]
+   Gap_Min_mm : INT ;	//Shortest Real Gap Between Packets [mm]
+   Time_ms : DINT ;	//Time Since Packet Front [mS]
+   Fall_ms : DINT ;	//Time at Last OFF [mS]
+   Width_Sum_ms : DINT ;	//Sum of Widths [mS]
+   Width_Avg_ms : INT ;	//Average Width [mS] @ C10 Fast = C11/C12/C21/C22 Speed
+   Last_Width_ms : INT ;	//Last Packet Width [mS]
+  END_STRUCT ;
+END_TYPE
+
+TYPE UDT 11
+VERSION : 0.1
+
+
+  STRUCT 
+   Was_On : BOOL ;	//Sensor State Last Scan
+   Pulse : BOOL ;	//Cleaned Packet Pulse (Info)
+   Spare_1 : BOOL ;	
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Spare_5 : BOOL ;	
+   Spare_6 : BOOL ;	
+   T_ms : DINT  := L#60000;	//Belt Run Time Since Last Counted Packet [mS]
+   Pulse_ms : INT ;	//Pulse Time Left [mS]
+   Count : INT ;	//Packets Counted (Cleaned) - Total
+   Raw : INT ;	//Raw Sensor Fronts - Total
+   Sag : INT ;	//Fronts Ignored (Inside Blanking = Sag of a U-Shape) - Total
+   Butt : INT ;	//Butted Packets Counted (Sensor Never Cleared) - Total
+  END_STRUCT ;
+END_TYPE
+
+DATA_BLOCK DB 30
+TITLE =Packet Width Measure
+VERSION : 0.10
+
+  STRUCT
+   Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
+   Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
+   Enc_Direct : BOOL  := TRUE;	//1 = PIW 334 Direct Word, Every Scan (Default, HW Config 2026-11-19) / 0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS)
+   Enc_PIW_Addr : INT  := 334;	//FM350-2 Direct Low Word of Ch5 (C10) - User_Type2 Right=334 (After HW Config)
+   Enc_Word_Last : INT ;	//Last Direct Word Read (Wrap Handling)
+   Enc_Direct_Mem : BOOL ;	//Direct Mode Last Scan (First Scan Init)
+   Enc_Live : DINT ;	//Encoder Value Used This Scan
+   Active : BOOL ;	//C10 Transfering
+   FP_Start : BOOL ;	//Edge Memory
+   FN_End : BOOL ;	//Edge Memory
+   Valid : BOOL ;	//A Verified Width Exists
+   Last_OK : BOOL ;	//Last Transfer Verified
+   Spare_1 : BOOL ;
+   Spare_2 : BOOL ;
+   Spare_3 : BOOL ;
+   C10_Count_Start : INT ;	//C10 Packet Count at Transfer Start
+   Width_mm : INT ;	//VERIFIED Packet Width [mm]
+   Width_ms_31 : INT ;	//MEASURED Width [mS] @ 31 m/min: C11/C12/C21/C22 + C13/C23 LOADING
+   Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (Real 30.6 m/min = 510)
+   Good_Count : INT ;	//Transfers Verified
+   Bad_Count : INT ;	//Transfers Rejected (Packets Seen but Not Verified)
+   Empty_Count : INT ;	//Transfers Without Any Packet (e.g. Clearing Re-Call of C10)
+   Sensor_Dist_mm : INT  := 568;	//EFFECTIVE Distance B10.5 -> B10.6 [mm] (Tape 527, Calibrated 568 = 510 mm/s, 2026-11-19)
+   Pend : BOOL ;	//A B10.5 Front Waits for B10.6
+   T_ms : DINT ;	//Time Since Transfer Start [mS]
+   Pend_Enc : DINT ;	//Encoder at B10.5 Front
+   Pend_T : DINT ;	//Time at B10.5 Front
+   Cal_Pulse_Sum : DINT ;	//Pulses B10.5 -> B10.6 (Sum)
+   Cal_ms_Sum : DINT ;	//mS B10.5 -> B10.6 (Sum)
+   Cal_Count : INT ;	//Fronts Seen at Both Sensors This Transfer
+   Cal_mm_Pulse : REAL ;	//CALIBRATED Encoder Factor [mm/pulse] (Code Uses 0.31)
+   Cal_Speed_mm_s : INT ;	//CALIBRATED C10 Fast Speed [mm/s] (Real 30.6 m/min = 510)
+   Width_mm_Cal : INT ;	//Verified Width with Calibrated Factor [mm]
+   S5 : UDT 10;	//B10.5 C10 Full Sens
+   S6 : UDT 10;	//B10.6 C10 Exit Sens
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK DB 31
+TITLE =Packet Blanking - Shadow Counters
+VERSION : 0.1
+
+  STRUCT 
+   Width_ms : INT ;	//Packet Time Used [mS] (DB30 Width_ms_31, Else 855)
+   Blank_Pct : INT  := 90;	//TUNE - Blanking After a Front [% of Packet Time]
+   Butt_Pct : INT  := 140;	//TUNE - Sensor Still ON -> Butted Packet [% of Packet Time]
+   Pulse_ms : INT  := 400;	//Cleaned Pulse Length [mS] (FC8: > 300 ON, Gap > 300)
+   C10_Exit_B10_6 : UDT 11;	//C10 Exit = C11 / C21 InFeed (Run: C10 Fast A48.0+A48.1)
+   C11_Exit_B10_7 : UDT 11;	//C11 Exit = C12 InFeed (Run: C11 A48.3)
+   C12_Exit_B11_0 : UDT 11;	//C12 Exit = C13 InFeed (Run: C12 A48.6)
+   C21_Exit_B15_4 : UDT 11;	//C21 Exit = C22 InFeed (Run: C21 A53.4)
+   C22_Exit_B15_5 : UDT 11;	//C22 Exit = C23 InFeed (Run: C22 A53.6)
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
+
+FUNCTION FC 1211 : VOID
+TITLE =Width Sensor - One Sensor, Encoder Based
+//Measures every packet passing one sensor with the C10 encoder (0.31 mm/pulse).
+//An OFF shorter than Gap_Min = Sag inside the same packet (U-Shape / low
+//packet), an OFF longer than Gap_Min = real gap: the packet is closed.
+//The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
+//C11...C23 have no encoder, they need the mS at the same speed.
+//Measurement only - writes only its own Data.
+VERSION : 0.10
+
+
+VAR_INPUT
+  Sensor : BOOL ;	//Packet Sensor
+  Active : BOOL ;	//Transfer Active
+  Start : BOOL ;	//First Scan of Transfer
+  Stop : BOOL ;	//First Scan After Transfer
+  Enc : DINT ;	//Encoder Counter [Pulses]
+  Gap_Min_Pulse : DINT ;	//Real Gap Minimum [Pulses]
+  Scan_mS : INT ;	//PLC Scan Time [mS]
+END_VAR
+VAR_IN_OUT
+  Data : UDT 10;	
+END_VAR
+VAR_TEMP
+  D : DINT ;	
+  MM : INT ;	
+  CLOSE : BOOL ;	
+  RUN : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Transfer Start - Reset
+
+      A     #Start; 
+      JCN   S001; 
+
+      L     0; 
+      T     #Data.Count; 
+      T     #Data.Skipped; 
+      T     #Data.Sag_Count; 
+      T     #Data.Width_Max_mm; 
+      T     #Data.Width_Avg_mm; 
+      T     #Data.Sag_Max_mm; 
+      L     L#0; 
+      T     #Data.Width_Sum_mm; 
+      T     #Data.Width_Sum_ms; 
+      T     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
+      L     32767; 
+      T     #Data.Width_Min_mm; 
+      T     #Data.Gap_Min_mm; 
+      L     #Enc; 
+      T     #Data.Start_Pos; 
+      T     #Data.Fall_Pos; 
+      A     #Sensor; // Already Covered = Partial Packet
+      =     #Data.Open; 
+      =     #Data.Skip; 
+      CLR   ; 
+      =     #Data.Low; 
+
+S001: NOP   0; 
+NETWORK
+TITLE =Only While Transfering (or Last Scan)
+
+      CLR   ; 
+      =     #CLOSE; 
+      =     #Data.Front; 
+//;
+      A(    ; 
+      O     #Active; 
+      O     #Stop; 
+      )     ; 
+      AN    #Start; 
+      =     #RUN; 
+
+NETWORK
+TITLE =Sensor ON - Sag End or New Packet
+
+      A     #RUN; 
+      A     #Sensor; 
+      AN    #Data.Was_On; 
+      JCN   S010; 
+
+      A     #Data.Open; 
+      A     #Data.Low; 
+      JCN   S011; 
+
+      L     #Enc; // Sag: Covered Again Before Gap_Min
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S012; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S012: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; // Encoder 0.31 mm/pulse
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      L     #Data.Sag_Count; 
+      L     1; 
+      +I    ; 
+      T     #Data.Sag_Count; 
+      L     #MM; 
+      L     #Data.Sag_Max_mm; 
+      >I    ; 
+      JCN   S013; 
+
+      L     #MM; 
+      T     #Data.Sag_Max_mm; 
+
+S013: SET   ; 
+      R     #Data.Low; 
+      JU    S010; 
+
+S011: A     #Data.Open; 
+      JC    S010; 
+
+      L     #Data.Count; // New Packet - Gap Since Last One
+      L     0; 
+      >I    ; 
+      JCN   S014; 
+
+      L     #Enc; 
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S015; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S015: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; 
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      L     #MM; 
+      L     #Data.Gap_Min_mm; 
+      <I    ; 
+      JCN   S014; 
+
+      L     #MM; 
+      T     #Data.Gap_Min_mm; 
+
+S014: SET   ; 
+      S     #Data.Front; // New Packet Front
+      S     #Data.Open; 
+      R     #Data.Low; 
+      R     #Data.Skip; 
+      L     #Enc; 
+      T     #Data.Start_Pos; 
+      L     L#0; 
+      T     #Data.Time_ms; 
+
+S010: NOP   0; 
+NETWORK
+TITLE =Packet Time [mS] - Front to Now (Sags Included)
+
+      A     #RUN; 
+      A     #Data.Open; 
+      JCN   S016; 
+
+      L     #Data.Time_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #Data.Time_ms; 
+//;
+      L     #Data.Time_ms; 
+      L     L#30000; 
+      >D    ; // Clamp 30s
+      JCN   S016; 
+
+      L     L#30000; 
+      T     #Data.Time_ms; 
+
+S016: NOP   0; 
+NETWORK
+TITLE =Sensor OFF - Remember Position
+
+      A     #RUN; 
+      AN    #Sensor; 
+      A     #Data.Was_On; 
+      A     #Data.Open; 
+      JCN   S020; 
+
+      L     #Enc; 
+      T     #Data.Fall_Pos; 
+      L     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
+      SET   ; 
+      S     #Data.Low; 
+
+S020: NOP   0; 
+NETWORK
+TITLE =OFF Longer than Gap_Min = Real Gap - Close Packet
+
+      A     #RUN; 
+      AN    #Sensor; 
+      A     #Data.Open; 
+      A     #Data.Low; 
+      JCN   S030; 
+
+      L     #Enc; 
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S031; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S031: L     #D; 
+      L     #Gap_Min_Pulse; 
+      >=D   ; 
+      =     #CLOSE; 
+
+S030: NOP   0; 
+NETWORK
+TITLE =Transfer End - Close Last Packet / Discard Covered One
+
+      A     #Stop; 
+      A     #Data.Open; 
+      A     #Data.Low; 
+      S     #CLOSE; 
+//;
+      A     #Stop; 
+      A     #Data.Open; 
+      AN    #Data.Low; // Still Covered = Not Complete
+      R     #Data.Open; 
+
+NETWORK
+TITLE =Close Packet - Record Width
+
+      A     #CLOSE; 
+      JCN   S090; 
+
+      A     #Data.Skip; // Partial Packet - Not Recorded
+      JCN   S041; 
+
+      L     #Data.Skipped; 
+      L     1; 
+      +I    ; 
+      T     #Data.Skipped; 
+      JU    S049; 
+
+S041: L     #Data.Fall_Pos; 
+      L     #Data.Start_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S042; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S042: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; 
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      T     #Data.Last_Width_mm; 
+      L     #Data.Count; 
+      L     1; 
+      +I    ; 
+      T     #Data.Count; 
+      L     #MM; 
+      ITD   ; 
+      L     #Data.Width_Sum_mm; 
+      +D    ; 
+      T     #Data.Width_Sum_mm; 
+      L     #MM; 
+      L     #Data.Width_Min_mm; 
+      <I    ; 
+      JCN   S043; 
+
+      L     #MM; 
+      T     #Data.Width_Min_mm; 
+
+S043: L     #MM; 
+      L     #Data.Width_Max_mm; 
+      >I    ; 
+      JCN   S044; 
+
+      L     #MM; 
+      T     #Data.Width_Max_mm; 
+
+S044: L     #Data.Width_Sum_mm; 
+      L     #Data.Count; 
+      ITD   ; 
+      /D    ; 
+      T     #Data.Width_Avg_mm; 
+//;
+      L     #Data.Fall_ms; // Width [mS] = Front -> End
+      T     #Data.Last_Width_ms; 
+      L     #Data.Width_Sum_ms; 
+      +D    ; 
+      T     #Data.Width_Sum_ms; 
+      L     #Data.Count; 
+      ITD   ; 
+      /D    ; 
+      T     #Data.Width_Avg_ms; 
+
+S049: SET   ; 
+      R     #Data.Open; 
+      R     #Data.Low; 
+      R     #Data.Skip; 
+
+S090: NOP   0; 
+NETWORK
+TITLE =Sensor State for Next Scan
+
+      A     #Sensor; 
+      =     #Data.Was_On; 
+END_FUNCTION
+
+FUNCTION FC 1212 : VOID
+TITLE =Packet Blanking - One Sensor (Shadow)
+//v0.1 2026-11-19: one count per packet from a raw sensor, with the packet time
+//measured at C10 (DB30 Width_ms_31, same speed on C11/C12/C21/C22).
+//- Front (OFF->ON) counts if the belt has run >= Blank_Pct of a packet time
+//  since the last count; an earlier front = sag of a U-Shape -> ignored.
+//- Sensor still ON after Butt_Pct of a packet time = butted packet -> +1.
+//- Time only runs while the belt runs (Run): a stop does not open the window.
+//- Pulse: Pulse_ms long per counted packet (for FC8 later).
+VERSION : 0.1
+
+
+VAR_INPUT
+  Sensor : BOOL ;	//Raw Packet Sensor
+  Run : BOOL ;	//Belt Under the Sensor Runs
+  Width_ms : INT ;	//Packet Time [mS]
+  Blank_Pct : INT ;	//Blanking [%]
+  Butt_Pct : INT ;	//Butted [%]
+  Pulse_Len : INT ;	//Pulse [mS]
+  Scan_mS : INT ;	//PLC Scan [mS]
+END_VAR
+VAR_OUTPUT
+  Pulse : BOOL ;	//One Pulse per Counted Packet
+END_VAR
+VAR_IN_OUT
+  D : UDT 11;	
+END_VAR
+VAR_TEMP
+  BLANK : DINT ;	
+  BUTT : DINT ;	
+  CNT : BOOL ;	
+  BTD : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Belt Run Time Since Last Count
+
+      CLR   ; 
+      =     #CNT; 
+      =     #BTD; 
+//;
+      A     #Run; 
+      JCN   B001; 
+
+      L     #D.T_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #D.T_ms; 
+      L     #D.T_ms; 
+      L     L#60000; 
+      >D    ; // Clamp 60s
+      JCN   B001; 
+
+      L     L#60000; 
+      T     #D.T_ms; 
+
+B001: NOP   0; 
+NETWORK
+TITLE =Windows [mS]
+
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Blank_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BLANK; 
+//;
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Butt_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BUTT; 
+NETWORK
+TITLE =Front - Count, or Ignore Inside Blanking (Sag)
+
+      A     #Sensor; 
+      AN    #D.Was_On; 
+      JCN   B010; 
+
+      L     #D.Raw; 
+      L     1; 
+      +I    ; 
+      T     #D.Raw; 
+//;
+      L     #D.T_ms; 
+      L     #BLANK; 
+      >=D   ; 
+      =     #CNT; // Front Counts
+      JC    B010; 
+
+      L     #D.Sag; // Front Inside Blanking = Sag
+      L     1; 
+      +I    ; 
+      T     #D.Sag; 
+
+B010: NOP   0; 
+NETWORK
+TITLE =Sensor Still ON - Butted Packet
+
+      A     #Sensor; 
+      A     #Run; 
+      AN    #CNT; 
+      JCN   B020; 
+
+      L     #D.T_ms; 
+      L     #BUTT; 
+      >=D   ; 
+      JCN   B020; 
+
+      L     #D.Butt; 
+      L     1; 
+      +I    ; 
+      T     #D.Butt; 
+      SET   ; 
+      =     #CNT; 
+      =     #BTD; // Next Butted Packet One Packet Time Later
+
+B020: NOP   0; 
+NETWORK
+TITLE =Count + Pulse
+
+      A     #CNT; 
+      JCN   B030; 
+
+      L     #D.Count; 
+      L     1; 
+      +I    ; 
+      T     #D.Count; 
+      L     L#0; 
+      T     #D.T_ms; 
+      A     #BTD; 
+      JCN   B032; 
+
+      L     #BUTT; // Butted: T = Butt - Packet Time
+      L     #Width_ms; 
+      ITD   ; 
+      -D    ; 
+      T     #D.T_ms; 
+
+B032: L     #Pulse_Len; 
+      T     #D.Pulse_ms; 
+
+B030: L     #D.Pulse_ms; 
+      L     0; 
+      >I    ; 
+      =     #Pulse; 
+      =     #D.Pulse; 
+      JCN   B031; 
+
+      L     #D.Pulse_ms; 
+      L     #Scan_mS; 
+      -I    ; 
+      T     #D.Pulse_ms; 
+
+B031: A     #Sensor; 
+      =     #D.Was_On; 
+END_FUNCTION
+
+FUNCTION FC 1210 : VOID
+TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
+//MEASUREMENT ONLY (v0.1): writes only "PACKET WIDTH DB" (DB30), changes nothing
+//on the machine. While C10 transfers (M55.5), every packet passing B10.5 and
+//B10.6 is measured with the C10 encoder (FM350 ch5). At the end of the
+//transfer both sensors must agree (same number of packets, = C10 count, and
+//average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
+//(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
+//v0.10 2026-11-20: FC1211 duplicate jump label S015 renamed S016 (compile error).
+//v0.9 2026-11-19: direct encoder steps < 0 or > 300 pulses/scan ignored (Ch5
+//restarts from 0 when gate 5 reopens).
+//v0.8 2026-11-19: also runs the packet BLANKING in shadow (FC1212 / DB31): one
+//cleaned count per packet at the C10/C11/C12/C21/C22 exits, NOT used by FC1208 yet.
+VERSION : 0.10
+
+
+VAR_TEMP
+  START : BOOL ;	
+  STOP : BOOL ;	
+  OK : BOOL ;	
+  GAP_P : DINT ;	
+  C5 : INT ;	
+  C6 : INT ;	
+  DIFF : INT ;	
+  TOLMM : INT ;	
+  D : DINT ;	
+  PTR : DWORD ;	
+  WB : INT ;	
+  RUNB : BOOL ;	
+  PLS : BOOL ;	
+  W : INT ;	
+  DW : DINT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =C10 Transfer - Start / End
+
+      A     "M 55.5"; // C10 Transfering - Step
+      AN    "M 55.6"; // Not Steps Reset
+      =     "PACKET WIDTH DB".Active; 
+//;
+      A     "PACKET WIDTH DB".Active; 
+      FP    "PACKET WIDTH DB".FP_Start; 
+      =     #START; 
+//;
+      A     "PACKET WIDTH DB".Active; 
+      FN    "PACKET WIDTH DB".FN_End; 
+      =     #STOP; 
+//;
+      A     #START; 
+      JCN   W001; 
+
+      L     "HMI_DB".CONV_10_COUNT; // Packets on C10 Before Transfer
+      T     "PACKET WIDTH DB".C10_Count_Start; 
+
+W001: NOP   0; 
+NETWORK
+TITLE =Gap Minimum mm -> Encoder Pulses
+
+      L     "PACKET WIDTH DB".Gap_Min_mm; 
+      ITD   ; 
+      DTR   ; 
+      L     3.100000e-001; 
+      /R    ; 
+      RND   ; 
+      T     #GAP_P; 
+NETWORK
+TITLE =Encoder Source - Read Job Value or Direct Peripheral Word (Every Scan)
+//ACT_CNTV5 comes from the CNT2_RD job 101, fired once per 100 mS (M6.0), so it
+//can be 100 mS or more old (51 mm @ 30.6 m/min). Direct = PIW of the FM350-2
+//direct area (low word of Ch5, every scan). The word wraps at 65536: only the
+//difference to the last scan (INT, wrap-safe) is added to Enc_Live (DINT).
+
+      A     "PACKET WIDTH DB".Enc_Direct; 
+      JCN   E001; 
+
+      L     "PACKET WIDTH DB".Enc_PIW_Addr; 
+      SLD   3; // Byte Address -> Pointer
+      T     #PTR; 
+      L     PIW [#PTR]; 
+      T     #W; 
+//;
+      A     "PACKET WIDTH DB".Enc_Direct_Mem; // First Scan in Direct Mode: Init
+      JC    E003; 
+
+      L     #W; 
+      T     "PACKET WIDTH DB".Enc_Word_Last; 
+      SET   ; 
+      =     "PACKET WIDTH DB".Enc_Direct_Mem; 
+      JU    E002; 
+
+E003: L     #W; // Pulses Since Last Scan (INT Subtraction = Wrap-Safe)
+      L     "PACKET WIDTH DB".Enc_Word_Last; 
+      -I    ; 
+      ITD   ; 
+      T     #DW; 
+      L     L#0; // Ch5 Restarts from 0 When Gate 5 Reopens: Negative or
+      <D    ; // Big Step = Restart, Not Travel -> Ignored
+      JC    E004; 
+
+      L     #DW; 
+      L     L#300; 
+      >D    ; 
+      JC    E004; 
+
+      L     "PACKET WIDTH DB".Enc_Live; 
+      L     #DW; 
+      +D    ; 
+      T     "PACKET WIDTH DB".Enc_Live; 
+
+E004: NOP   0; 
+      L     #W; 
+      T     "PACKET WIDTH DB".Enc_Word_Last; 
+      JU    E002; 
+
+E001: CLR   ; 
+      =     "PACKET WIDTH DB".Enc_Direct_Mem; 
+      L     "FM350 DB".ACT_CNTV5; 
+      T     "PACKET WIDTH DB".Enc_Live; 
+
+E002: NOP   0; 
+NETWORK
+TITLE =B10.5 C10 Full Sens
+
+      CALL FC 1211 (
+           Sensor                   := "B 10.5",
+           Active                   := "PACKET WIDTH DB".Active,
+           Start                    := #START,
+           Stop                     := #STOP,
+           Enc                      := "PACKET WIDTH DB".Enc_Live,
+           Gap_Min_Pulse            := #GAP_P,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Data                     := "PACKET WIDTH DB".S5);
+NETWORK
+TITLE =B10.6 C10 Exit Sens
+
+      CALL FC 1211 (
+           Sensor                   := "B 10.6",
+           Active                   := "PACKET WIDTH DB".Active,
+           Start                    := #START,
+           Stop                     := #STOP,
+           Enc                      := "PACKET WIDTH DB".Enc_Live,
+           Gap_Min_Pulse            := #GAP_P,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Data                     := "PACKET WIDTH DB".S6);
+NETWORK
+TITLE =Calibration - Same Packet Front at B10.5 then B10.6
+//Pitch (packet + gap, ~650 mm) > Sensor_Dist (527 mm): the first front at B10.6
+//after a front at B10.5 is the SAME packet. Pulses and mS between the two give
+//the real mm/pulse and the real C10 speed - every transfer, no jog needed.
+
+      A     #START; 
+      JCN   K001; 
+
+      L     L#0; 
+      T     "PACKET WIDTH DB".T_ms; 
+      T     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      T     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     0; 
+      T     "PACKET WIDTH DB".Cal_Count; 
+      CLR   ; 
+      =     "PACKET WIDTH DB".Pend; 
+
+K001: A     "PACKET WIDTH DB".Active; 
+      JCN   K090; 
+
+      L     "PACKET WIDTH DB".T_ms; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "PACKET WIDTH DB".T_ms; 
+//;
+      A     "PACKET WIDTH DB".S6.Front; // B10.6 First (Same Scan Case)
+      A     "PACKET WIDTH DB".Pend; 
+      JCN   K002; 
+
+      L     "PACKET WIDTH DB".Enc_Live; 
+      L     "PACKET WIDTH DB".Pend_Enc; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    K003; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+K003: L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     #D; 
+      +D    ; 
+      T     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     "PACKET WIDTH DB".T_ms; 
+      L     "PACKET WIDTH DB".Pend_T; 
+      -D    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      +D    ; 
+      T     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Cal_Count; 
+      SET   ; 
+      R     "PACKET WIDTH DB".Pend; 
+
+K002: A     "PACKET WIDTH DB".S5.Front; 
+      JCN   K090; 
+
+      L     "PACKET WIDTH DB".Enc_Live; 
+      T     "PACKET WIDTH DB".Pend_Enc; 
+      L     "PACKET WIDTH DB".T_ms; 
+      T     "PACKET WIDTH DB".Pend_T; 
+      SET   ; 
+      S     "PACKET WIDTH DB".Pend; 
+
+K090: NOP   0; 
+NETWORK
+TITLE =Transfer End - Verify (Both Sensors Agree) and Store
+
+      A     #STOP; 
+      JCN   W090; 
+
+      L     "PACKET WIDTH DB".S5.Count; // Packets Seen = Measured + Partial
+      L     "PACKET WIDTH DB".S5.Skipped; 
+      +I    ; 
+      T     #C5; 
+      L     "PACKET WIDTH DB".S6.Count; 
+      L     "PACKET WIDTH DB".S6.Skipped; 
+      +I    ; 
+      T     #C6; 
+//;
+      L     #C5; // No Packet at Both Sensors = Empty Transfer, Not Rejected
+      L     0; 
+      ==I   ; 
+      A(    ; 
+      L     #C6; 
+      L     0; 
+      ==I   ; 
+      )     ; 
+      JCN   W005; 
+
+      L     "PACKET WIDTH DB".Empty_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Empty_Count; 
+      JU    W090; 
+
+W005: NOP   0; 
+      L     "PACKET WIDTH DB".S5.Width_Avg_mm; 
+      L     "PACKET WIDTH DB".S6.Width_Avg_mm; 
+      -I    ; 
+      T     #DIFF; 
+      L     0; 
+      >=I   ; 
+      JC    W002; 
+
+      L     #DIFF; 
+      NEGI  ; 
+      T     #DIFF; 
+
+W002: L     "PACKET WIDTH DB".S5.Width_Avg_mm; 
+      L     "PACKET WIDTH DB".Tolerance_Pct; 
+      *I    ; 
+      L     100; 
+      /I    ; 
+      T     #TOLMM; 
+//;
+      L     "PACKET WIDTH DB".S5.Count; // Both Measured Something
+      L     0; 
+      >I    ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".S6.Count; 
+      L     0; 
+      >I    ; 
+      )     ; 
+      A(    ; 
+      L     #C5; // Same Number of Packets
+      L     #C6; 
+      ==I   ; 
+      )     ; 
+      A(    ; 
+      L     #DIFF; // Same Width
+      L     #TOLMM; 
+      <=I   ; 
+      )     ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".C10_Count_Start; // = C10 Count (0 = Unknown)
+      L     0; 
+      ==I   ; 
+      O     ; 
+      L     #C5; 
+      L     "PACKET WIDTH DB".C10_Count_Start; 
+      ==I   ; 
+      )     ; 
+      =     #OK; 
+      =     "PACKET WIDTH DB".Last_OK; 
+      JCN   W003; 
+
+      L     "PACKET WIDTH DB".S5.Width_Avg_mm; 
+      L     "PACKET WIDTH DB".S6.Width_Avg_mm; 
+      +I    ; 
+      L     2; 
+      /I    ; 
+      T     "PACKET WIDTH DB".Width_mm; 
+//;
+      L     "PACKET WIDTH DB".S5.Width_Avg_ms; // MEASURED mS @ C10 Fast
+      L     "PACKET WIDTH DB".S6.Width_Avg_ms; 
+      +I    ; 
+      L     2; 
+      /I    ; 
+      T     "PACKET WIDTH DB".Width_ms_31; 
+//;
+      L     "PACKET WIDTH DB".Width_ms_31; // Check: Speed = mm x 1000 / mS
+      L     0; 
+      >I    ; 
+      JCN   W004; 
+
+      L     "PACKET WIDTH DB".Width_mm; 
+      ITD   ; 
+      L     L#1000; 
+      *D    ; 
+      L     "PACKET WIDTH DB".Width_ms_31; 
+      ITD   ; 
+      /D    ; 
+      T     "PACKET WIDTH DB".Speed_mm_s; 
+
+W004: NOP   0; 
+      SET   ; 
+      S     "PACKET WIDTH DB".Valid; 
+      L     "PACKET WIDTH DB".Good_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Good_Count; 
+      JU    W090; 
+
+W003: L     "PACKET WIDTH DB".Bad_Count; 
+      L     1; 
+      +I    ; 
+      T     "PACKET WIDTH DB".Bad_Count; 
+
+W090: NOP   0; 
+NETWORK
+TITLE =Transfer End - Calibration Result
+
+      A     #STOP; 
+      JCN   K190; 
+
+      L     "PACKET WIDTH DB".Cal_Count; 
+      L     0; 
+      >I    ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      L     L#0; 
+      >D    ; 
+      )     ; 
+      A(    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      L     L#0; 
+      >D    ; 
+      )     ; 
+      JCN   K190; 
+
+      L     "PACKET WIDTH DB".Sensor_Dist_mm; // mm/pulse = Dist x Count / Pulses
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      ITD   ; 
+      DTR   ; 
+      *R    ; 
+      L     "PACKET WIDTH DB".Cal_Pulse_Sum; 
+      DTR   ; 
+      /R    ; 
+      T     "PACKET WIDTH DB".Cal_mm_Pulse; 
+//;
+      L     "PACKET WIDTH DB".Sensor_Dist_mm; // mm/s = Dist x Count x 1000 / mS
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_Count; 
+      ITD   ; 
+      DTR   ; 
+      *R    ; 
+      L     1.000000e+003; 
+      *R    ; 
+      L     "PACKET WIDTH DB".Cal_ms_Sum; 
+      DTR   ; 
+      /R    ; 
+      RND   ; 
+      T     "PACKET WIDTH DB".Cal_Speed_mm_s; 
+//;
+      L     "PACKET WIDTH DB".Width_mm; // Width with the Calibrated Factor
+      ITD   ; 
+      DTR   ; 
+      L     "PACKET WIDTH DB".Cal_mm_Pulse; 
+      *R    ; 
+      L     3.100000e-001; 
+      /R    ; 
+      RND   ; 
+      T     "PACKET WIDTH DB".Width_mm_Cal; 
+
+K190: NOP   0; 
+NETWORK
+TITLE =Blanking (Shadow) - Packet Time to Use
+
+      L     "PACKET WIDTH DB".Width_ms_31; 
+      T     #WB; 
+      A     "PACKET WIDTH DB".Valid; 
+      A(    ; 
+      L     #WB; 
+      L     300; 
+      >I    ; 
+      )     ; 
+      A(    ; 
+      L     #WB; 
+      L     5000; 
+      <I    ; 
+      )     ; 
+      JC    K201; 
+
+      L     855; // Default (Measured 2026-11-19)
+      T     #WB; 
+
+K201: L     #WB; 
+      T     "BLANKING DB".Width_ms; 
+NETWORK
+TITLE =Blanking (Shadow) - C10 Exit B10.6
+
+      A     "A 48.0"; 
+      A     "A 48.1"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 10.6",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C10_Exit_B10_6);
+NETWORK
+TITLE =Blanking (Shadow) - C11 Exit B10.7
+
+      A     "A 48.3"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 10.7",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C11_Exit_B10_7);
+NETWORK
+TITLE =Blanking (Shadow) - C12 Exit B11.0
+
+      A     "A 48.6"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 11.0",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C12_Exit_B11_0);
+NETWORK
+TITLE =Blanking (Shadow) - C21 Exit B15.4
+
+      A     "A 53.4"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 15.4",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C21_Exit_B15_4);
+NETWORK
+TITLE =Blanking (Shadow) - C22 Exit B15.5
+
+      A     "A 53.6"; 
+      =     #RUNB; 
+      CALL FC 1212 (
+           Sensor                   := "B 15.5",
+           Run                      := #RUNB,
+           Width_ms                 := #WB,
+           Blank_Pct                := "BLANKING DB".Blank_Pct,
+           Butt_Pct                 := "BLANKING DB".Butt_Pct,
+           Pulse_Len                := "BLANKING DB".Pulse_ms,
+           Scan_mS                  := "DB UTILITY".Scan_Cycle_Previous,
+           Pulse                    := #PLS,
+           D                        := "BLANKING DB".C22_Exit_B15_5);
+END_FUNCTION

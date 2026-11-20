@@ -1,0 +1,94 @@
+FUNCTION "SENSOR CHECK" : VOID
+TITLE =Sensor Check
+//Counting Foul Sensor Switching of less than PreSet Time (500mS)
+VERSION : 0.1
+
+
+VAR_INPUT
+  Bit : BOOL ;	
+  Preset_ms : INT ;	
+  Plc_Scan_ms : INT ;	
+END_VAR
+VAR_IN_OUT
+  Rising_Pulse_1 : BOOL ;	//Db3 Struct 
+  Rising_Pulse_2 : BOOL ;	//Db3 Struct 
+  Memory_Bit_1 : BOOL ;	//Db3 Struct 
+  Memory_Bit_2 : BOOL ;	//Db3 Struct 
+  Word_Buffer : INT ;	//Db3 Struct 
+  Word_Result : INT ;	//Db3 Struct 
+END_VAR
+VAR_TEMP
+  MEMORY_BIT : BOOL ;	
+  Bool2 : BOOL ;	
+  Bool3 : BOOL ;	
+  Bool4 : BOOL ;	
+  Bool5 : BOOL ;	
+  Bool6 : BOOL ;	
+  Bool7 : BOOL ;	
+  Bool8 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Input Bit - Reset
+
+      A     #Bit; 
+      FP    #Rising_Pulse_1; 
+      JNB   _001; 
+      L     0; 
+      T     #Word_Buffer; 
+
+_001: NOP   0; 
+NETWORK
+TITLE =TimeBase 
+//TimeBase -> ScanTime 
+      A     #Bit; 
+      JNB   _002; 
+      L     #Word_Buffer; 
+      L     #Plc_Scan_ms; 
+      +I    ; 
+      T     #Word_Buffer; 
+
+_002: NOP   0; 
+
+      A(    ; 
+      L     #Word_Buffer; 
+      L     10000; 
+      >=I   ; 
+      )     ; 
+      =     #MEMORY_BIT; 
+      JNB   _003; 
+      L     0; 
+      T     #Word_Buffer; 
+
+_003: NOP   0; 
+NETWORK
+TITLE =ByPass Conditions
+//Longer Switching Event Corrector
+
+      A     #Bit; 
+      A     #MEMORY_BIT; 
+      S     #Memory_Bit_1; 
+NETWORK
+TITLE =Result
+//WordResult + 1 
+      A(    ; 
+      L     #Word_Buffer; 
+      L     #Preset_ms; 
+      <I    ; 
+      )     ; 
+      AN    #Bit; 
+      AN    #Memory_Bit_1; 
+      FP    #Rising_Pulse_2; 
+      JNB   _004; 
+      L     #Word_Result; 
+      L     1; 
+      +I    ; 
+      T     #Word_Result; 
+
+_004: NOP   0; 
+
+      AN    #Bit; 
+      R     #Memory_Bit_1; 
+
+END_FUNCTION
+

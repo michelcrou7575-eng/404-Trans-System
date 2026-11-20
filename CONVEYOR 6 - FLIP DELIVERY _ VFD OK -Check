@@ -1,4 +1,4 @@
-FUNCTION "CONVEYOR 6 - FLIP DELIVERY" : VOID
+FUNCTION "CONVEYOR 6 - FLIP DELIV." : VOID
 TITLE =Conveyor 6 - Delivery to Flipper Pos.8 FC1038
 NAME : POS_8
 VERSION : 0.0
@@ -17,6 +17,8 @@ TITLE =Slat Conveyor - Service
       A     "HMI_DB".CONVEYOR_6_SERVICE_SW; 
       A     "HMI_DB".SERVICE_SW_2_STATUS; 
       =     #MAIN_SERVICE_2_SW; 
+      CLR   ; // Fix: #INITIALISATION was never written
+      =     #INITIALISATION; 
 //;    
       A     #MAIN_SERVICE_2_SW; 
       O     "M 38.1"; 

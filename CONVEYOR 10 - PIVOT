@@ -48,10 +48,12 @@ TITLE =Pivot Service
 //;
       A     #PIVOT_SERVICE_SW; 
       A     "HMI_DB".HMI_PIVOT_TEST_DN_SSW; 
+      AN    "HMI_DB".HMI_PIVOT_TEST_UP_SSW; // Not Both Switches
       =     #PIVOT_DN; 
 //;
       A     #PIVOT_SERVICE_SW; 
       A     "HMI_DB".HMI_PIVOT_TEST_UP_SSW; 
+      AN    "HMI_DB".HMI_PIVOT_TEST_DN_SSW; // Not Both Switches
       =     #PIVOT_UP; 
 //;
       AN(   ; 
@@ -597,6 +599,7 @@ TITLE =Conveyor 10 - Pivot Down - Actuator
       O     #PIVOT_DN; 
       AN    "P 15.1"; 
       AN    "A 48.0"; 
+      AN    "K 53.1"; // Interlock - Not while Going Up
       =     "K 53.0"; 
 NETWORK
 TITLE =Conveyor 10 - Pivot Up - Actuator
@@ -614,6 +617,7 @@ TITLE =Conveyor 10 - Pivot Up - Actuator
       O     #PIVOT_UP; 
       AN    "P 15.0"; 
       AN    "A 48.0"; 
+      AN    "K 53.0"; // Interlock - Not while Going Down
       =     "K 53.1"; 
 NETWORK
 TITLE =Pivot Conveyor 10 - Go Down - TimeOut 10s

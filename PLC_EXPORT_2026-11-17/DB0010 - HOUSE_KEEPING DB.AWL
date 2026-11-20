@@ -1,0 +1,66 @@
+DATA_BLOCK "HOUSE_KEEPING DB"
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   C4_First_Collating : BOOL ;	//C4 First Packet Collating
+   C4_First_Collating_Done : BOOL ;	//C4 First Packet Collating Done
+   C10_First_Collating : BOOL ;	//C10 First Packet Collating
+   C10_First_Collating_Done : BOOL ;	//C10 First Packet Collating Done
+   Spare5 : BOOL ;	
+   Spare6 : BOOL ;	
+   Spare7 : BOOL ;	
+   Spare8 : BOOL ;	
+   SpareWord : WORD ;	
+   C4_Added_Scans_mS : INT ;	//C4 Added Scan Cycles [mS]
+   C10_Added_Scans_mS : INT ;	//C10 Added Scan Cycles [mS]
+   C3_Encoder_READ_Mem : INT ;	//C3 Encoder Read / Print [ep](Encoder Pulses)
+   C4_Encoder_READ_Mem : INT ;	//C4 Encoder Read / Print [ep](Encoder Pulses)
+   C10_Encoder_READ_Mem : INT ;	//C10 Encoder Read / Print [ep](Encoder Pulses)
+   C3_Packet_Length_ep : INT ;	//C3 Encoder Length [ep]
+   C4_Packet_Length_ep : INT ;	//C4 Encoder Length [ep]
+   C10_Packet_Width_ep : INT ;	//C10 Encoder Length [ep]
+   C3_Packet_Length_mm : INT ;	//C3 Packet Lenght [mm]
+   C4_Packet_Length_mm : INT ;	//C4 Packet Lenght [mm]
+   C10_Packet_Width_mm : INT ;	//C10 Packet Lenght [mm]
+   C4_Packet_Length_mS : INT ;	//C4 Packet Lenght [mS]
+   C10_Packet_Width_mS : INT ;	//C4 Packet Lenght [mS]
+   C4_RampDown_Dx_ep : INT ;	//C4 Ramp Down Distance [EP]
+   C10_RampDown_Dx_ep : INT ;	//C10 Ramp Up/Down Distance [EP]
+   SpareINT01 : INT ;	
+   SpareINT02 : INT ;	
+   SpareINT03 : INT ;	
+   SpareINT04 : INT ;	
+  END_STRUCT ;	
+BEGIN
+   C4_First_Collating := FALSE; 
+   C4_First_Collating_Done := FALSE; 
+   C10_First_Collating := FALSE; 
+   C10_First_Collating_Done := FALSE; 
+   Spare5 := FALSE; 
+   Spare6 := FALSE; 
+   Spare7 := FALSE; 
+   Spare8 := FALSE; 
+   SpareWord := W#16#0; 
+   C4_Added_Scans_mS := 0; 
+   C10_Added_Scans_mS := 0; 
+   C3_Encoder_READ_Mem := 0; 
+   C4_Encoder_READ_Mem := 0; 
+   C10_Encoder_READ_Mem := 0; 
+   C3_Packet_Length_ep := 0; 
+   C4_Packet_Length_ep := 0; 
+   C10_Packet_Width_ep := 0; 
+   C3_Packet_Length_mm := 0; 
+   C4_Packet_Length_mm := 654; 
+   C10_Packet_Width_mm := 0; 
+   C4_Packet_Length_mS := 0; 
+   C10_Packet_Width_mS := 0; 
+   C4_RampDown_Dx_ep := 0; 
+   C10_RampDown_Dx_ep := 0; 
+   SpareINT01 := 0; 
+   SpareINT02 := 0; 
+   SpareINT03 := 0; 
+   SpareINT04 := 0; 
+END_DATA_BLOCK
+

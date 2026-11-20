@@ -1,0 +1,220 @@
+FUNCTION "CONVEYOR 6 - FLIP DELIV." : VOID
+TITLE =Conveyor 6 - Delivery to Flipper Pos.8
+//
+NAME : POS_8
+VERSION : 0.0
+
+
+VAR_TEMP
+  MAIN_SERVICE_2_SW : BOOL ;	
+  SERVICE_RUN : BOOL ;	
+  INITIALISATION : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Slat Conveyor - Service
+
+      A     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      A     "HMI_DB".CONVEYOR_6_SERVICE_SW; 
+      A     "HMI_DB".SERVICE_SW_2_STATUS; 
+      =     #MAIN_SERVICE_2_SW; 
+//;    
+      A     #MAIN_SERVICE_2_SW; 
+      O     "M 38.1"; 
+      JNB   CON6; 
+      A     "HMI_DB".HMI_CONVEYOR_6_TEST_SSW; 
+      =     #SERVICE_RUN; 
+      S     "DB UTILITY".Conveyor_5_Disable; 
+//;
+      AN    #MAIN_SERVICE_2_SW; 
+      R     "HMI_DB".HMI_CONVEYOR_6_TEST_SSW; 
+      R     "DB UTILITY".Conveyor_5_Disable; 
+
+CON6: R     #SERVICE_RUN; 
+      R     #INITIALISATION; 
+      FP    "FP 158.6"; 
+      =     "M 38.1"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Running TimeOut  30s
+
+      A     "M 39.1"; 
+      AN    "M 39.3"; 
+      A     "M 0.3"; 
+      L     S5T#30S; 
+      SD    "Timer 40"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Delivering Run
+
+      A     "M 39.4"; 
+      AN    "M 39.5"; 
+      A     "M 0.3"; 
+      S     "M 38.5"; 
+//;
+      A     "M 43.4"; 
+      R     "M 38.5"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Ready to Deliver
+
+      A     "B 7.3"; 
+      A     "M 39.5"; 
+      AN    "M 39.6"; 
+      A     "M 0.3"; 
+      S     "M 38.6"; 
+//;
+      A     "M 39.3"; 
+      AN    "M 39.4"; 
+      R     "M 38.6"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Run TimeOut  5s
+
+      A     "M 39.3"; 
+      AN    "M 39.4"; 
+      A     "A 45.3"; 
+      A     "M 0.3"; 
+      L     S5T#5S; 
+      SD    "Timer 38"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Done
+
+      A     "Timer 38"; 
+      S     "M 38.7"; 
+//;
+      AN    "B 7.2"; 
+      A     "M 0.3"; 
+      R     "M 38.7"; 
+NETWORK
+TITLE =Conveyor 6 - Steps Register - Reset
+
+      A(    ; 
+      O     "M 39.6"; 
+      O     "Timer 40"; 
+      O     #INITIALISATION; 
+      O     "DB UTILITY".Conveyor_6_Disable; 
+      )     ; 
+      A     "M 0.3"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     W#16#0; 
+      T     "MW 39"; 
+      T     "MB 41"; 
+      T     "HMI DB NEW".CONV_6_COUNT; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =Step 7N1 - Power ON
+
+      A     "M 0.3"; 
+      AN    "DB UTILITY".Conveyor_6_Disable; 
+      =     "M 39.0"; 
+NETWORK
+TITLE =Step 7N2 - Conveyor 6 - Packet Filling
+
+      A(    ; 
+
+      A     "M 35.2"; // 6 Filling Trigger
+      AN    "M 35.3"; // AND NOT Triggered
+      O     "M 34.0"; // OR Service Run
+
+      O     ; 
+
+      A(    ; 
+      O     "B 7.2"; 
+      O     "B 7.3"; 
+      )     ; 
+      A     "M 35.0"; 
+      AN    "M 35.3"; 
+      A     "M 39.0"; 
+      AN    "M 39.1"; 
+
+      O     ; 
+
+      A     #SERVICE_RUN; 
+      )     ; 
+
+      A     "M 0.3"; 
+      A     "M 39.0"; 
+      S     "M 39.1"; 
+NETWORK
+TITLE =Step 7N3 - Conveyor 6 - Packet Reaching
+
+      A     "B 7.2"; 
+      A     "M 0.3"; 
+      A     "M 39.1"; 
+      S     "M 39.2"; 
+NETWORK
+TITLE =Step 7N4 - Conveyor 6 - Packet in Position
+
+      A     "B 7.3"; 
+      A     "M 0.3"; 
+      A     "M 39.2"; 
+      S     "M 39.3"; 
+NETWORK
+TITLE =Step 7N5 - Conveyor 6 - Packet Delivering
+
+      A(    ; 
+      A     "M 43.2"; 
+      AN    "M 43.3"; 
+      AN    "M 38.5"; 
+      ON    "B 7.3"; 
+      )     ; 
+      AN    "M 38.7"; 
+      A     "M 0.3"; 
+      A     "M 39.3"; 
+      S     "M 39.4"; 
+//;
+      A(    ; 
+      O     "M 38.6"; 
+      ON    "M 39.3"; 
+      )     ; 
+      R     "M 39.4"; 
+NETWORK
+TITLE =Step 7N6 - Conveyor 6 - Packet Delivered
+
+      A(    ; 
+      ON    "B 7.3"; // Last LB Free
+      O     "M 38.7"; 
+      )     ; 
+      A     "M 0.3"; 
+      A     "M 39.4"; 
+      S     "M 39.5"; 
+//;
+      AN    "M 39.4"; 
+      R     "M 39.5"; 
+NETWORK
+TITLE =Flipper Delivery Conveyor 6 - Last Delivery TimeOut 5s
+
+      A     "M 39.5"; 
+      AN    "M 39.6"; 
+      A     "M 0.3"; 
+      L     S5T#5S; 
+      SD    "Timer 39"; 
+NETWORK
+TITLE =Step 7N7 - Conveyor 6 - Steps Register - Reset
+
+      A     "Timer 39"; // Last Delivery - time to Reset 5s       
+      A     "M 0.3"; 
+      A     "M 39.5"; // Delivered then Reset
+      S     "M 39.6"; 
+NETWORK
+TITLE =Delivery Conveyor - VFD Release
+
+      A(    ; 
+      A     "M 39.1"; // 6 Filling
+      AN    "M 39.3"; // Packet Reached
+      O     ; 
+      A     "M 39.4"; // 6 Delivering
+      AN    "M 39.6"; // Delivered
+      )     ; 
+      AN    "DB UTILITY".Conveyor_6_Disable; 
+      A     "M 39.0"; 
+      =     "A 45.3"; 
+NETWORK
+TITLE =Delivery Conveyor - Fast
+
+      A     "M 39.1"; 
+      AN    "M 39.2"; 
+      A     "M 39.0"; 
+      =     "A 45.4"; // Fast for Filling Only
+END_FUNCTION
+

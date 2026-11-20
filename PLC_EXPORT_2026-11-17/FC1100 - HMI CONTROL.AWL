@@ -1,0 +1,144 @@
+FUNCTION "HMI CONTROL" : VOID
+TITLE =HMI Control - Screen 0 SSW Inputs
+//Screen 0 - "RUN" Screen
+NAME : HMI_CTRL
+VERSION : 0.1
+
+
+VAR_TEMP
+  SERVICE_ON : BOOL ;	
+  CLEARING_ON : BOOL ;	
+  HAND_FEED : BOOL ;	
+  UPDATE_PULSE : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =New HMI Panel Switches
+
+      A     "E 34.0"; 
+      =     "M 146.0"; 
+//;
+      A     "E 34.1"; 
+      =     "M 146.1"; 
+//;
+      A     "E 34.2"; 
+      =     "M 146.2"; 
+//;
+      A     "E 28.7"; 
+      =     "M 146.3"; 
+//;
+      A     "H 40.1"; 
+      =     "H 57.1"; 
+//;
+      A(    ; 
+      A     "M 6.5"; 
+      A     "M 10.0"; 
+      )     ; 
+      O     "M 5.3"; // Alarm White
+      O     "M 8.5"; 
+      =     "H 57.0"; 
+//;
+      A     "H 40.2"; 
+      O     "M 5.5"; // Alarm Red
+      =     "H 57.2"; 
+//;
+      A     "M 146.3"; 
+      =     "H 57.3"; 
+NETWORK
+TITLE =New HMI ON Temporary
+
+      A     "HMI_DB".ON_SW; 
+      A     "HMI_DB".SERVICE_SW_3_STATUS; 
+      =     "M 140.3"; 
+NETWORK
+TITLE =Screen UpDate
+
+      A     "M 6.7"; 
+      FP    "FP 168.0"; 
+      =     #UPDATE_PULSE; 
+NETWORK
+TITLE =Screen 0 Soft Switches
+
+      A(    ; 
+      L     "HMI_DB".ACTUAL_HMI_SCREEN_NO; 
+      L     "HMI_UPDATE".HMI_MAIN_PAGE_GRAPHIC; 
+      <>I   ; 
+      )     ; 
+      O     #UPDATE_PULSE; 
+      JNB   MAIN; 
+NETWORK
+TITLE =Service Switch Status - Screen 0 SSW Inputs
+
+      A     "HMI_DB".SERVICE_SSW_MAIN; 
+      L     S5T#20M; 
+      SD    "Timer 101"; 
+      =     #SERVICE_ON; 
+      =     "HMI_DB".SERVICE_SSW_STATUS; 
+//;
+      A     #SERVICE_ON; 
+      A     "Timer 101"; 
+      R     "HMI_DB".SERVICE_SSW_MAIN; 
+NETWORK
+TITLE =Hand Feed Switch Status - Screen 0 SSW Inputs
+
+      A     "M 140.3"; 
+      A     "HMI_DB".MAN_FEED_SSW_MAIN; 
+      L     S5T#20M; 
+      SD    "Timer 103"; 
+      =     #HAND_FEED; 
+      =     "M 110.0"; 
+      =     "HMI_DB".MAN_FEED_SSW_STATUS; 
+//;
+      A     #HAND_FEED; 
+      =     "HMI_DB".HAND_FEED_ARROW_STATUS; 
+//;
+      A     #HAND_FEED; 
+      A     "Timer 103"; 
+      R     "HMI_DB".MAN_FEED_SSW_MAIN; 
+NETWORK
+TITLE =Turn Table Switch Status - Screen 0 SSW Inputs
+
+      A     "M 7.3"; 
+      =     "HMI_DB".TURNTABLE_SSW_STATUS; 
+NETWORK
+TITLE =Flipper Switch Status - Screen 0 SSW Inputs
+
+      A     "M 140.3"; 
+      A     "HMI_DB".FLIPPER_SSW_MAIN; 
+      =     "M 111.1"; 
+      =     "HMI_DB".FLIPPER_SSW_STATUS; 
+NETWORK
+TITLE =Roller Switch Status - Screen 0 SSW Inputs
+
+      A     "M 140.3"; 
+      A     "HMI_DB".ROLLER_SSW_MAIN; 
+      =     "M 111.0"; 
+      =     "HMI_DB".ROLLER_SSW_STATUS; 
+NETWORK
+TITLE =HMI Service Switch Reset
+//HMI Service Switch Reset when 2145 Exits Packets + 10s Delay
+      A(    ; 
+      L     "HMI_DB".ACTUAL_HMI_SCREEN_NO; 
+      L     0; 
+      ==I   ; 
+      )     ; 
+      L     S5T#10S; 
+      SD    "Timer 6"; 
+//;
+      A     "Timer 6"; 
+      A     "E 34.7"; 
+      R     "HMI_DB".ALL_SERVICE_ENABLE_SW; 
+      R     "HMI_DB".SERVICE_SW_1_STATUS; 
+      R     "HMI_DB".SERVICE_SW_2_STATUS; 
+      R     "HMI_DB".SERVICE_SW_3_STATUS; 
+      R     "HMI_DB".SERVICE_SW_1_2_STATUS; 
+NETWORK
+TITLE =Main Screen Graphic
+
+
+      L     "HMI_DB".ACTUAL_HMI_SCREEN_NO; 
+      T     "HMI_UPDATE".HMI_MAIN_PAGE_GRAPHIC; 
+
+MAIN: NOP   0; 
+END_FUNCTION
+

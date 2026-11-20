@@ -1,0 +1,43 @@
+ORGANIZATION_BLOCK "OB100"
+TITLE =Start up    OB100
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB100_EV_CLASS : BYTE ;	//16#13, Event class 1, Entering event state, Event logged in diagnostic buffer
+  OB100_STRTUP : BYTE ;	//16#81/82/83/84 Method of startup
+  OB100_PRIORITY : BYTE ;	//27 (Priority of 1 is lowest)
+  OB100_OB_NUMBR : BYTE ;	//100 (Organization block 100, OB100)
+  OB100_RESERVED_1 : BYTE ;	//Reserved for system
+  OB100_RESERVED_2 : BYTE ;	//Reserved for system
+  OB100_STOP : WORD ;	//Event that caused CPU to stop (16#4xxx)
+  OB100_STRT_INFO : DWORD ;	//Information on how system started
+  OB100_DATE_TIME : DATE_AND_TIME ;	//Date and time OB100 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =Lauer restart bit
+
+      L     2#0; // Reset First cycle Flag 
+      =     "M 210.0"; 
+NETWORK
+TITLE =HMI On Lamp 
+
+      AN    "HMI_DB".AERIAL_LINK_RUN_PB; 
+      =     "HMI_DB".AERIAL_LINK_RUN_PB; 
+NETWORK
+TITLE =DB Init
+
+      R     "DEBOUNCER COUNTER DB".Conveyor_C3_Slat.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C4_Collator.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C5_Link.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C6_Delivery.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C10_Collator.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C11_Link.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C12_Link.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C13_Delivery.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C21_Link.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C22_Link.FirstScan_Done; 
+      R     "DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.FirstScan_Done; 
+END_ORGANIZATION_BLOCK
+

@@ -1,0 +1,574 @@
+FUNCTION "CONVEYORS CLEARING" : VOID
+TITLE =Conveyors - Clearing Function
+//New Order Sequence
+NAME : CLEARING
+VERSION : 0.0
+
+
+VAR_TEMP
+  EMPTY_11 : BOOL ;	//Empty Conveyor 11
+  EMPTY_21 : BOOL ;	//Empty Conveyor 21
+  EMPTY_12_22 : BOOL ;	//Empty Conveyor 12 & 22
+  EMPTY_13_23 : BOOL ;	//Empty Conveyor 13 & 23
+  C10_EMPTY_TEST : BOOL ;	
+  CLEARING_ABORT : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =HMI Clearing Call
+
+      A     "M 140.3"; 
+      A     "HMI_DB".CLEARING_SSW_MAIN; 
+      =     "M 5.2"; 
+//;
+      L     8; 
+      A     "M 10.0"; 
+      =     "HMI_DB".CLEARING_SSW_STATUS; 
+      JC    CLEA; 
+      L     0; 
+
+CLEA: T     "HMI_DB".CLEARING_FUNCTION; 
+
+      A     "M 10.0"; 
+      FN    "FN 155.7"; 
+      R     "HMI_DB".CLEARING_SSW_MAIN; 
+      R     "M 54.2"; 
+//;
+      A     "M 5.2"; 
+      FP    "FP 147.4"; 
+      AN    "B 10.7"; // C11 - Empty
+      AN    "B 11.0"; // C12 - Empty
+      AN    "B 11.1"; // C13 - Empty
+      AN    "B 11.2"; // C13 - Empty
+      AN    "B 15.4"; // C21 - Empty
+      AN    "B 15.5"; // C22 - Empty
+      AN    "B 15.6"; // C23 - Empty
+      AN    "B 15.7"; // C23 - Empty
+      S     "M 54.2"; // Empty C11...C23
+NETWORK
+TITLE =New Order Seq - First New Order Packet to Pivot Conveyor 10
+
+      A     "M 55.2"; 
+      A     "M 8.5"; 
+      A     "M 0.3"; 
+      S     "M 7.4"; // C10 New Order - Filling - Set
+//;
+      A(    ; 
+      A     "M 55.6"; 
+      A     "M 7.5"; // C10 New Order - Full
+      O     ; 
+      AN    "M 7.5"; // C10 New Order -  Not Full Yet
+      A     "Timer 57"; 
+      A     "M 0.3"; 
+      )     ; 
+      R     "M 7.4"; // C10 New Order - Ready - Reset
+NETWORK
+TITLE =New Order Seq - Conveyor 10 Full with New Order
+
+      A     "M 7.4"; // C10 New Order - Ready
+      A     "M 55.4"; // C10 - Full Step
+      A     "M 0.3"; 
+      S     "M 7.5"; // C10 New Order - Full - Set [Case:A]
+//;
+      A     "M 7.6"; // New Order - C11...23 Ready
+      A     "M 0.3"; 
+      R     "M 7.5"; // C10 New Order - Full - Reset
+NETWORK
+TITLE =New Order Seq
+//New Order Seq - Waiting for the last Order Packets to Run out !
+
+
+NETWORK
+TITLE =Conveyor 11 - Ready
+
+      A     "M 59.0"; 
+      AN    "M 59.1"; 
+      AN    "M 59.3"; 
+      =     #EMPTY_11; 
+NETWORK
+TITLE =Conveyor 21 - Ready
+
+      A     "M 79.0"; 
+      AN    "M 79.1"; 
+      AN    "M 79.3"; 
+      =     #EMPTY_21; 
+NETWORK
+TITLE =Conveyor 12 & 22 - Ready
+
+      A     "M 63.0"; 
+      AN    "M 63.1"; 
+      AN    "M 63.3"; 
+      A     "M 83.0"; 
+      AN    "M 83.1"; 
+      AN    "M 83.3"; 
+      =     #EMPTY_12_22; 
+NETWORK
+TITLE =Conveyor 13 & 23 - Ready
+
+      A     "M 67.0"; 
+      AN    "M 67.1"; 
+      AN    "M 67.3"; 
+      A     "M 87.0"; 
+      AN    "M 87.1"; 
+      AN    "M 87.3"; 
+      =     #EMPTY_13_23; 
+NETWORK
+TITLE =New Order Seq - Conveyor 11, 12, 13, 21, 22, 23 - Empty
+//Case A: C10 becomes Full with New Order before C11...23 are Empty.
+//Case B: C10 becomes Full with New Order After C11...23 are Empty.
+      A     "M 7.5"; // New Order - C10 Full [Case:A]
+      A(    ; 
+      A     "M 55.6"; // C10 Step Register - Reset
+      O     ; 
+      A     #EMPTY_11; 
+      A     #EMPTY_21; 
+      A     #EMPTY_12_22; 
+      A     #EMPTY_13_23; 
+      )     ; 
+      A     "M 0.3"; 
+      S     "M 7.6"; // New Order - C11...23 Ready - Set
+//;
+      A     "M 7.7"; 
+      A     "M 0.3"; 
+      R     "M 7.6"; // New Order - C11...23 Ready - Reset
+NETWORK
+TITLE =Events UpDate - Conveyor 11 & 21 Waiting for Packets
+
+      A     "M 59.0"; 
+      AN    "M 59.1"; 
+      AN    "M 59.3"; 
+      A     "M 79.0"; 
+      AN    "M 79.1"; 
+      AN    "M 79.3"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =New Order Seq - Conveyors 11, 21 - Empty
+
+      A     "M 9.0"; 
+      A     "M 7.6"; // New Order - C11...23 Ready
+      A     "M 0.3"; 
+      S     "M 7.7"; // New Order - C11, 21 Ready - Set
+//;
+      A     "M 8.0"; // New Order - C12, 22 Ready 
+      A     "M 0.3"; 
+      R     "M 7.7"; // New Order - C11, 22 Ready - Reset
+NETWORK
+TITLE =Events UpDate - Conveyor 12 & 22 Waiting for Packets
+
+      A     "M 63.0"; 
+      AN    "M 63.1"; 
+      AN    "M 63.3"; 
+      A     "M 83.0"; 
+      AN    "M 83.1"; 
+      AN    "M 83.3"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =New Order Seq - Conveyors 11, 21, 12, 22 - Empty
+
+      A     "M 9.0"; 
+      A     "M 7.7"; 
+      A     "M 0.3"; 
+      S     "M 8.0"; // New Order - C12, 22 Ready - Set
+//;
+      A     "M 8.1"; // New Order - C13, 23 Ready 
+      A     "M 0.3"; 
+      R     "M 8.0"; // New Order - C12, 22 Ready - Reset
+NETWORK
+TITLE =Events UpDate - Conveyor 13 & 23 Waiting for Packets
+
+      A     "M 67.0"; 
+      AN    "M 67.1"; 
+      AN    "M 67.3"; 
+      A     "M 87.0"; 
+      AN    "M 87.1"; 
+      AN    "M 87.3"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =New Order Seq - Conveyor 11, 21, 12, 22, 13, 23 - Empty
+
+      A     "M 9.0"; 
+      A     "M 8.0"; 
+      A     "M 0.3"; 
+      S     "M 8.1"; // New Order - C13, 23 Ready - Set
+//;
+      A     "M 8.2"; 
+      A     "M 0.3"; 
+      R     "M 8.1"; // New Order - C13, 23 Ready - Reset
+NETWORK
+TITLE =New Order Seq - Feeder Done & Empty
+
+      A     "M 8.1"; // New Order - C13, 23 Ready 
+      A     "M 71.1"; 
+      AN    "M 71.2"; 
+      AN    "M 71.4"; 
+      A     "M 0.3"; 
+      S     "M 8.2"; // New Order - Feeder Empty / Ready - Set
+//;
+      A     "M 8.3"; // New Order - Operator Enabled
+      A     "M 0.3"; 
+      R     "M 8.2"; // New Order - Feeder Empty / Ready - Reset
+NETWORK
+TITLE =Conveyor 10 Clearing Enable after New Order
+
+      A     "S 3.2"; // Operator Switch
+      A     "M 8.2"; // New Order - Feeder Empty / Ready
+      A     "M 0.3"; 
+      S     "M 8.3"; // New Order - Operator Enabled
+      S     "M 59.4"; // C11-12-21-22 - Registers Reset
+      S     "M 63.4"; 
+      S     "M 79.4"; 
+      S     "M 83.4"; 
+//;
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.4"; 
+      R     "M 8.5"; 
+//;
+      ON    "M 8.2"; 
+      R     "M 8.3"; 
+NETWORK
+TITLE =New Order - Status Lamp
+
+      A     "M 8.2"; // New Order - Feeder Empty / Ready
+      AN    "M 8.3"; // New Order - Operator Not Enabled Yet
+      A     "M 145.0"; 
+      O     "Timer 0"; 
+      =     "H 49.5"; // Feeder Enable PB Lamp  (Amber)
+NETWORK
+TITLE =Conveyors Clearing Blink
+
+      A     "M 10.0"; 
+      A     "M 145.4"; 
+      =     "M 142.0"; 
+NETWORK
+TITLE =After Clearing - Delay  10s
+
+      A     "M 0.3"; 
+      A     "M 11.6"; 
+      L     S5T#10S; 
+      SD    "Timer 9"; 
+NETWORK
+TITLE =Clearing Done - Ready
+
+      A     "M 0.3"; 
+      A     "Timer 9"; 
+      ON    "M 11.6"; 
+      S     "M 9.7"; 
+//;
+      ON    "M 0.3"; 
+      R     "M 9.7"; 
+NETWORK
+TITLE =Clearing Command
+//Clearing Command
+
+
+NETWORK
+TITLE =Conveyors Clearing - Cmd
+
+      A(    ; 
+      A     "M 5.2"; 
+      FP    "FP 157.2"; 
+      O     ; 
+      A     "M 150.4"; // F4
+      )     ; 
+      S     "M 10.0"; 
+//;
+      A     "M 5.2"; 
+      FN    "FN 155.6"; 
+      A     "M 10.0"; 
+      =     "M 5.4"; // Clearing ABORT !
+      R     "M 5.2"; 
+//;
+      A(    ; 
+      A     "M 150.4"; // Clearing ON
+      A     "M 171.4"; // ENT PB
+      A     "M 171.5"; // CLR PB
+      O     "M 5.4"; // Clearing ABORT !
+      O     "M 10.6"; 
+      )     ; 
+      =     #CLEARING_ABORT; 
+NETWORK
+TITLE =Conveyors Clearing Conveyors 1,2,3,4 - TimeOut 30S
+
+      A     "M 10.0"; 
+      A     "M 10.1"; 
+      A     "M 10.2"; 
+      AN    "M 10.3"; 
+      L     S5T#30S; 
+      SD    "Timer 128"; 
+//;
+      A     "Timer 128"; 
+      O     #CLEARING_ABORT; 
+      JNB   NCLR; 
+      L     0; 
+      T     "MB 10"; // Clearing OFF
+
+NCLR: NOP   0; 
+NETWORK
+TITLE =Events UpDate - Clearing + Elevator + Conveyor 1, 2 - Empty
+
+      A     "M 10.0"; 
+      A     "M 15.3"; 
+      AN    "M 15.4"; 
+      A     "M 19.1"; 
+      AN    "M 19.2"; 
+      A     "M 23.0"; 
+      AN    "M 23.1"; 
+      AN    "B 5.4"; 
+      AN    "B 6.0"; 
+      AN    "B 6.1"; 
+      AN    "B 6.2"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Elevator + Conveyor 1, 2 - Cleared -> Start Slat Clearing
+
+      A     "M 9.0"; 
+      A     "M 0.3"; 
+      AN    "A 44.0"; 
+      =     "M 10.1"; 
+NETWORK
+TITLE =Elevator + Conveyor 1, 2 - NOT Empty Alarm
+
+      A     "M 10.0"; 
+      AN    "M 9.0"; 
+      S     "M 11.4"; 
+NETWORK
+TITLE =Clearing Sequence
+//Clearing Sequence from Slat 3 to Pivot 10 Conveyors
+
+
+NETWORK
+TITLE =Conveyors 4 - Clearing Start - Enable Delay  3s
+
+      A     "M 10.1"; // C1-2 Cleared
+      L     S5T#2S; 
+      SD    "Timer 10"; 
+NETWORK
+TITLE =Slat Conveyor 3 - Cleared -> Start Conveyor 4 Clearing
+
+      A     "M 10.1"; // C1-2 Cleared
+      A     "M 26.7"; 
+      A     "M 0.3"; 
+      S     "M 10.2"; // C3 Cleared
+//;
+      AN    "M 10.0"; // Clearing Off
+      R     "M 10.2"; // Coherence - Reset
+NETWORK
+TITLE =Conveyors 3, 4 - Cleared -> Start Conveyor 5, 6 Clearing
+
+      A(    ; 
+      O     "M 31.5"; 
+      O     "Timer 33"; 
+      )     ; 
+      A     "M 10.2"; 
+      A     "M 0.3"; 
+      S     "M 10.3"; // C4 Cleared
+//;
+      AN    "M 10.2"; 
+      R     "M 10.3"; // Coherence - Reset
+NETWORK
+TITLE =Conveyors 5, 6 - Clearing Start Delay  3s
+
+      A     "M 10.3"; // C4 Cleared
+      L     S5T#3S; 
+      SD    "Timer 11"; // C4 Cleared Delayed
+NETWORK
+TITLE =Events UpDate - Conveyors 5, 6 - Clearing 
+
+      A     "M 10.3"; // C4 Cleared  
+      A     "Timer 11"; // C4 Cleared Delayed 
+      A     "M 35.0"; 
+      AN    "M 35.1"; 
+      A     "M 39.0"; 
+      AN    "M 39.1"; 
+      =     "M 9.0"; // C5-6 Cleared  
+NETWORK
+TITLE =Conveyors 3, 4, 5, 6 - Cleared -> Start Conveyor 7 Clearing
+
+      A     "M 9.0"; // C5-6 Cleared  
+      A     "M 0.3"; 
+      S     "M 10.4"; // C5,6 Cleared - Latch
+//;
+      AN    "M 10.3"; // C4 Not Cleared
+      R     "M 10.4"; // Coherence - Reset
+NETWORK
+TITLE =Events UpDate - Flipper Belt 7 - Ready
+
+      A     "M 10.4"; // C5-6 Cleared
+      A     "M 43.1"; // C7 Cleared
+      AN    "M 43.2"; 
+      =     "M 9.0"; // C5-6-7 Cleared
+NETWORK
+TITLE =Conveyors 3, 4, 5, 6, 7, 8, 9 - Clearing - Cleared / Ready
+
+      A     "M 9.0"; // C5-6-7 Cleared
+      A     "M 47.2"; // C8 Cleared
+      AN    "M 47.3"; 
+      A     "M 51.1"; // C9 Cleared
+      AN    "M 51.2"; 
+      AN    "B 9.7"; // C9 - Pusher2 - Edge Cleared
+      A     "M 0.3"; 
+      L     S5T#3S; 
+      SD    "Timer 56"; // Delay 3s
+//;
+      A     "Timer 56"; 
+      =     "M 10.5"; // C10 UpStream Cleared 
+      FP    "M 188.4"; 
+      S     "M 58.2"; // C10 UpStream Cleared - Trigger Set
+//;
+      A     "M 10.5"; 
+      L     S5T#1S; 
+      SE    "Timer 58"; // UpStream Cleared - Pulse 1s 
+NETWORK
+TITLE =Pivot Conveyor 10 - Clearing - Cleared / Ready
+//"C10_EMPTY_TEST" : Work Around to "Will NOT Empty Conveyor 10 - Pivot after a 
+//Clearing (F4)".
+      A     "M 10.0"; // Clearing CMD - Latch
+      AN    "M 10.6"; // C10 Pivot Not Cleared
+      A(    ; 
+      AN    "B 10.7"; // C11 Exit Sens
+      A     "P 15.1"; // Pivot Low Ready
+      O     ; 
+      AN    "B 15.4"; // C21 Exit Sens
+      A     "P 15.0"; // Pivot Hi Ready
+      O     "Timer 57"; 
+      )     ; 
+      A     "M 6.5"; // System Clock 1s
+      A     "M 10.5"; // C10 UpStream Cleared
+      A     "M 0.3"; 
+      =     #C10_EMPTY_TEST; // C10 UpStream Cleared - Pulse
+//;
+      A     #C10_EMPTY_TEST; // C10 UpStream Cleared - Pulse
+      A     "M 58.3"; // All Steps - Reset Mem 
+      S     "M 10.6"; // C10 Pivot Cleared - Set
+//;
+      AN    "M 10.4"; // C5 or C6 Not Empty !
+      R     "M 10.6"; // C10 Pivot Cleared - Reset
+NETWORK
+TITLE =C10 Clearing Trigger via C11 or C21
+
+      A     "M 9.3"; // C10 Clearing via C11-21 - Trigger 1 Scan
+      R     "M 9.3"; // C10 Clearing via C11-21 - Trigger Reset
+//;
+      A     "Timer 58"; // UpStream Cleared - Pulse 1s
+      A     "M 10.0"; // Clearing CMD - Confirm
+      S     "M 9.3"; // C10 Clearing via C11-21 - Trigger Set
+NETWORK
+TITLE =Conveyors 1 - 9 Clearing - Clearing Done !
+//New Order: C10 Full AND C11...23 Not Empty = Hold Bit! - M8.4  [Case:A]
+//
+//- Clearing Initiated with an empty Conveyors 11-13, 21-23: No HOLD for New 
+//Order!  [Case:B]
+//
+      AN    "M 54.2"; // Non-Empty C11...C23   [Case:A] 
+      A     "M 10.6"; // Clearing Done / Off Pulse 
+      A     "M 0.3"; 
+      S     "M 8.4"; // New Order - Wait Set   [Case:A] 
+      S     "M 8.5"; // New Order - Clearing Done - Set
+//;
+      A     "M 54.6"; // Empty C11...C23
+      R     "M 8.5"; // New Order - Clearing Done - Reset   [Case:B] 
+NETWORK
+TITLE =Events UpDate - Clearing Stop - Command
+
+      AN    "M 10.0"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Events UpDate - Clearing Stop - Ready
+
+      A     "M 9.0"; 
+      AN    "M 12.0"; 
+      AN    "M 12.1"; 
+      AN    "M 15.4"; 
+      AN    "M 19.2"; 
+      AN    "M 23.2"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Conveyors Clearing Stop - Ready
+
+      A     "M 9.0"; 
+      AN    "M 43.2"; 
+      AN    "M 47.3"; 
+      AN    "M 51.2"; 
+      =     "M 11.6"; 
+NETWORK
+TITLE =New Order 
+//New Order : Start Filling Conveyors
+
+
+NETWORK
+TITLE =Events UpDate - Elevator Packet IN
+
+      A     "M 15.5"; 
+      =     "M 9.0"; 
+NETWORK
+TITLE =Events UpDate - Conveyor 1 - 9 - Packet Present
+
+      A     "M 9.0"; 
+      A     "M 19.3"; 
+      A     "M 23.2"; 
+      A     "M 43.4"; 
+      A     "M 47.4"; 
+      A     "M 51.5"; 
+      =     "M 11.7"; 
+NETWORK
+TITLE =Collator Conveyor 4 - Packet Presence - Monitor
+
+      A     "M 31.1"; // C4 Collator Trigger Step
+      AN    "M 31.2"; // C4 Collating Done / Packet ON
+      A     "M 0.3"; 
+      S     "M 12.0"; // 1st Packet OFF -> ON
+//;
+      A(    ; 
+      ON    "M 31.0"; 
+      O     "M 31.7"; // C4 Step Register - Reset
+      )     ; 
+      R     "M 12.0"; // Last Packet ON -> OFF
+NETWORK
+TITLE =Collator Conveyor 10 - Packet Presence - Monitor
+
+      A     "B 10.4"; // C10 Collator Trigger Sens
+      A     "M 55.1"; // C10 Collator Trigger Step
+      AN    "M 55.2"; // Collating Done / Packet ON
+      A     "M 0.3"; 
+      S     "M 12.1"; // 1st Packet OFF -> ON
+//;
+      A(    ; 
+      ON    "M 55.0"; 
+      O     "M 55.6"; // C10 Step Register - Reset
+      )     ; 
+      R     "M 12.1"; // Last Packet ON -> OFF
+NETWORK
+TITLE =Clearing - Cancelling
+
+      A     "M 0.3"; 
+      A     "M 150.4"; 
+      A     "M 171.4"; 
+      A     "M 171.5"; 
+      O     "M 5.4"; 
+      O(    ; 
+      A     "M 8.4"; 
+      AN    "M 10.0"; 
+      A     "M 5.0"; 
+      )     ; 
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.2"; 
+      R     "M 8.3"; // New Order - Operator Enabled - Reset
+      R     "M 8.4"; 
+      R     "M 8.5"; 
+NETWORK
+TITLE =Function Key F4 - Reset
+
+      AN    "M 10.0"; 
+      R     "M 150.4"; 
+END_FUNCTION
+

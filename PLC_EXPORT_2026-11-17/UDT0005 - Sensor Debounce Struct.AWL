@@ -1,0 +1,28 @@
+TYPE "Sensor Debounce Struct"
+VERSION : 0.1
+
+
+  STRUCT 	
+   Rising_Pulse_1 : BOOL ;	
+   Rising_Pulse_2 : BOOL ;	
+   Rising_Pulse_3 : BOOL ;	
+   Rising_Pulse_4 : BOOL ;	
+   Rising_Pulse_5 : BOOL ;	
+   Rising_Pulse_6 : BOOL ;	
+   Rising_Pulse_7 : BOOL ;	
+   Rising_Pulse_8 : BOOL ;	
+   Bit_0_FrontEnd : BOOL ;	
+   Bit_1_FrontEnd : BOOL ;	
+   Bit_0_RearEnd : BOOL ;	
+   Bit_1_RearEnd : BOOL ;	
+   Packet_Exiting : BOOL ;	
+   Count_Error : BOOL ;	
+   Sens_Error : BOOL ;	
+   FirstScan_Init_Done : BOOL ;	
+   Bit_0_ON_Time : INT ;	//Count Up Sens
+   Bit_1_ON_Time : INT ;	//Count Dn Sens
+   Word_Count_Result : INT ;	
+   Word_Count_Limit : INT ;	
+  END_STRUCT ;	
+END_TYPE
+

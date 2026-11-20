@@ -12,6 +12,9 @@ VAR_TEMP
   EMPTY_13_23 : BOOL ;	//Empty Conveyor 13 & 23
   C10_EMPTY_TEST : BOOL ;	
   CLEARING_ABORT : BOOL ;	
+  PROOF_P : DINT ;	//C10 Empty Proof Travel [Pulses]
+  D_ENC : DINT ;	//Encoder Pulses This Scan
+  ENC_W : INT ;	//Encoder Word PIW 334
 END_VAR
 BEGIN
 NETWORK
@@ -25,6 +28,7 @@ TITLE =HMI Clearing Call
       A     "M 10.0"; 
       =     "HMI_DB".CLEARING_SSW_STATUS; 
       JC    CLEA; 
+
       L     0; 
 
 CLEA: T     "HMI_DB".CLEARING_FUNCTION; 
@@ -233,11 +237,49 @@ TITLE =Conveyor 10 Clearing Enable after New Order
 NETWORK
 TITLE =New Order - Status Lamp
 
+//2026-11-19: BLINK = S3.2 can be pressed now (M8.2). STEADY = C10 held for the
+//new order, not ready yet (M8.4 without M8.2) - before, the lamp stayed OFF.
+      A(    ; 
       A     "M 8.2"; // New Order - Feeder Empty / Ready
       AN    "M 8.3"; // New Order - Operator Not Enabled Yet
-      A     "M 145.0"; 
-      O     "Timer 0"; 
+      A     "M 145.0"; // Blink
+      )     ; 
+      O(    ; 
+      A     "M 8.4"; // C10 Hold - Waiting New Order
+      AN    "M 8.2"; // Not Ready Yet
+      AN    "M 10.0"; // Not While Clearing
+      )     ; 
+      O     "Timer 0"; // Lamp Test
       =     "H 49.5"; // Feeder Enable PB Lamp  (Amber)
+NETWORK
+TITLE =S3.2 Held 3s - Release the Hold (Sequence Not Complete)
+//2026-11-19: Before, S3.2 only worked with M8.2 (whole new-order chain done).
+//If the chain got stuck, the TS waited with no way out but SIGNAL/F4.
+//S3.2 held 3s releases the hold only (C11...C22 steps NOT reset: they may
+//still carry the previous order).
+
+      A     "S 3.2"; // Operator PB
+      A     "M 8.4"; // C10 Hold Active
+      AN    "M 10.0"; // Not While Clearing
+      L     S5T#3S; 
+      SD    T    140; // Hold 3s (Free Timer)
+//;
+      A     T    140; 
+      A     "M 0.3"; 
+      JCN   S321; 
+
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.2"; 
+      R     "M 8.3"; 
+      R     "M 8.4"; // C10 Hold - Released
+      R     "M 8.5"; // Clearing Done - Reset
+
+S321: NOP   0; 
 NETWORK
 TITLE =Conveyors Clearing Blink
 
@@ -277,8 +319,9 @@ TITLE =Conveyors Clearing - Cmd
       )     ; 
       S     "M 10.0"; 
 //;
-      A     "M 5.2"; 
+      A     "HMI_DB".CLEARING_SSW_MAIN; // Fix: Abort only on a real HMI Switch OFF
       FN    "FN 155.6"; 
+      A     "M 140.3"; // ... while New HMI in Control (not when M140.3 drops)
       A     "M 10.0"; 
       =     "M 5.4"; // Clearing ABORT !
       R     "M 5.2"; 
@@ -292,6 +335,29 @@ TITLE =Conveyors Clearing - Cmd
       )     ; 
       =     #CLEARING_ABORT; 
 NETWORK
+TITLE =Clearing Start - Release a Hold Left from the Previous Clearing
+//Fix 2026-11-19: F4 pressed while C10 still held a new order (M8.4, S3.2 not
+//pressed yet) -> C10 could not transfer, the clearing could never finish.
+//F4 = clear everything: at every clearing start the hold and the new-order
+//sequence are reset. They are set again when this clearing is done.
+
+      A     "M 10.0"; // Clearing CMD
+      FP    M    283.4; // Edge Memory (Free)
+      JCN   CST1; 
+
+      R     "M 7.4"; 
+      R     "M 7.5"; 
+      R     "M 7.6"; 
+      R     "M 7.7"; 
+      R     "M 8.0"; 
+      R     "M 8.1"; 
+      R     "M 8.2"; 
+      R     "M 8.3"; 
+      R     "M 8.4"; // C10 Hold - Released
+      R     "M 8.5"; // Clearing Done - Reset
+
+CST1: NOP   0; 
+NETWORK
 TITLE =Conveyors Clearing Conveyors 1,2,3,4 - TimeOut 30S
 
       A     "M 10.0"; 
@@ -304,6 +370,7 @@ TITLE =Conveyors Clearing Conveyors 1,2,3,4 - TimeOut 30S
       A     "Timer 128"; 
       O     #CLEARING_ABORT; 
       JNB   NCLR; 
+
       L     0; 
       T     "MB 10"; // Clearing OFF
 
@@ -362,7 +429,7 @@ TITLE =Conveyors 3, 4 - Cleared -> Start Conveyor 5, 6 Clearing
 
       A(    ; 
       O     "M 31.5"; 
-      O     "Timer 33"; 
+      O     "DB UTILITY".T33_DN; // Fix: was S5 "Timer 33" - never started (C4 uses Soft Timer T33 20s)
       )     ; 
       A     "M 10.2"; 
       A     "M 0.3"; 
@@ -424,6 +491,113 @@ TITLE =Conveyors 3, 4, 5, 6, 7, 8, 9 - Clearing - Cleared / Ready
       L     S5T#1S; 
       SE    "Timer 58"; // UpStream Cleared - Pulse 1s 
 NETWORK
+TITLE =Clearing - C10 Proven Empty (Encoder Travel With Nothing Seen, Added Up)
+//Fix: Clearing used to end with packets left on C10 (nothing checked C10 itself).
+//v0.3 2026-11-19: proof by ENCODER TRAVEL, not time (C10 accelerates between
+//B10.4 and B10.6). C10 encoder read directly every scan: PIW 334 = FM350-2 Ch5
+//low word (HW Config 2026-11-19), wrap-safe difference per scan. Travel is
+//ADDED UP over several runs (MD284) while the exit B10.6 is clear. Proven when
+//travel >= C10 surface (Surface_Length_10, pulses) + 20 %. 0 -> 18000 p (5 m).
+//Any packet seen on C10 (B10.3 / B10.4 / B10.5 / B10.6) or a Pusher 2 push
+//restarts the proof (a pushed packet can sit at the infeed without C10 starting).
+
+      L     "COLLATORS DB".Surface_Length_10; // C10 Surface [Pulses] (WORD)
+      L     L#12; 
+      *D    ; 
+      L     L#10; // + 20 %
+      /D    ; 
+      T     #PROOF_P; 
+//;
+      L     #PROOF_P; 
+      L     L#1000; 
+      <D    ; // Surface Unknown (0) or Too Small
+      JCN   P001; 
+
+      L     L#18000; // ~5 m @ 0.28 mm/pulse
+      T     #PROOF_P; 
+
+P001: L     PIW  334; // C10 Encoder - Direct, Every Scan
+      T     #ENC_W; 
+      A     "M 10.0"; // Clearing CMD
+      JC    P002; 
+
+      L     #ENC_W; // No Clearing: Follow Encoder, Proof = 0
+      T     MW   288; 
+      L     L#0; 
+      T     MD   284; 
+      JU    P004; 
+
+P002: L     #ENC_W; // Pulses Since Last Scan (INT Subtraction = Wrap-Safe)
+      L     MW   288; 
+      -I    ; 
+      ITD   ; 
+      T     #D_ENC; 
+      L     #ENC_W; 
+      T     MW   288; // Last Encoder Word (Free)
+      L     #D_ENC; // Counter Restart (Gate 5 Reopened, e.g. Every 500 mS in
+      L     L#0; // Clearing) = Negative or Big Jump -> Not Travel: Ignore
+      <D    ; 
+      JC    P006; 
+
+      L     #D_ENC; 
+      L     L#300; // Max Plausible Pulses per Scan
+      >D    ; 
+      JCN   P003; 
+
+P006: L     L#0; 
+      T     #D_ENC; 
+
+P003: AN    "B 10.6"; // C10 Exit Sens Clear
+      JCN   P004; 
+
+      L     MD   284; // Travel With Exit Clear, Added Up [Pulses] (Free)
+      L     #D_ENC; 
+      +D    ; 
+      T     MD   284; 
+
+P004: A(    ; 
+      O     "B 10.3"; // Pusher Extended - Packet Sens (C10 Infeed)
+      O     "M 51.7"; // Pusher 2 FWD - Packet Being Pushed
+      O     "B 10.4"; // C10 InFeed Sens
+      O     "B 10.5"; // C10 Full Sens
+      O     "B 10.6"; // C10 Exit Sens
+      )     ; 
+      JCN   P005; 
+
+      L     L#0; // Packet Seen - Proof Restarts
+      T     MD   284; 
+
+P005: L     MD   284; 
+      L     #PROOF_P; 
+      >=D   ; 
+      A     "M 10.0"; 
+      S     "M 10.7"; // C10 Proven Empty - Set
+//;
+      A(    ; 
+      O     "B 10.3"; 
+      O     "M 51.7"; 
+      O     "B 10.4"; 
+      O     "B 10.5"; 
+      O     "B 10.6"; 
+      )     ; 
+      R     "M 10.7"; // Packet Seen - Not Empty
+NETWORK
+TITLE =Clearing - C10 Not Proven Empty -> Call C10 Transfer Again
+//Fix: After a C10 transfer ends (C11/C21 full or 20s), packets could stay on C10
+//and nothing called C10 again. While clearing and C10 is not proven empty,
+//re-arm the C11/C21 call (M58.2) each time C10 is back to idle.
+      A     "M 10.0"; // Clearing CMD
+      A     "M 10.5"; // C3...C9 Cleared
+      AN    "M 10.6"; // C10 Not Cleared Yet
+      AN    "M 10.7"; // C10 Not Proven Empty
+      A     "M 58.3"; // C10 Did a Transfer & Stopped
+      A     "M 55.0"; // C10 Steps Idle
+      AN    "M 55.1"; 
+      AN    "M 55.5"; // Not Transfering
+      AN    "M 58.2"; // Not Already Called
+      A     "M 0.3"; 
+      S     "M 58.2"; // C11/C21 Trigger -> C10 Transfer
+NETWORK
 TITLE =Pivot Conveyor 10 - Clearing - Cleared / Ready
 //"C10_EMPTY_TEST" : Work Around to "Will NOT Empty Conveyor 10 - Pivot after a 
 //Clearing (F4)".
@@ -439,6 +613,7 @@ TITLE =Pivot Conveyor 10 - Clearing - Cleared / Ready
       )     ; 
       A     "M 6.5"; // System Clock 1s
       A     "M 10.5"; // C10 UpStream Cleared
+      A     "M 10.7"; // Fix: C10 Proven Empty (No Packet Left)
       A     "M 0.3"; 
       =     #C10_EMPTY_TEST; // C10 UpStream Cleared - Pulse
 //;
@@ -464,14 +639,12 @@ TITLE =Conveyors 1 - 9 Clearing - Clearing Done !
 //- Clearing Initiated with an empty Conveyors 11-13, 21-23: No HOLD for New 
 //Order!  [Case:B]
 //
-      AN    "M 54.2"; // Non-Empty C11...C23   [Case:A] 
-      A     "M 10.6"; // Clearing Done / Off Pulse 
+//Fix: S3.2 confirmation ALWAYS required (Case B "lines empty" removed: it only
+//looked at exit sensors and could skip the hold). Old M54.6 line removed (wrong bit).
+      A     "M 10.6"; // Clearing Done / Off Pulse
       A     "M 0.3"; 
-      S     "M 8.4"; // New Order - Wait Set   [Case:A] 
+      S     "M 8.4"; // New Order - Wait Set (Always)
       S     "M 8.5"; // New Order - Clearing Done - Set
-//;
-      A     "M 54.6"; // Empty C11...C23
-      R     "M 8.5"; // New Order - Clearing Done - Reset   [Case:B] 
 NETWORK
 TITLE =Events UpDate - Clearing Stop - Command
 

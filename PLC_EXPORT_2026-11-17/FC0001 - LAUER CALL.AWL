@@ -1,0 +1,119 @@
+FUNCTION "LAUER CALL" : VOID
+TITLE =Lauer Call
+// TEXT ORG  
+NAME : TEXTORG
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =Reset & Preset
+//When the communication/control byte is in a neutral state, and those two 
+//internal flags are off, the FC restores default preset values in the Lauer DB.
+      A(    ; 
+      L     "MB 150"; 
+      L     W#16#FFF7; 
+      AW    ; 
+      L     W#16#0; 
+      )     ; 
+      ==I   ; 
+      AN    "M 151.6"; 
+      AN    "M 151.7"; 
+      JC    M001; 
+      JU    M002; 
+
+M001: L     2#0; 
+      T     DBW   76; 
+//;
+      L     2#111100000000; 
+      T     DBW   72; 
+//;
+      L     2#11100000000001; 
+      T     DBW   74; 
+//;
+      L     W#16#0; 
+      T     DBW   32; 
+
+M002: NOP   0; 
+NETWORK
+TITLE =
+//transfer keypad/page/request words 
+//avoid repeated copying every scan
+//only copy 
+//once per trigger edge/state
+      A     "M 0.3"; 
+      AN    "M 200.0"; 
+      JC    M003; 
+      A     "M 0.2"; 
+      AN    "M 200.1"; 
+      JC    M004; 
+      JU    M005; 
+
+M003: L     "MW 150"; 
+      T     "MW 118"; 
+//;
+      L     "MW 152"; 
+      T     "MW 120"; 
+//;
+      A     "M 0.3"; 
+      S     "M 200.0"; 
+      R     "M 200.1"; 
+      JU    M005; 
+
+M004: L     "MW 118"; 
+      T     "MW 150"; 
+//;
+      L     "MW 120"; 
+      T     "MW 152"; 
+//;
+      A     "M 0.2"; 
+      S     "M 200.1"; 
+      R     "M 200.0"; 
+
+M005: NOP   0; 
+NETWORK
+TITLE =
+//reopen "DB LAUER"
+//
+//load DBW48
+//
+//call LAUER KEYS 1
+      OPN   "DB LAUER"; 
+      L     DBW   48; 
+      CALL "LAUER KEYS 1" ;
+NETWORK
+TITLE =
+
+      CALL "LAUER SERVICE" ;
+
+NETWORK
+TITLE =
+
+      CALL "LAUER KEYS 2" ;
+
+NETWORK
+TITLE =
+
+      CALL "LAUER KEYS 3" ;
+
+NETWORK
+TITLE =
+
+      CALL "LAUER MESSAGE1" ;
+
+NETWORK
+TITLE =
+
+//      CALL  "LAUER"
+
+NETWORK
+TITLE =
+
+      CALL "LAUER MESSAGE2" ;
+
+END_FUNCTION
+

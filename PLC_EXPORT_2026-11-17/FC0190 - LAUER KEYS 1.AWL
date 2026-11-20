@@ -1,0 +1,200 @@
+FUNCTION "LAUER KEYS 1" : VOID
+TITLE =
+NAME : TASTAUSW
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =
+
+      L     "MW 150"; 
+      L     2#1011111110000000; 
+      AW    ; 
+      T     "MW 150"; 
+      L     "MW 152"; 
+      L     2#1111111111000000; 
+      AW    ; 
+      T     "MW 152"; 
+NETWORK
+TITLE =
+
+      L     "MW 150"; 
+      L     W#16#0; 
+      <>I   ; 
+      JC    M001; 
+      L     W#16#0; 
+      T     DBB   32; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+      L     DBW    8; 
+      L     "MW 160"; 
+      XOW   ; 
+      L     DBW    8; 
+      AW    ; 
+      T     "MW 162"; 
+      TAK   ; 
+      L     "MW 160"; 
+      AW    ; 
+      T     MW   164; 
+      L     DBW    8; 
+      T     "MW 160"; 
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+      L     DBW   10; 
+      L     "MW 170"; 
+      XOW   ; 
+      L     DBW   10; 
+      AW    ; 
+      T     "MW 172"; 
+      TAK   ; 
+      L     "MW 170"; 
+      AW    ; 
+      T     MW   174; 
+      L     DBW   10; 
+      T     "MW 170"; 
+NETWORK
+TITLE =
+
+      L     "MW 150"; 
+      L     "MW 162"; 
+      XOW   ; 
+      T     "MW 150"; 
+NETWORK
+TITLE =
+
+      L     2#1011111110111111; 
+      L     "MW 150"; 
+      AW    ; 
+      T     "MW 150"; 
+NETWORK
+TITLE =
+
+      L     "MW 152"; 
+      L     "MW 172"; 
+      XOW   ; 
+      T     "MW 152"; 
+NETWORK
+TITLE =
+
+      L     "MW 152"; 
+      L     2#1011011111111111; 
+      AW    ; 
+      T     "MW 152"; 
+NETWORK
+TITLE =temps de controle de lamps
+
+      A     "M 153.6"; 
+      L     S5T#5S; 
+      SF    "Timer 0"; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     "Timer 0"; 
+      R     "M 153.6"; 
+NETWORK
+TITLE =
+
+      A     "Timer 0"; 
+      JC    M002; 
+      L     2#0; 
+      T     DBW   42; 
+      T     DBW   50; 
+      T     DBW   54; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      L     "MW 150"; 
+      L     2#1111111111000000; 
+      AW    ; 
+      T     DBW   40; 
+NETWORK
+TITLE =
+
+      L     "MW 152"; 
+      L     2#1111111111000000; 
+      AW    ; 
+      T     DBW   48; 
+NETWORK
+TITLE =
+
+      AN    "Timer 0"; 
+      JC    M004; 
+      L     2#1111111111001111; 
+      T     DBW   42; 
+      T     DBW   46; 
+      T     DBW   50; 
+      T     DBW   54; 
+      L     2#110000; 
+      T     DBW   48; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "Timer 0"; 
+      JC    M005; 
+      L     W#16#0; 
+      L     DBW   42; 
+      L     DBW   50; 
+      L     DBW   54; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    "M 134.0"; 
+      JC    M006; 
+      L     DBW   44; 
+      L     2#100000000000; 
+      OW    ; 
+      T     DBW   44; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    "M 134.2"; 
+      JC    M007; 
+      L     DBW   44; 
+      L     2#1111011111111111; 
+      AW    ; 
+      T     DBW   44; 
+M007: NOP   0; 
+NETWORK
+TITLE =
+// BLD 131;
+      O     "M 141.1"; 
+      O     "M 141.2"; 
+      O     "M 141.3"; 
+      O     "M 141.4"; 
+      O     "M 141.5"; 
+      JC    M008; 
+      L     W#16#0; 
+      T     DBW   46; 
+      BEU   ; 
+M008: L     W#16#400; 
+      T     DBW   46; 
+NETWORK
+TITLE =
+
+
+
+END_FUNCTION
+

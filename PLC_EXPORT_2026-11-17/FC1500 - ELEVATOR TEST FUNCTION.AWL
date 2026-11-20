@@ -1,0 +1,43 @@
+FUNCTION "ELEVATOR TEST FUNCTION" : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+
+      A     "A 63.0"; 
+      JCN   M003; 
+      A     "A 63.3"; 
+      JCN   M002; 
+      L     MW   950; 
+      L     1; 
+      -I    ; 
+      T     MW   950; 
+      JU    M001; 
+M002: L     MW   950; 
+      L     1; 
+      +I    ; 
+      T     MW   950; 
+M001: L     MW   950; 
+      L     200; 
+      <=I   ; 
+      =     M    930.1; 
+      L     MW   950; 
+      L     10; 
+      <=I   ; 
+      =     M    930.0; 
+      L     MW   950; 
+      L     800; 
+      >=I   ; 
+      =     M    930.2; 
+      L     MW   950; 
+      L     990; 
+      >=I   ; 
+      =     M    930.3; 
+M003: CLR   ; 
+
+
+END_FUNCTION
+

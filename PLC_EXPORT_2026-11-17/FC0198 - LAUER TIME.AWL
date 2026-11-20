@@ -1,0 +1,27 @@
+FUNCTION "LAUER TIME" : VOID
+TITLE =
+// TIMER  
+NAME : _TIMER
+VERSION : 0.0
+
+
+VAR_OUTPUT
+  QUEL : WORD ;	// QUEL
+  _TIME : WORD ;	// TIME
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+      L     #QUEL; 
+      T     DBW  504; 
+
+      L     DBW  504; 
+      ITB   ; 
+      T     DBW  506; 
+
+      L     DBW  506; 
+      T     #_TIME; 
+END_FUNCTION
+

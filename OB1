@@ -1,6 +1,9 @@
 ORGANIZATION_BLOCK "CYCLIC"
-TITLE =Main Cycle  OB1
-VERSION : 0.0
+TITLE =Main Cycle
+//v0.1 2026-11-20: FC9xx switches read from DB111 (kept at power-off) instead of
+//MB280...MB282. Bit layout unchanged: M280.0 = DB111.DBX0.0 ... M282.4 = DBX2.4.
+//v0.2 2026-11-20: PIW test blocks: DB111.DBX2.5 FC925 (C3), 2.6 FC932 (C4), 2.7 FC955 (C10).
+VERSION : 0.2
 
 
 VAR_TEMP
@@ -41,16 +44,9 @@ TITLE =Scan Triggers
       =     "M 13.3"; 
 NETWORK
 TITLE =Packet Counters
+//     CALL  "HMI PACKET COUNTER OLD"
 
 
-      CALL "HMI PACKET COUNTER OLD" ;
-
-      A     M    333.3; 
-      JCN   NOOP; 
-
-      CALL "HMI PACKET COUNTER  NEW" ;
-
-NOOP: NOP   0; 
 
 //  CALL  "ELEVATOR TEST FUNCTION"
 
@@ -66,36 +62,161 @@ TITLE =Utility Blocks
       CALL "FM350 COUNTERS" ;
       CALL "BLINKER" ;
       CALL "LIGHT CURTAIN - SAFETY" ;
-
+      CALL "HMI PACKET COUNTER  NEW" ;
 NETWORK
 TITLE =Program Blocks
 
-
+      A     DB111.DBX 0.0; // 1 = NEW FC911 / 0 = OLD FC1011 (DB111, was M 280.0)
+      JC    N011; 
       CALL "CONVEYORS CLEARING" ;
+      JU    E011; 
+N011: CALL FC 911 ;
+E011: NOP   0; 
 
+      A     DB111.DBX 0.1; // 1 = NEW FC912 / 0 = OLD FC1012 (DB111, was M 280.1)
+      JC    N012; 
       CALL "CONVEYOR 0 + PUSHER 0" ;
+      JU    E012; 
+N012: CALL FC 912 ;
+E012: NOP   0; 
+      A     DB111.DBX 0.2; // 1 = NEW FC916 / 0 = OLD FC1016 (DB111, was M 280.2)
+      JC    N016; 
       CALL "ELEVATOR + PUSHER 1" ;
+      JU    E016; 
+N016: CALL FC 916 ;
+E016: NOP   0; 
+      A     DB111.DBX 0.3; // 1 = NEW FC918 / 0 = OLD FC1018 (DB111, was M 280.3)
+      JC    N018; 
       CALL "CONVEYOR 1 - BELT" ;
+      JU    E018; 
+N018: CALL FC 918 ;
+E018: NOP   0; 
+      A     DB111.DBX 0.4; // 1 = NEW FC922 / 0 = OLD FC1022 (DB111, was M 280.4)
+      JC    N022; 
       CALL "CONVEYOR 2 - ANGLE B+R" ;
+      JU    E022; 
+N022: CALL FC 922 ;
+E022: NOP   0; 
+      A     DB111.DBX 0.5; // 1 = NEW FC924 / 0 = OLD FC1024 (DB111, was M 280.5)
+      JC    N024; 
       CALL "CONVEYOR 3 - SLAT" ;
+      JU    E024; 
+N024: A     DB111.DBX 2.5; // 1 = FC925 (PIW Test) / 0 = FC924
+      JC    P024; 
+
+      CALL FC 924 ;
+      JU    E024; 
+
+P024: CALL FC 925 ;
+E024: NOP   0; 
+      A     DB111.DBX 0.6; // 1 = NEW FC931 / 0 = OLD FC1031 (DB111, was M 280.6)
+      JC    N031; 
       CALL "CONVEYOR 4 - COLLATOR" ;
+      JU    E031; 
+N031: A     DB111.DBX 2.6; // 1 = FC932 (PIW Test) / 0 = FC931
+      JC    P031; 
+
+      CALL FC 931 ;
+      JU    E031; 
+
+P031: CALL FC 932 ;
+E031: NOP   0; 
+      A     DB111.DBX 0.7; // 1 = NEW FC934 / 0 = OLD FC1034 (DB111, was M 280.7)
+      JC    N034; 
       CALL "CONVEYOR 5 - LINK" ;
+      JU    E034; 
+N034: CALL FC 934 ;
+E034: NOP   0; 
 
+      A     DB111.DBX 1.0; // 1 = NEW FC938 / 0 = OLD FC1038 (DB111, was M 281.0)
+      JC    N038; 
       CALL "CONVEYOR 6 - FLIP DELIV." ;
+      JU    E038; 
+N038: CALL FC 938 ;
+E038: NOP   0; 
+      A     DB111.DBX 1.1; // 1 = NEW FC942 / 0 = OLD FC1042 (DB111, was M 281.1)
+      JC    N042; 
       CALL "CONVEYOR 7 - FLIPPER" ;
+      JU    E042; 
+N042: CALL FC 942 ;
+E042: NOP   0; 
 
+      A     DB111.DBX 1.2; // 1 = NEW FC948 / 0 = OLD FC1048 (DB111, was M 281.2)
+      JC    N048; 
       CALL "CONVEYOR 8 - TURNTABLE" ;
+      JU    E048; 
+N048: CALL FC 948 ;
+E048: NOP   0; 
 
+      A     DB111.DBX 1.3; // 1 = NEW FC950 / 0 = OLD FC1050 (DB111, was M 281.3)
+      JC    N050; 
       CALL "CONVEYOR 9 - PUSHER 2" ;
+      JU    E050; 
+N050: CALL FC 950 ;
+E050: NOP   0; 
+      A     DB111.DBX 1.4; // 1 = NEW FC954 / 0 = OLD FC1054 (DB111, was M 281.4)
+      JC    N054; 
       CALL "CONVEYOR 10 - PIVOT" ;
+      JU    E054; 
+N054: A     DB111.DBX 2.7; // 1 = FC955 (PIW Test) / 0 = FC954
+      JC    P054; 
+
+      CALL FC 954 ;
+      JU    E054; 
+
+P054: CALL FC 955 ;
+E054: NOP   0; 
+
+      CALL FC 1210 ; // PACKET WIDTH MEASURE - Measurement Only (DB30)
+      A     DB111.DBX 1.5; // 1 = NEW FC958 / 0 = OLD FC1058 (DB111, was M 281.5)
+      JC    N058; 
       CALL "CONVEYOR 11 - LINK 1 LO" ;
+      JU    E058; 
+N058: CALL FC 958 ;
+E058: NOP   0; 
+      A     DB111.DBX 1.6; // 1 = NEW FC962 / 0 = OLD FC1062 (DB111, was M 281.6)
+      JC    N062; 
       CALL "CONVEYOR 12 - LINK 2 LO" ;
+      JU    E062; 
+N062: CALL FC 962 ;
+E062: NOP   0; 
+      A     DB111.DBX 1.7; // 1 = NEW FC966 / 0 = OLD FC1066 (DB111, was M 281.7)
+      JC    N066; 
       CALL "CONVEYOR 13 - DELIV. LO" ;
-      CALL "FEEDER FINGERS" ;
-      CALL "FEEDER LIFT" ;
+      JU    E066; 
+N066: CALL FC 966 ;
+E066: NOP   0; 
+      A     DB111.DBX 2.0; // 1 = NEW FC970 / 0 = OLD FC1070 (DB111, was M 282.0)
+      JC    N070; 
+      CALL "LOADER FINGERS" ;
+      JU    E070; 
+N070: CALL FC 970 ;
+E070: NOP   0; 
+      A     DB111.DBX 2.1; // 1 = NEW FC974 / 0 = OLD FC1074 (DB111, was M 282.1)
+      JC    N074; 
+      CALL "LOADER LIFT" ;
+      JU    E074; 
+N074: CALL FC 974 ;
+E074: NOP   0; 
+      A     DB111.DBX 2.2; // 1 = NEW FC978 / 0 = OLD FC1078 (DB111, was M 282.2)
+      JC    N078; 
       CALL "CONVEYOR 21 - LINK 1 HI" ;
+      JU    E078; 
+N078: CALL FC 978 ;
+E078: NOP   0; 
+      A     DB111.DBX 2.3; // 1 = NEW FC982 / 0 = OLD FC1082 (DB111, was M 282.3)
+      JC    N082; 
       CALL "CONVEYOR 22 - LINK 2 HI" ;
+      JU    E082; 
+N082: CALL FC 982 ;
+E082: NOP   0; 
+      A     DB111.DBX 2.4; // 1 = NEW FC986 / 0 = OLD FC1086 (DB111, was M 282.4)
+      JC    N086; 
       CALL "CONVEYOR 23 - DELIV. HI" ;
+      JU    E086; 
+N086: CALL FC 986 ;
+E086: NOP   0; 
+
 
 NETWORK
 TITLE =Program Init - Switch ON
@@ -115,7 +236,7 @@ TITLE =Faults Monitor
       A(    ; 
       L     "MD 1"; 
       L     0; 
-      >I    ; 
+      >D    ; // TODO later: <>D (MD1 < 0 when M 1.7 set) - kept as running
       )     ; 
       =     "M 5.1"; 
 NETWORK

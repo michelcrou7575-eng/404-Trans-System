@@ -1,5 +1,5 @@
 TYPE "Debouncer Counter Struct"
-VERSION : 0.2
+VERSION : 0.7
 
 
   STRUCT 	
@@ -18,6 +18,10 @@ VERSION : 0.2
    Exit_Window_mS : INT ;	//Exit Window [mS]
    Maximum_Count : INT ;	//Maximum Conveyor Count Qty
    Count_Result : INT ;	//Qty Counted
+   Bit0_OFF_mS : INT ;	//Added v0.7 (FC8) - Bit_0 Gap Time [mS]
+   Bit0_Stuck_mS : INT ;	//Added v0.7 (FC8) - Bit_0 Continuous ON Time [mS]
+   Bit1_OFF_mS : INT ;	//Added v0.7 (FC8) - Bit_1 Gap Time [mS]
+   HMI_Last : INT ;	//Added v0.7 (FC8) - Last Count Written to HMI
   END_STRUCT ;	
 END_TYPE
 
