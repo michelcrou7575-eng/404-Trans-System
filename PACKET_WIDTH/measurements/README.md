@@ -12,3 +12,4 @@
 - The blanking corrects B10.7 (C11 exit = C12 infeed), exactly where C12 counted wrong.
 - No butted packets. Blank_Pct 90 / Butt_Pct 140 unchanged.
 - Next: 1-2 more days, a U-shape order, readings with C12/C22 empty. Then FC1208 v0.12 (cleaned pulses for C11..C13 and C21..C23).
+| `2026-11-20_C4_collating_photo.jpg` | C4 collating, order of 2026-11-20 (Omya Snowhite 50 lb sacks): flat packets, gaps about 1/3 to 1/2 packet |
