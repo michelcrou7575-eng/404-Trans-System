@@ -1,5 +1,5 @@
 TYPE UDT 10
-VERSION : 0.9
+VERSION : 0.10
 
   STRUCT
    Was_On : BOOL ;	//Sensor State Last Scan
@@ -54,7 +54,7 @@ END_TYPE
 
 DATA_BLOCK DB 30
 TITLE =Packet Width Measure
-VERSION : 0.9
+VERSION : 0.10
 
   STRUCT
    Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
@@ -122,7 +122,7 @@ TITLE =Width Sensor - One Sensor, Encoder Based
 //The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
 //C11...C23 have no encoder, they need the mS at the same speed.
 //Measurement only - writes only its own Data.
-VERSION : 0.9
+VERSION : 0.10
 
 
 VAR_INPUT
@@ -285,7 +285,7 @@ TITLE =Packet Time [mS] - Front to Now (Sags Included)
 
       A     #RUN; 
       A     #Data.Open; 
-      JCN   S015; 
+      JCN   S016; 
 
       L     #Data.Time_ms; 
       L     #Scan_mS; 
@@ -296,12 +296,12 @@ TITLE =Packet Time [mS] - Front to Now (Sags Included)
       L     #Data.Time_ms; 
       L     L#30000; 
       >D    ; // Clamp 30s
-      JCN   S015; 
+      JCN   S016; 
 
       L     L#30000; 
       T     #Data.Time_ms; 
 
-S015: NOP   0; 
+S016: NOP   0; 
 NETWORK
 TITLE =Sensor OFF - Remember Position
 
@@ -619,11 +619,12 @@ TITLE =Packet Width Measure - C10 Transfer, B10.5 + B10.6
 //transfer both sensors must agree (same number of packets, = C10 count, and
 //average widths within Tolerance_Pct) -> Width_mm (encoder) and Width_ms_31
 //(measured, = C11/C12/C13 + C21/C22/C23 loading speed) are VERIFIED.
+//v0.10 2026-11-20: FC1211 duplicate jump label S015 renamed S016 (compile error).
 //v0.9 2026-11-19: direct encoder steps < 0 or > 300 pulses/scan ignored (Ch5
 //restarts from 0 when gate 5 reopens).
 //v0.8 2026-11-19: also runs the packet BLANKING in shadow (FC1212 / DB31): one
 //cleaned count per packet at the C10/C11/C12/C21/C22 exits, NOT used by FC1208 yet.
-VERSION : 0.9
+VERSION : 0.10
 
 
 VAR_TEMP
