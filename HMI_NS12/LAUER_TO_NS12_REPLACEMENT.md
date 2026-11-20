@@ -21,25 +21,25 @@ Key bits are **toggles** (press = on, press again = off), kept in `MW150` / `MW1
 
 | Key | Strip label | PLC bit | Used in | NS12 equivalent | Status |
 |---|---|---|---|---|---|
-| F1 | affichage de pas (step display) | `M150.7` | LAUER display only (FC200/201) | — | Drop (or a step page later) |
-| F2 | — | `M150.6` | not used | — | Drop |
+| F1 | affichage de pas (step display) | `M150.7` | LAUER display only (FC200/201) | — | Ignore (decided 2026-11-20) |
+| F2 | — | `M150.6` | not used | — | Ignore (decided 2026-11-20) |
 | F3 | service | `M150.5` | LAUER service (FC195 → `M190.x`) + C8 manual-mode reset | NS12 service pages 1/2/3 | ✅ covered |
 | F4 | évacuer automatisation (clearing) | `M150.4` | Clearing (FC911) | `CLEARING_SSW_MAIN` (broom) → `M5.2` | ✅ covered |
 | F5 | — (unlabeled) | `M150.3` | C0 "packet goes through" manual run | `ROLLER_SSW_MAIN` → `M133.4` (same OR) | ✅ covered |
-| F6 | — | `M150.2` | LAUER message only (DBX95.4) | — | Drop |
-| F7, F8 | — | `M150.1`, `M150.0` | not used | — | Drop |
+| F6 | — | `M150.2` | LAUER message only (DBX95.4) | — | Ignore (decided 2026-11-20) |
+| F7, F8 | — | `M150.1`, `M150.0` | not used | — | Ignore (decided 2026-11-20) |
 | F9 | temps (times) | `M151.7` | LAUER time entry → DBW240/242/252 → `MW130/122/124`. **Only `MW124` (C9 position, Timer 50) is used, and only when `M140.3` = 0** | `CONV_9_POS_mS`, `CONV_8_POS_REV_mS`, `CONV_7_POS_mS` (SERVICE OFF page) | ✅ once `M140.3` is permanent (H1) |
-| F10 | — | `M151.6` | LAUER preset logic only | — | Drop |
-| F11 | bande de pressage passage/stockage | `M152.7` | **not used in the PLC** | — | Drop (check with operators) |
-| F12 | — | `M152.6` | not used | — | Drop |
+| F10 | — | `M151.6` | LAUER preset logic only | — | Ignore (decided 2026-11-20) |
+| F11 | bande de pressage passage/stockage | `M152.7` | **not used in the PLC** | — | Ignore (decided 2026-11-20) |
+| F12 | — | `M152.6` | not used | — | Ignore (decided 2026-11-20) |
 | F13 | station de retournement 0-passage 1-retournement | `M152.5` | Flipper (FC942) | `FLIPPER_SSW_MAIN` → `M111.1` | ✅ covered |
-| F14 | station de retournement retourner 0-arrêt en marche | `M152.4` | **not used in the PLC** | — | Drop |
-| F15 | — | `M152.3` | not used | — | Drop |
+| F14 | station de retournement retourner 0-arrêt en marche | `M152.4` | **not used in the PLC** | — | Ignore (decided 2026-11-20) |
+| F15 | — | `M152.3` | not used | — | Ignore (decided 2026-11-20) |
 | F16 | station de tournement 0-passage 1-tourner | `M152.2` | Turntable direction (FC948) | `TURNTABLE_SSW_MAIN` | ✅ covered |
-| F17 | "Paquet vers 504" (handwritten) | `M152.1` | **not used in the PLC** | — | Drop (check: 504 handled elsewhere?) |
+| F17 | "Paquet vers 504" (handwritten) | `M152.1` | **not used in the PLC** | — | Ignore (decided 2026-11-20) |
 | F18 | (Link feed by hand) | `M152.0` | C0 hand feed (FC912) | `MAN_FEED_SSW_MAIN` → `M110.0` | ✅ covered |
 | F19 | (must always be ON) | `M153.7` | C0 feed to 508 | — | ❌ **B2** |
-| F20 | contrôle des lampes (lamp test) | `M153.6` | 5 s lamp test of the LAUER LEDs only | — | Drop (or NS12 lamp-test button for the desk lamps) |
+| F20 | contrôle des lampes (lamp test) | `M153.6` | 5 s lamp test of the LAUER LEDs only | — | Ignore (decided 2026-11-20) |
 | + / − | (service jog) | `M161.0` / `M161.1` | LAUER service: C0, elevator, C5, flipper, C8, C9, pivot, loader | NS12 service pages (own buttons) | ✅ covered |
 | ENT / CLR | | `M171.4` / `M171.5` | see B1, B3 | | ❌ **B1** |
 
