@@ -55,11 +55,11 @@ Key bits are **toggles** (press = on, press again = off), kept in `MW150` / `MW1
 ## 4. Proposed steps
 
 1. **B1, CLR reset** (one network, low risk): in each block that uses `A "M 171.5"` for a reset, change to `O "M 171.5"  O "M 9.1"`, so the SIGNAL button (`E34.1`), `S0.7` and `S2.7` reset everything CLR resets. Works with LAUER still connected.
-2. **B2, F19:** ✅ always ON in the PLC (OB35 v0.2): operators control the 508 feed at the 2145 Tuber.
+2. **B2, F19:** ready: OB35 v0.2 (always ON). F19 toggles fine while the LAUER is connected, so **load OB35 v0.2 with step 6 (LAUER removal)**. Operators control the 508 feed at the 2145 Tuber.
 3. **H1** from `NEW_HMI_TEST_PLAN.md`: `M140.3` = NS12 ON only (position times then always from the NS12).
 4. **NS12 alarm list** from §5 (Alarm.csv): needs the NS12 address format for the PLC (export one object with an address).
 5. Run 3 shifts with LAUER still connected but not touched.
-6. Unplug LAUER. Keep FC1/FC100 called for a week (harmless: keys read 0).
+6. Load OB35 v0.2 (F19 always ON), then unplug LAUER. Keep FC1/FC100 called for a week (harmless: keys read 0).
 7. Delete the LAUER blocks and DB50 → frees memory (DB50 + 13 FCs).
 
 ## 5. LAUER message list (FC199 "Faults" + FC201 "Status") → NS12 alarms
