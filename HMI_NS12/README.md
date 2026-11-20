@@ -3,7 +3,7 @@
 | File | What |
 |---|---|
 | `Caption_ORIGINAL_2026-11-20.csv` | Caption export as received (UTF-16) |
-| `Caption_FIXED_v0.1.csv` | Same, 11 corrections - import back in CX-Designer (UTF-16, CRLF kept) |
+| `Caption_FIXED_v0.2.csv` | Same, 14 corrections - import back in CX-Designer (UTF-16, CRLF kept) |
 
 ## v0.1 (2026-11-20) corrections
 | Screen | Part | Was | Now |
@@ -17,8 +17,16 @@
 | 0 / 2 | PL0183, PL0030 caption | `8\n` | `8` |
 | 2 | LBL0171 caption | `C12\n` | `C12` |
 
+## v0.2 (2026-11-20) - confirmed by maintenance
+C2 = two conveyors on top of each other (2B belts, 2R rollers, 90 deg turn). Loader drops into the Feeder (508 bottomer, own control).
+| Screen | Part | Was (ON caption) | Now |
+|---|---|---|---|
+| 1 | PB0106 Conv 2 Belt | CONV 2 | CONV 2B |
+| 1 | PB0163 Conv 2 Roller | CONV 2 | CONV 2R |
+| 3 | PB0071 Loader Service | FEEDER | LOADER |
+
+Caption-0 = OFF state, Caption-1 = ON state.
+
 ## Left as is - to confirm
-- PB0106 / PB0163 OFF caption `CONV 2` (ON = CONV 2B / CONV 2R)
-- PB0071 Loader Service OFF caption `FEEDER` (ON = LOADER)
 - PB0076 Belt JOG `BELT` / `BELT ON`, PB0282 `Tst` / `OFF`, Screen 5/6 PB0013 `->` / `to` / `in`
 - ConfirmDialog, StringTable and Alarm tables are empty (no alarm list on the NS12)
