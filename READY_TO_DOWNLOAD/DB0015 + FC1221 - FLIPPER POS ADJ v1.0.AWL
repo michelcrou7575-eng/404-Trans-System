@@ -1,0 +1,197 @@
+DATA_BLOCK DB 15
+TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
+//One stop time per packet length class (15 mm classes, 510 ... > 975 mm).
+//Time = belt run after the packet tail leaves B7.4 (step 8N5 -> 8N6, Timer 42).
+//Time_ms[class] = 0 -> Default_ms (1500 = as before v1.0).
+VERSION : 1.0
+
+  STRUCT 
+   Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
+   Class : INT ;	//Length Class 0 = < 525 mm ... 31 = >= 975 mm (15 mm Steps from 510)
+   Time_Used_ms : INT ;	//Stop Time Used for This Class [mS] - HMI Display
+   Default_ms : INT  := 1500;	//Stop Time When the Class Has No Time Set [mS] (= Before v1.0)
+   Step_ms : INT  := 10;	//One Arrow Press [mS]
+   Min_ms : INT  := 200;	//Lowest Time Allowed [mS]
+   Max_ms : INT  := 5000;	//Highest Time Allowed [mS]
+   Plus_PB : BOOL ;	//HMI Arrow -> : Longer (Packet Stops Further) - Momentary
+   Minus_PB : BOOL ;	//HMI Arrow <- : Shorter (Packet Stops Earlier) - Momentary
+   Reset_PB : BOOL ;	//HMI: This Class Back to Default - Momentary
+   Use_Table : BOOL  := TRUE;	//1 = Table / 0 = Default_ms Always (Old Fixed 1.5 s)
+   Spare_1 : BOOL ;	
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Class_Lamps : DWORD ;	//One Bit per Class (HMI Lamps) - Class 0 = DBX19.0 ... 7 = DBX19.7, 8 = DBX18.0 ... 31 = DBX16.7
+   Stop_S5T : S5TIME  := S5T#1S500MS;	//Stop Time for FC942 Timer 42
+   Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//Stop Time per Class [mS] - 0 = Default_ms
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
+
+FUNCTION FC 1221 : VOID
+TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
+//v1.0 2026-11-23: called by FC942 v1.0. Picks the stop time of the length class
+//of the packets (C4 measurement), lights the class lamp, and lets the operator
+//change that class time with the HMI arrows (+/- Step_ms, Min_ms...Max_ms).
+//Writes only DB15 "FLIPPER POS DB". Empty table = Default_ms = 1.5 s as before.
+VERSION : 1.0
+
+
+VAR_TEMP
+  CLASS : INT ;	
+  T_TAB : INT ;	
+  T_NEW : INT ;	
+  T_TIME : TIME ;	
+  S5 : S5TIME ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Packet Length -> Class (15 mm Steps from 510 mm, 0...31)
+
+      L     "HOUSE_KEEPING DB".C4_Packet_Length_mm; 
+      T     "FLIPPER POS DB".Length_mm; 
+      L     510; 
+      -I    ; 
+      L     15; 
+      /I    ; 
+      T     #CLASS; 
+      L     0; 
+      >=I   ; 
+      JC    K001; 
+
+      L     0; 
+      T     #CLASS; 
+
+K001: L     #CLASS; 
+      L     31; 
+      <=I   ; 
+      JC    K002; 
+
+      L     31; 
+      T     #CLASS; 
+
+K002: L     #CLASS; 
+      T     "FLIPPER POS DB".Class; 
+//;
+      L     #CLASS; // Class Lamp: Bit = Class
+      L     L#1; 
+      SLD   ; 
+      T     "FLIPPER POS DB".Class_Lamps; 
+NETWORK
+TITLE =Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x Class)
+
+      L     #CLASS; 
+      SLW   1; 
+      L     22; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "FLIPPER POS DB"; 
+      L     DBW [AR1,P#0.0]; 
+      T     #T_TAB; 
+NETWORK
+TITLE =HMI Arrows / Reset - Change This Class Time
+//The HMI sets Plus_PB / Minus_PB / Reset_PB, the PLC resets them after use:
+//one press = one step.
+
+      L     #T_TAB; // Start From the Time Used (0 = Default)
+      L     0; 
+      <>I   ; 
+      JC    K010; 
+
+      L     "FLIPPER POS DB".Default_ms; 
+      JU    K011; 
+
+K010: L     #T_TAB; 
+K011: T     #T_NEW; 
+//;
+      A     "FLIPPER POS DB".Plus_PB; 
+      JCN   K012; 
+
+      L     #T_NEW; 
+      L     "FLIPPER POS DB".Step_ms; 
+      +I    ; 
+      T     #T_NEW; 
+
+K012: A     "FLIPPER POS DB".Minus_PB; 
+      JCN   K013; 
+
+      L     #T_NEW; 
+      L     "FLIPPER POS DB".Step_ms; 
+      -I    ; 
+      T     #T_NEW; 
+
+K013: L     #T_NEW; // Clamp Min...Max
+      L     "FLIPPER POS DB".Min_ms; 
+      >=I   ; 
+      JC    K014; 
+
+      L     "FLIPPER POS DB".Min_ms; 
+      T     #T_NEW; 
+
+K014: L     #T_NEW; 
+      L     "FLIPPER POS DB".Max_ms; 
+      <=I   ; 
+      JC    K015; 
+
+      L     "FLIPPER POS DB".Max_ms; 
+      T     #T_NEW; 
+
+K015: NOP   0; 
+NETWORK
+TITLE =Write Back After an Arrow / Reset
+
+      A     "FLIPPER POS DB".Reset_PB; 
+      JCN   K020; 
+
+      L     0; // Class Back to Default
+      T     #T_TAB; 
+      JU    K021; 
+
+K020: A(    ; 
+      O     "FLIPPER POS DB".Plus_PB; 
+      O     "FLIPPER POS DB".Minus_PB; 
+      )     ; 
+      JCN   K022; 
+
+      L     #T_NEW; 
+      T     #T_TAB; 
+
+K021: L     #CLASS; 
+      SLW   1; 
+      L     22; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "FLIPPER POS DB"; 
+      L     #T_TAB; 
+      T     DBW [AR1,P#0.0]; 
+
+K022: SET   ; // Momentary: Reset by the PLC
+      R     "FLIPPER POS DB".Plus_PB; 
+      R     "FLIPPER POS DB".Minus_PB; 
+      R     "FLIPPER POS DB".Reset_PB; 
+NETWORK
+TITLE =Stop Time Used -> S5TIME for FC942 Timer 42
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      A     "FLIPPER POS DB".Use_Table; 
+      JC    K030; 
+
+      L     "FLIPPER POS DB".Default_ms; 
+      JU    K031; 
+
+K030: L     #T_TAB; 
+K031: T     "FLIPPER POS DB".Time_Used_ms; 
+      ITD   ; 
+      T     #T_TIME; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #T_TIME,
+           RET_VAL                  := #S5);
+
+      L     #S5; 
+      T     "FLIPPER POS DB".Stop_S5T; 
+END_FUNCTION
