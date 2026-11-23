@@ -1,0 +1,350 @@
+DATA_BLOCK DB 13
+TITLE =HMI Alarms - NS12
+//One BOOL per alarm, written by FC1220 every scan (no latching here: the
+//fault bits keep their own latch / reset). NS12 address: SERIALA:DB0013_DBXbbbbb.ii
+VERSION : 1.0
+
+  STRUCT 
+   Fuse_Fault : BOOL ;	//DBX0.0 Fuse fault
+   Motor_Protect : BOOL ;	//DBX0.1 Motor protection tripped
+   Motor_Temp : BOOL ;	//DBX0.2 Motor temperature fault
+   Air_Low : BOOL ;	//DBX0.3 Compressed air below 5 bar
+   EStop_Desk_X120 : BOOL ;	//DBX0.4 E-STOP desk X120 (HMI box)
+   EStop_Desk_X121 : BOOL ;	//DBX0.5 E-STOP desk X121 (feeder box)
+   EStop_Elevator : BOOL ;	//DBX0.6 E-STOP elevator station
+   EStop_Flipper : BOOL ;	//DBX0.7 E-STOP flipper station
+   Door_Feeder : BOOL ;	//DBX1.0 Door open - feeder
+   Door_Elevator : BOOL ;	//DBX1.1 Door open - elevator
+   Door_Flipper : BOOL ;	//DBX1.2 Door open - flipper
+   Spare_1_3 : BOOL ;	//DBX1.3 Spare
+   Spare_1_4 : BOOL ;	//DBX1.4 Spare
+   Spare_1_5 : BOOL ;	//DBX1.5 Spare
+   Spare_1_6 : BOOL ;	//DBX1.6 Spare
+   Spare_1_7 : BOOL ;	//DBX1.7 Spare
+   C2_Angle_Fault : BOOL ;	//DBX2.0 C2 angle conveyor fault
+   Elev_Rollers_Fault : BOOL ;	//DBX2.1 Elevator rollers (C0) fault
+   Elev_Pusher_Fault : BOOL ;	//DBX2.2 Elevator pusher fault
+   Elev_Not_Centered : BOOL ;	//DBX2.3 Elevator - packet not centered
+   C4_Fault : BOOL ;	//DBX2.4 C4 collator fault
+   C4_Timeout : BOOL ;	//DBX2.5 C4 collator timeout stop
+   C4_Infeed_Obstruct : BOOL ;	//DBX2.6 C4 infeed obstruction
+   C6_Fault : BOOL ;	//DBX2.7 C6 flipper delivery fault
+   Flipper_Obstruct : BOOL ;	//DBX3.0 Flipper flip obstructed
+   C10_Fault : BOOL ;	//DBX3.1 C10 pivot conveyor fault
+   Pivot_Timeout : BOOL ;	//DBX3.2 Pivot timeout
+   Pivot_Conflict : BOOL ;	//DBX3.3 Pivot / conveyor conflict
+   C13_Delivery_Fault : BOOL ;	//DBX3.4 C13 delivery fault (low)
+   C23_Delivery_Fault : BOOL ;	//DBX3.5 C23 delivery fault (high)
+   Spare_3_6 : BOOL ;	//DBX3.6 Spare
+   Spare_3_7 : BOOL ;	//DBX3.7 Spare
+   VFD_U44_3 : BOOL ;	//DBX4.0 Drive U44.3 fault - C4
+   VFD_U45_0 : BOOL ;	//DBX4.1 Drive U45.0 fault - C5
+   VFD_U45_3 : BOOL ;	//DBX4.2 Drive U45.3 fault - C6
+   VFD_U45_6 : BOOL ;	//DBX4.3 Drive U45.6 fault - C7 flipper conveyor
+   VFD_U46_0 : BOOL ;	//DBX4.4 Drive U46.0 fault - Flipper
+   VFD_U46_4 : BOOL ;	//DBX4.5 Drive U46.4 fault - C8 turntable conveyor
+   VFD_U47_0 : BOOL ;	//DBX4.6 Drive U47.0 fault - Turntable
+   VFD_U47_5 : BOOL ;	//DBX4.7 Drive U47.5 fault - C9 pusher 2 conveyor
+   VFD_U47_6 : BOOL ;	//DBX5.0 Drive U47.6 fault - Pusher 2
+   VFD_U48_0 : BOOL ;	//DBX5.1 Drive U48.0 fault - C10
+   VFD_U48_3 : BOOL ;	//DBX5.2 Drive U48.3 fault - C11
+   VFD_U48_6 : BOOL ;	//DBX5.3 Drive U48.6 fault - C12
+   VFD_U49_0 : BOOL ;	//DBX5.4 Drive U49.0 fault - C13
+   VFD_U53_2 : BOOL ;	//DBX5.5 Drive U53.2 fault - C21
+   VFD_U53_4 : BOOL ;	//DBX5.6 Drive U53.4 fault - C22
+   VFD_U54_0 : BOOL ;	//DBX5.7 Drive U54.0 fault - C23
+   Sens_B5_1_On : BOOL ;	//DBX6.0 Sensor Elevator platform infeed B5.1 ON - line empty (packet left or dirty sensor)
+   Sens_B5_2_On : BOOL ;	//DBX6.1 Sensor Elevator platform limit B5.2 ON - line empty (packet left or dirty sensor)
+   Sens_B5_4_On : BOOL ;	//DBX6.2 Sensor C1 exit B5.4 ON - line empty (packet left or dirty sensor)
+   Sens_B5_5_On : BOOL ;	//DBX6.3 Sensor C2 infeed B5.5 ON - line empty (packet left or dirty sensor)
+   Sens_B6_0_On : BOOL ;	//DBX6.4 Sensor C2 roller center B6.0 ON - line empty (packet left or dirty sensor)
+   Sens_B6_7_On : BOOL ;	//DBX6.5 Sensor C4 infeed B6.7 ON - line empty (packet left or dirty sensor)
+   Sens_B7_0_On : BOOL ;	//DBX6.6 Sensor C4 exit B7.0 ON - line empty (packet left or dirty sensor)
+   Sens_B7_1_On : BOOL ;	//DBX6.7 Sensor C5 exit B7.1 ON - line empty (packet left or dirty sensor)
+   Sens_B7_2_On : BOOL ;	//DBX7.0 Sensor C6 reaching B7.2 ON - line empty (packet left or dirty sensor)
+   Sens_B7_3_On : BOOL ;	//DBX7.1 Sensor C6 exit B7.3 ON - line empty (packet left or dirty sensor)
+   Sens_B7_4_On : BOOL ;	//DBX7.2 Sensor Flipper infeed B7.4 ON - line empty (packet left or dirty sensor)
+   Sens_B8_2_On : BOOL ;	//DBX7.3 Sensor Flipper exit B8.2 ON - line empty (packet left or dirty sensor)
+   Sens_B9_6_On : BOOL ;	//DBX7.4 Sensor C9 infeed B9.6 ON - line empty (packet left or dirty sensor)
+   Sens_B9_7_On : BOOL ;	//DBX7.5 Sensor C9 packet edge B9.7 ON - line empty (packet left or dirty sensor)
+   Sens_B10_4_On : BOOL ;	//DBX7.6 Sensor C10 infeed B10.4 ON - line empty (packet left or dirty sensor)
+   Sens_B10_5_On : BOOL ;	//DBX7.7 Sensor C10 full B10.5 ON - line empty (packet left or dirty sensor)
+   Sens_B10_7_On : BOOL ;	//DBX8.0 Sensor C11 exit B10.7 ON - line empty (packet left or dirty sensor)
+   Sens_B11_0_On : BOOL ;	//DBX8.1 Sensor C12 exit B11.0 ON - line empty (packet left or dirty sensor)
+   Sens_B11_1_On : BOOL ;	//DBX8.2 Sensor C13 slow B11.1 ON - line empty (packet left or dirty sensor)
+   Sens_B5_4_Off : BOOL ;	//DBX8.3 Sensor C1 exit B5.4 OFF - line empty (check sensor / reflector)
+   Sens_B9_7_Off : BOOL ;	//DBX8.4 Sensor C9 packet edge B9.7 OFF - line empty (check sensor / reflector)
+   Spare_8_5 : BOOL ;	//DBX8.5 Spare
+   Spare_8_6 : BOOL ;	//DBX8.6 Spare
+   Spare_8_7 : BOOL ;	//DBX8.7 Spare
+   Clearing_Active : BOOL ;	//DBX9.0 Clearing (F4) active
+   Packets_Present : BOOL ;	//DBX9.1 Packets present on C1-C2 / C7-C9
+   Control_Off : BOOL ;	//DBX9.2 Control voltage OFF - press START
+   Start_Ready : BOOL ;	//DBX9.3 Start ready (10 s)
+   Spare_9_4 : BOOL ;	//DBX9.4 Spare
+   Spare_9_5 : BOOL ;	//DBX9.5 Spare
+   Spare_9_6 : BOOL ;	//DBX9.6 Spare
+   Spare_9_7 : BOOL ;	//DBX9.7 Spare
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
+
+FUNCTION FC 1220 : VOID
+TITLE =HMI Alarms - NS12 (DB13)
+//v1.0 2026-11-23: all LAUER messages (FC199 / FC201) as single alarm bits for
+//the NS12 alarm list, ALL at the same time (LAUER showed only the first one).
+//Drive faults: one per drive M3.0...M4.7 (LAUER lines for C11 / C21 / C22 / C23
+//tested M4.1 = C10 by mistake). Sensor messages: only while the line is empty
+//(LAUER cue: M0.3 AND M11.6 AND NOT M9.7), as before.
+//Writes only DB13. Changes nothing on the machine.
+VERSION : 1.0
+
+
+VAR_TEMP
+  CUE : BOOL ;	//Control ON + Conveyors 1..10 Empty + Clearing Not Done
+END_VAR
+BEGIN
+NETWORK
+TITLE =Message Cue (as LAUER MESSAGE1)
+
+      A     "M 0.3"; 
+      A     "M 11.6"; 
+      AN    "M 9.7"; 
+      =     #CUE; 
+NETWORK
+TITLE =General
+
+      A     "M 0.4"; 
+      =     "HMI ALARMS".Fuse_Fault; // DBX0.0
+//;
+      A     "M 0.5"; 
+      =     "HMI ALARMS".Motor_Protect; // DBX0.1
+//;
+      A     "M 0.6"; 
+      =     "HMI ALARMS".Motor_Temp; // DBX0.2
+//;
+      A     "M 0.7"; 
+      =     "HMI ALARMS".Air_Low; // DBX0.3
+NETWORK
+TITLE =E-Stop
+
+      A     "M 1.0"; 
+      =     "HMI ALARMS".EStop_Desk_X120; // DBX0.4
+//;
+      A     "M 1.1"; 
+      =     "HMI ALARMS".EStop_Desk_X121; // DBX0.5
+//;
+      A     "M 1.2"; 
+      =     "HMI ALARMS".EStop_Elevator; // DBX0.6
+//;
+      A     "M 1.3"; 
+      =     "HMI ALARMS".EStop_Flipper; // DBX0.7
+NETWORK
+TITLE =Door
+
+      A     "M 1.5"; 
+      =     "HMI ALARMS".Door_Feeder; // DBX1.0
+//;
+      A     "M 1.6"; 
+      =     "HMI ALARMS".Door_Elevator; // DBX1.1
+//;
+      A     "M 1.7"; 
+      =     "HMI ALARMS".Door_Flipper; // DBX1.2
+NETWORK
+TITLE =Conveyor
+
+      A     "M 22.7"; 
+      =     "HMI ALARMS".C2_Angle_Fault; // DBX2.0
+//;
+      A     "M 30.1"; 
+      =     "HMI ALARMS".Elev_Rollers_Fault; // DBX2.1
+//;
+      A     "M 30.2"; 
+      =     "HMI ALARMS".Elev_Pusher_Fault; // DBX2.2
+//;
+      A     "M 14.7"; 
+      =     "HMI ALARMS".Elev_Not_Centered; // DBX2.3
+//;
+      A     "M 30.0"; 
+      =     "HMI ALARMS".C4_Fault; // DBX2.4
+//;
+      A     "M 30.7"; 
+      =     "HMI ALARMS".C4_Timeout; // DBX2.5
+//;
+      A     "M 33.7"; 
+      =     "HMI ALARMS".C4_Infeed_Obstruct; // DBX2.6
+//;
+      A     "M 38.7"; 
+      =     "HMI ALARMS".C6_Fault; // DBX2.7
+//;
+      A     "M 42.7"; 
+      =     "HMI ALARMS".Flipper_Obstruct; // DBX3.0
+//;
+      A     "M 54.7"; 
+      =     "HMI ALARMS".C10_Fault; // DBX3.1
+//;
+      A     "M 98.1"; 
+      =     "HMI ALARMS".Pivot_Timeout; // DBX3.2
+//;
+      A     "M 98.2"; 
+      =     "HMI ALARMS".Pivot_Conflict; // DBX3.3
+//;
+      A     "M 66.7"; 
+      =     "HMI ALARMS".C13_Delivery_Fault; // DBX3.4
+//;
+      A     "M 86.7"; 
+      =     "HMI ALARMS".C23_Delivery_Fault; // DBX3.5
+NETWORK
+TITLE =Drive
+
+      A     "M 3.0"; 
+      =     "HMI ALARMS".VFD_U44_3; // DBX4.0
+//;
+      A     "M 3.1"; 
+      =     "HMI ALARMS".VFD_U45_0; // DBX4.1
+//;
+      A     "M 3.2"; 
+      =     "HMI ALARMS".VFD_U45_3; // DBX4.2
+//;
+      A     "M 3.3"; 
+      =     "HMI ALARMS".VFD_U45_6; // DBX4.3
+//;
+      A     "M 3.4"; 
+      =     "HMI ALARMS".VFD_U46_0; // DBX4.4
+//;
+      A     "M 3.5"; 
+      =     "HMI ALARMS".VFD_U46_4; // DBX4.5
+//;
+      A     "M 3.6"; 
+      =     "HMI ALARMS".VFD_U47_0; // DBX4.6
+//;
+      A     "M 3.7"; 
+      =     "HMI ALARMS".VFD_U47_5; // DBX4.7
+//;
+      A     "M 4.0"; 
+      =     "HMI ALARMS".VFD_U47_6; // DBX5.0
+//;
+      A     "M 4.1"; 
+      =     "HMI ALARMS".VFD_U48_0; // DBX5.1
+//;
+      A     "M 4.2"; 
+      =     "HMI ALARMS".VFD_U48_3; // DBX5.2
+//;
+      A     "M 4.3"; 
+      =     "HMI ALARMS".VFD_U48_6; // DBX5.3
+//;
+      A     "M 4.4"; 
+      =     "HMI ALARMS".VFD_U49_0; // DBX5.4
+//;
+      A     "M 4.5"; 
+      =     "HMI ALARMS".VFD_U53_2; // DBX5.5
+//;
+      A     "M 4.6"; 
+      =     "HMI ALARMS".VFD_U53_4; // DBX5.6
+//;
+      A     "M 4.7"; 
+      =     "HMI ALARMS".VFD_U54_0; // DBX5.7
+NETWORK
+TITLE =Sensor
+
+      A     #CUE; 
+      A     "B 5.1"; 
+      =     "HMI ALARMS".Sens_B5_1_On; // DBX6.0
+//;
+      A     #CUE; 
+      A     "B 5.2"; 
+      =     "HMI ALARMS".Sens_B5_2_On; // DBX6.1
+//;
+      A     #CUE; 
+      A     "B 5.4"; 
+      =     "HMI ALARMS".Sens_B5_4_On; // DBX6.2
+//;
+      A     #CUE; 
+      A     "B 5.5"; 
+      =     "HMI ALARMS".Sens_B5_5_On; // DBX6.3
+//;
+      A     #CUE; 
+      A     "B 6.0"; 
+      =     "HMI ALARMS".Sens_B6_0_On; // DBX6.4
+//;
+      A     #CUE; 
+      A     "B 6.7"; 
+      =     "HMI ALARMS".Sens_B6_7_On; // DBX6.5
+//;
+      A     #CUE; 
+      A     "B 7.0"; 
+      =     "HMI ALARMS".Sens_B7_0_On; // DBX6.6
+//;
+      A     #CUE; 
+      A     "B 7.1"; 
+      =     "HMI ALARMS".Sens_B7_1_On; // DBX6.7
+//;
+      A     #CUE; 
+      A     "B 7.2"; 
+      =     "HMI ALARMS".Sens_B7_2_On; // DBX7.0
+//;
+      A     #CUE; 
+      A     "B 7.3"; 
+      =     "HMI ALARMS".Sens_B7_3_On; // DBX7.1
+//;
+      A     #CUE; 
+      A     "B 7.4"; 
+      =     "HMI ALARMS".Sens_B7_4_On; // DBX7.2
+//;
+      A     #CUE; 
+      A     "B 8.2"; 
+      =     "HMI ALARMS".Sens_B8_2_On; // DBX7.3
+//;
+      A     #CUE; 
+      A     "B 9.6"; 
+      =     "HMI ALARMS".Sens_B9_6_On; // DBX7.4
+//;
+      A     #CUE; 
+      A     "B 9.7"; 
+      =     "HMI ALARMS".Sens_B9_7_On; // DBX7.5
+//;
+      A     #CUE; 
+      A     "B 10.4"; 
+      =     "HMI ALARMS".Sens_B10_4_On; // DBX7.6
+//;
+      A     #CUE; 
+      A     "B 10.5"; 
+      =     "HMI ALARMS".Sens_B10_5_On; // DBX7.7
+//;
+      A     #CUE; 
+      A     "B 10.7"; 
+      =     "HMI ALARMS".Sens_B10_7_On; // DBX8.0
+//;
+      A     #CUE; 
+      A     "B 11.0"; 
+      =     "HMI ALARMS".Sens_B11_0_On; // DBX8.1
+//;
+      A     #CUE; 
+      A     "B 11.1"; 
+      =     "HMI ALARMS".Sens_B11_1_On; // DBX8.2
+//;
+      A     #CUE; 
+      AN    "B 5.4"; 
+      =     "HMI ALARMS".Sens_B5_4_Off; // DBX8.3
+//;
+      A     #CUE; 
+      AN    "B 9.7"; 
+      =     "HMI ALARMS".Sens_B9_7_Off; // DBX8.4
+NETWORK
+TITLE =Status
+
+      A     "M 10.0"; 
+      =     "HMI ALARMS".Clearing_Active; // DBX9.0
+//;
+      A     "M 11.7"; 
+      =     "HMI ALARMS".Packets_Present; // DBX9.1
+//;
+      AN    "M 0.3"; 
+      AN    "M 0.2"; 
+      AN    "M 0.1"; 
+      =     "HMI ALARMS".Control_Off; // DBX9.2
+//;
+      A     "M 0.2"; 
+      AN    "M 0.3"; 
+      =     "HMI ALARMS".Start_Ready; // DBX9.3
+END_FUNCTION

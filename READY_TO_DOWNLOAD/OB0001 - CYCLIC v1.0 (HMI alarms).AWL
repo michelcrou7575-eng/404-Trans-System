@@ -1,0 +1,140 @@
+ORGANIZATION_BLOCK "CYCLIC"
+TITLE =Main Cycle
+//v0.1 2026-11-20: FC9xx switches read from DB111 (kept at power-off) instead of
+//MB280...MB282. Bit layout unchanged: M280.0 = DB111.DBX0.0 ... M282.4 = DBX2.4.
+//v0.2 2026-11-20: PIW test blocks: DB111.DBX2.5 FC925 (C3), 2.6 FC932 (C4), 2.7 
+//FC955 (C10).
+//v0.3 2026-11-23: test switches removed. NEW blocks called directly (= v0.2 with
+//all "TESTING DB" switches = 1): FC911...FC986 with FC925 / FC932 / FC955 (direct
+//PIW) for C3 / C4 / C10. OLD FC1011...FC1086 and FC924 / FC931 / FC954 no longer
+//called, "TESTING DB" (DB111) no longer read. Back: load OB1 v0.2.
+//v1.0 2026-11-23: CALL FC1220 "HMI ALARMS FC" (NS12 alarm bits in DB13).
+VERSION : 1.0
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//1 (Priority of 1 is lowest)
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =Scan Time
+
+      L     #OB1_PREV_CYCLE; 
+      T     "DB UTILITY".Scan_Cycle_Previous; 
+NETWORK
+TITLE =Scan Triggers
+
+      A     "M 6.0"; 
+      FP    "M 188.0"; 
+      =     "M 13.0"; 
+//;
+      A     "M 6.1"; 
+      FP    "M 188.1"; 
+      =     "M 13.1"; 
+//;
+      A     "M 6.3"; 
+      FP    "M 188.2"; 
+      =     "M 13.2"; 
+//;
+      A     "M 6.5"; 
+      FP    "M 188.3"; 
+      =     "M 13.3"; 
+NETWORK
+TITLE =Packet Counters
+//     CALL  "HMI PACKET COUNTER OLD"
+//
+//
+//
+//  CALL  "ELEVATOR TEST FUNCTION"
+
+
+NETWORK
+TITLE =Lauer Comms
+
+      CALL "LAUER_RE-START_PUP" ;
+
+NETWORK
+TITLE =Utility Blocks
+
+      CALL "CONTROL" ;
+      CALL "FM350 COUNTERS" ;
+      CALL "BLINKER" ;
+      CALL "LIGHT CURTAIN - SAFETY" ;
+      CALL "HMI PACKET COUNTER  NEW" ;
+      CALL "HMI ALARMS FC" ;                // FC1220 - NS12 Alarm Bits (DB13)
+NETWORK
+TITLE =Program Blocks
+
+      CALL "NEW CLEARING" ;              // FC911
+      CALL "NEW C0 + PUSHER 0" ;         // FC912
+      CALL "NEW ELEVATOR + PUSHER 1" ;   // FC916
+      CALL "NEW C1 - BELT" ;             // FC918
+      CALL "NEW C2 - ANGLE B+R" ;        // FC922
+      CALL "NEW C3 - SLAT PIW" ;         // FC925 - PIW 328
+      CALL "NEW C4 - COLLATOR PIW" ;     // FC932 - PIW 330 / 332
+      CALL "NEW C5 - LINK" ;             // FC934
+      CALL "NEW C6 - FLIP DELIV." ;      // FC938
+      CALL "NEW C7 - FLIPPER" ;          // FC942
+      CALL "NEW C8 - TURNTABLE" ;        // FC948
+      CALL "NEW C9 - PUSHER 2" ;         // FC950
+      CALL "NEW C10 - PIVOT PIW" ;       // FC955 - PIW 334
+      CALL "PACKET WIDTH MEASURE" ;      // FC1210 - Width DB30 + Blanking DB31
+      CALL "NEW C11 - LINK 1 LO" ;       // FC958
+      CALL "NEW C12 - LINK 2 LO" ;       // FC962
+      CALL "NEW C13 - DELIV. LO" ;       // FC966
+      CALL "NEW LOADER FINGERS" ;        // FC970
+      CALL "NEW LOADER LIFT" ;           // FC974
+      CALL "NEW C21 - LINK 1 HI" ;       // FC978
+      CALL "NEW C22 - LINK 2 HI" ;       // FC982
+      CALL "NEW C23 - DELIV. HI" ;       // FC986
+
+
+NETWORK
+TITLE =Program Init - Switch ON
+
+      A     "M 0.3"; 
+      A     "S 2.2"; 
+      JNB   M022; 
+      CALL "SETUP" ;
+
+M022: NOP   0; 
+NETWORK
+TITLE =Faults Monitor
+
+      A     "M 0.4"; 
+      A     "M 0.5"; 
+      A     "M 0.6"; 
+      A(    ; 
+      L     "MD 1"; 
+      L     0; 
+      >D    ; // TODO later: <>D (MD1 < 0 when M 1.7 set) - kept as running
+      )     ; 
+      =     "M 5.1"; 
+NETWORK
+TITLE =Blinker
+
+      A(    ; 
+      A     "M 6.3"; 
+      A     "M 6.7"; 
+      AN    "M 5.1"; 
+      O     ; 
+      A     "M 5.1"; 
+      A     "M 6.1"; 
+      )     ; 
+      A     "M 0.3"; 
+      =     "M 5.7"; 
+NETWORK
+TITLE =Always ON
+
+      AN    "M 50.0"; 
+      S     "M 50.0"; 
+END_ORGANIZATION_BLOCK
