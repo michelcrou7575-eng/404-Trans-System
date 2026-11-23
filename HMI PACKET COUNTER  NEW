@@ -3,18 +3,17 @@ TITLE =HMI Conveyors Display Packet Counter  FC1208
 //Counts are kept in "HMI_DB" (read by HMI, LIGHT BAR, C5 Re-Sync)
 //Bit_0 = InFeed  /  Bit_1 = RAW Exit Sensor  /
 //Transfer_Start = Transfer Step Active.
-//v0.12 2026-11-23: C11/C12/C13 + C21/C22/C23 (identical): Bit_0 / Bit_1 use the
-//CLEANED packet pulses of the blanking ("BLANKING DB" DB31, FC1212 in FC1210),
-//not the raw sensors. A U-Shape sag inside the blanking (90 % of the measured
-//packet time) is not a packet; a butted packet still gives one pulse per packet
-//time. Proven in shadow 2026-11-20..23: ~4670 packets per level, exits equal,
-//28 / 14 / 7 sags removed at B10.7 / B15.4 / B15.5.
-//Pulse 400 mS -> FC8 Preset_MIN 200 mS, Space_DX 400 mS (Gap 200 mS); butted
-//packets are done by the blanking -> HighSpd_Dimension 0 on these 6 calls.
+//v1.0 2026-11-23 (replaces v0.12): C11/C12/C13 + C21/C22/C23 (identical) use the
+//CLEANED SENSOR LEVEL = Raw Sensor OR Blanking Active ("BLANKING DB" T_ms <
+//Blank_Pct of Width_ms since the last counted front). A U-Shape sag inside the
+//blanking keeps the signal ON (one packet), and a packet already ON the sensor
+//when the filling step starts is still counted (v0.12 used a 400 mS pulse that
+//could come before the step = first packet of a load not counted).
+//FC8 settings back as v0.8 (600 / 300). Butted packets (count down): every
+//"BLANKING DB".Width_ms + Gap (was #DIM_31).
 //C13/C23 Count Down (once per delivery, v0.8) and C3..C10 unchanged.
-//Back to raw sensors: load FC1208 v0.8 again.
 //Also: duplicate presence T lines removed (no effect).
-VERSION : 0.12
+VERSION : 1.0
 
 
 VAR_TEMP
@@ -24,6 +23,12 @@ VAR_TEMP
   BIT1 : BOOL ;	//C13/C23 Count Down Pulse - One per Delivery
   DIM_31 : INT ;	//C10 Width @ 31.0 m/min [mS]
   DIM_237 : INT ;	//C10 Width @ 23.7 m/min [mS]
+  BLANK : DINT ;	//Blanking Time [mS] = Width_ms x Blank_Pct / 100
+  S106 : BOOL ;	//Cleaned B10.6 - C10 Exit
+  S107 : BOOL ;	//Cleaned B10.7 - C11 Exit
+  S110 : BOOL ;	//Cleaned B11.0 - C12 Exit
+  S154 : BOOL ;	//Cleaned B15.4 - C21 Exit
+  S155 : BOOL ;	//Cleaned B15.5 - C22 Exit
 END_VAR
 BEGIN
 NETWORK
@@ -272,6 +277,60 @@ TITLE =Packet Counter - Pivot Conveyor 10
 
 M480: NOP   0; 
 NETWORK
+TITLE =Cleaned Sensors - Raw OR Blanking Active (U-Shape Sag Filled)
+//Blanking from "BLANKING DB" (FC1212 in FC1210): T_ms = belt run time since the
+//last counted front at this sensor. While T_ms < Blank_Pct of the packet time
+//the signal stays ON, so a sag inside a packet is not a gap.
+
+      L     "BLANKING DB".Width_ms; 
+      ITD   ; 
+      L     "BLANKING DB".Blank_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BLANK; 
+//;
+      A(    ; 
+      L     "BLANKING DB".C10_Exit_B10_6.T_ms; 
+      L     #BLANK; 
+      <D    ; 
+      )     ; 
+      O     "B 10.6"; // C10 Exit Sens
+      =     #S106; 
+//;
+      A(    ; 
+      L     "BLANKING DB".C11_Exit_B10_7.T_ms; 
+      L     #BLANK; 
+      <D    ; 
+      )     ; 
+      O     "B 10.7"; // C11 Exit Sens
+      =     #S107; 
+//;
+      A(    ; 
+      L     "BLANKING DB".C12_Exit_B11_0.T_ms; 
+      L     #BLANK; 
+      <D    ; 
+      )     ; 
+      O     "B 11.0"; // C12 Exit Sens
+      =     #S110; 
+//;
+      A(    ; 
+      L     "BLANKING DB".C21_Exit_B15_4.T_ms; 
+      L     #BLANK; 
+      <D    ; 
+      )     ; 
+      O     "B 15.4"; // C21 Exit Sens
+      =     #S154; 
+//;
+      A(    ; 
+      L     "BLANKING DB".C22_Exit_B15_5.T_ms; 
+      L     #BLANK; 
+      <D    ; 
+      )     ; 
+      O     "B 15.5"; // C22 Exit Sens
+      =     #S155; 
+NETWORK
 TITLE =Packet Counter - Link Conveyor 11 (Low)
 
       A     "A 48.3"; 
@@ -284,7 +343,7 @@ TITLE =Packet Counter - Link Conveyor 11 (Low)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C11_Link.Maximum_Count; 
-      A     "BLANKING DB".C10_Exit_B10_6.Pulse; // Cleaned B10.6 (was Raw B10.6)
+      A     #S106; // Cleaned B 10.6
       A     "M 59.1"; 
       AN    "M 59.2"; 
       A     "P 15.1"; 
@@ -296,15 +355,15 @@ TITLE =Packet Counter - Link Conveyor 11 (Low)
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "BLANKING DB".C11_Exit_B10_7.Pulse,
+           Bit_1                    := #S107,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 3,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := 0,
+           HighSpd_Dimension_mS     := "BLANKING DB".Width_ms,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_11_COUNT,
@@ -324,7 +383,7 @@ TITLE =Packet Counter - Link Conveyor 12 (Low)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C12_Link.Maximum_Count; 
-      A     "BLANKING DB".C11_Exit_B10_7.Pulse; // Cleaned B10.7 (was Raw B10.7)
+      A     #S107; // Cleaned B 10.7
       A     "M 63.1"; 
       AN    "M 63.2"; 
       =     #BIT0; 
@@ -335,15 +394,15 @@ TITLE =Packet Counter - Link Conveyor 12 (Low)
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "BLANKING DB".C12_Exit_B11_0.Pulse,
+           Bit_1                    := #S110,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 3,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := 0,
+           HighSpd_Dimension_mS     := "BLANKING DB".Width_ms,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_12_COUNT,
@@ -363,7 +422,7 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C13_Delivery.Maximum_Count; 
-      A     "BLANKING DB".C12_Exit_B11_0.Pulse; // Cleaned B11.0 (was Raw B11.0)
+      A     #S110; // Cleaned B 11.0
       A     "M 67.1"; 
       AN    "M 67.2"; 
       =     #BIT0; 
@@ -380,7 +439,7 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
       FP    M    283.2; // Edge Memory (Free)
       A     M    283.3; // Only if a Packet was Seen
       L     S5T#500MS; 
-      SE    T    139; // Count Down Pulse 500mS (> Preset_MIN 200mS)
+      SE    T    139; // Count Down Pulse 500mS (> Preset_MIN 300mS)
 //;
       A     T    139; // Counted
       O     "M 67.6"; // Steps Reset
@@ -395,10 +454,10 @@ TITLE =Packet Counter - Delivery Conveyor 13 (Low)
            Bit_1                    := #BIT1,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 2,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
            HighSpd_Dimension_mS     := 0,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
@@ -420,7 +479,7 @@ TITLE =Packet Counter - Link Conveyor 21 (High)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C21_Link.Maximum_Count; 
-      A     "BLANKING DB".C10_Exit_B10_6.Pulse; // Cleaned B10.6 (was Raw B10.6)
+      A     #S106; // Cleaned B 10.6
       A     "M 79.1"; 
       AN    "M 79.2"; 
       A     "P 15.0"; 
@@ -432,15 +491,15 @@ TITLE =Packet Counter - Link Conveyor 21 (High)
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "BLANKING DB".C21_Exit_B15_4.Pulse,
+           Bit_1                    := #S154,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 3,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := 0,
+           HighSpd_Dimension_mS     := "BLANKING DB".Width_ms,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_21_COUNT,
@@ -460,7 +519,7 @@ TITLE =Packet Counter - Link Conveyor 22 (High)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C22_Link.Maximum_Count; 
-      A     "BLANKING DB".C21_Exit_B15_4.Pulse; // Cleaned B15.4 (was Raw B15.4)
+      A     #S154; // Cleaned B 15.4
       A     "M 83.1"; 
       AN    "M 83.2"; 
       =     #BIT0; 
@@ -471,15 +530,15 @@ TITLE =Packet Counter - Link Conveyor 22 (High)
 //;
       CALL "DE-BOUNCER / COUNTER" (
            Bit_0                    := #BIT0,
-           Bit_1                    := "BLANKING DB".C22_Exit_B15_5.Pulse,
+           Bit_1                    := #S155,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 3,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
-           HighSpd_Dimension_mS     := 0,
+           HighSpd_Dimension_mS     := "BLANKING DB".Width_ms,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
            Q_Error                  := #ERROR,
            Word_Count               := "HMI_DB".CONV_22_COUNT,
@@ -499,7 +558,7 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
 
       L     "HMI_DB".CONVEYOR_MAXCOUNT_W; 
       T     "DEBOUNCER COUNTER DB".Conveyor_C23_Delivery.Maximum_Count; 
-      A     "BLANKING DB".C22_Exit_B15_5.Pulse; // Cleaned B15.5 (was Raw B15.5)
+      A     #S155; // Cleaned B 15.5
       A     "M 87.1"; 
       AN    "M 87.2"; 
       =     #BIT0; 
@@ -516,7 +575,7 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
       FP    M    283.0; // Edge Memory (Free)
       A     M    283.1; // Only if a Packet was Seen
       L     S5T#500MS; 
-      SE    T    138; // Count Down Pulse 500mS (> Preset_MIN 200mS)
+      SE    T    138; // Count Down Pulse 500mS (> Preset_MIN 300mS)
 //;
       A     T    138; // Counted
       O     "M 87.6"; // Steps Reset
@@ -531,10 +590,10 @@ TITLE =Packet Counter - Delivery Conveyor 23 (High)
            Bit_1                    := #BIT1,
            Transfer_Start           := #XFER,
            Error_Reset              := "M 9.1",
-           Space_DX_mS              := 400,
+           Space_DX_mS              := 600,
            ReSample_DX              := 85,
            Conveyor_Type            := 2,
-           Preset_MIN_mS            := 200,
+           Preset_MIN_mS            := 300,
            LowSpd_Dimension_mS      := 0,
            HighSpd_Dimension_mS     := 0,
            Plc_Scan_mS              := "DB UTILITY".Scan_Cycle_Previous,
