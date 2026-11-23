@@ -1,0 +1,43 @@
+DATA_BLOCK DB 30
+TITLE =Packet Width Measure
+VERSION : 0.10
+
+  STRUCT
+   Gap_Min_mm : INT  := 150;	//TUNE - OFF Shorter = Sag (U-Shape), Longer = Real Gap [mm]
+   Tolerance_Pct : INT  := 10;	//B10.5 / B10.6 Must Agree Within [%]
+   Enc_Direct : BOOL  := TRUE;	//1 = PIW 334 Direct Word, Every Scan (Default, HW Config 2026-11-19) / 0 = "FM350 DB".ACT_CNTV5 (Read Job ~100 mS)
+   Enc_PIW_Addr : INT  := 334;	//FM350-2 Direct Low Word of Ch5 (C10) - User_Type2 Right=334 (After HW Config)
+   Enc_Word_Last : INT ;	//Last Direct Word Read (Wrap Handling)
+   Enc_Direct_Mem : BOOL ;	//Direct Mode Last Scan (First Scan Init)
+   Enc_Live : DINT ;	//Encoder Value Used This Scan
+   Active : BOOL ;	//C10 Transfering
+   FP_Start : BOOL ;	//Edge Memory
+   FN_End : BOOL ;	//Edge Memory
+   Valid : BOOL ;	//A Verified Width Exists
+   Last_OK : BOOL ;	//Last Transfer Verified
+   Spare_1 : BOOL ;
+   Spare_2 : BOOL ;
+   Spare_3 : BOOL ;
+   C10_Count_Start : INT ;	//C10 Packet Count at Transfer Start
+   Width_mm : INT ;	//VERIFIED Packet Width [mm]
+   Width_ms_31 : INT ;	//MEASURED Width [mS] @ 31 m/min: C11/C12/C21/C22 + C13/C23 LOADING
+   Speed_mm_s : INT ;	//Check: C10 Fast Speed Measured [mm/s] (Real 30.6 m/min = 510)
+   Good_Count : INT ;	//Transfers Verified
+   Bad_Count : INT ;	//Transfers Rejected (Packets Seen but Not Verified)
+   Empty_Count : INT ;	//Transfers Without Any Packet (e.g. Clearing Re-Call of C10)
+   Sensor_Dist_mm : INT  := 568;	//EFFECTIVE Distance B10.5 -> B10.6 [mm] (Tape 527, Calibrated 568 = 510 mm/s, 2026-11-19)
+   Pend : BOOL ;	//A B10.5 Front Waits for B10.6
+   T_ms : DINT ;	//Time Since Transfer Start [mS]
+   Pend_Enc : DINT ;	//Encoder at B10.5 Front
+   Pend_T : DINT ;	//Time at B10.5 Front
+   Cal_Pulse_Sum : DINT ;	//Pulses B10.5 -> B10.6 (Sum)
+   Cal_ms_Sum : DINT ;	//mS B10.5 -> B10.6 (Sum)
+   Cal_Count : INT ;	//Fronts Seen at Both Sensors This Transfer
+   Cal_mm_Pulse : REAL ;	//CALIBRATED Encoder Factor [mm/pulse] (Code Uses 0.31)
+   Cal_Speed_mm_s : INT ;	//CALIBRATED C10 Fast Speed [mm/s] (Real 30.6 m/min = 510)
+   Width_mm_Cal : INT ;	//Verified Width with Calibrated Factor [mm]
+   S5 : UDT 10;	//B10.5 C10 Full Sens
+   S6 : UDT 10;	//B10.6 C10 Exit Sens
+  END_STRUCT ;
+BEGIN
+END_DATA_BLOCK
