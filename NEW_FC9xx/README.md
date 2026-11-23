@@ -35,15 +35,15 @@ The "copy" blocks are the running code, unchanged. They are the base for the red
 `MB280–MB282` and `FC900–FC999` are free in the project (checked against the full export and the symbol table).
 
 ## Files
-* `ALL_NEW_FC9xx.AWL`: all 21 blocks in one source (compile once).
+* `../ARCHIVE/superseded/ALL_NEW_FC9xx (NEW_FC9xx 2026-11-18).AWL`: all 21 blocks in one source (compile once).
 * `FC09xx - ….AWL`: the same, one file per block.
-* `OB0001 - CYCLIC (FC9xx switches).AWL`: OB1 with the 21 switches (same as the repo `OB1`). Otherwise identical to the running OB1. The `>D` → `<>D` fault-monitor fix is **not** in it, so that this download changes nothing.
+* `../ARCHIVE/superseded/OB0001 - CYCLIC (FC9xx switches).AWL (OB1 v0.3 is now in the PLC, no switches)`: OB1 with the 21 switches (same as the repo `OB1`). Otherwise identical to the running OB1. The `>D` → `<>D` fault-monitor fix is **not** in it, so that this download changes nothing.
 * `NEW_FC9xx_SYMBOLS.asc`: symbols for FC911…FC986 and the switch bits `SW NEW FC9xx`.
 
 ## Steps
 **Office (no PLC):**
 1. Symbol table → *Symbol Table → Import* → `NEW_FC9xx_SYMBOLS.asc` (42 symbols). Optional: the sources use absolute `FC 9xx` and `M 28x.y`, so they compile without it.
-2. Sources → *Insert → External Source* → `ALL_NEW_FC9xx.AWL` → *Compile*. Then the same for the OB1 source.
+2. Sources → *Insert → External Source* → `../ARCHIVE/superseded/ALL_NEW_FC9xx (NEW_FC9xx 2026-11-18).AWL` → *Compile*. Then the same for the OB1 source.
 3. Check: 21 new blocks FC911…FC986, no errors.
 
 **Between shifts (≈ 10 min):**
