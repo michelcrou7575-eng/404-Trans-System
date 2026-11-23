@@ -70,3 +70,6 @@ Address format from the NS12 project: `SERIALA:DB0013_DBXbbbbb.ii`
 | 64 | `SERIALA:DB0013_DBX00009.01` | Status | Packets present on C1-C2 / C7-C9 | `A "M 11.7"` |
 | 65 | `SERIALA:DB0013_DBX00009.02` | Status | Control voltage OFF - press START | `AN "M 0.3" AN "M 0.2" AN "M 0.1"` |
 | 66 | `SERIALA:DB0013_DBX00009.03` | Status | Start ready (10 s) | `A "M 0.2" AN "M 0.3"` |
+
+## Import file
+`Alarm_DB13_66_v1.0.csv` (UTF-16, CRLF, same format as the CX-Designer export `Alarm_sample_1_row.csv`): all 66 alarms with the settings of the sample row (priority 1, high alarm, rising edge, history ON, no screen switch). Texts in capitals, max 46 characters. Sensor texts shortened: `B5.1 ON, LINE EMPTY - ELEVATOR PLATFORM INFEED`.
