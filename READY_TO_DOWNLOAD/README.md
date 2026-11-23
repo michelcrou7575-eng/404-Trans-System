@@ -7,6 +7,7 @@ This folder always holds the **latest** version of each block to load. **Every m
 | # | File | Block | Version | Status | What it fixes | Details |
 |---|---|---|---|---|---|---|
 | 1 | (full install only, already in the PLC) [ALL_NEW_FC9xx.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/READY_TO_DOWNLOAD/ALL_NEW_FC9xx.AWL) | FC911…FC986 | 2026-11-18 | ✅ PLCSIM OK | FC911 = clearing fix (C10 leftovers, S3.2 skipped). FC924/938/978 = init fixes. FC986 = C23 fault reset like C13. Others = copies | [NEW_FC9xx/README.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/NEW_FC9xx/README.md) |
+| 2a | [OB0001 - CYCLIC v0.3 (no test switches).AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/READY_TO_DOWNLOAD/OB0001%20-%20CYCLIC%20v0.3%20%28no%20test%20switches%29.AWL) | OB1 | **v0.3** | ⏳ **to load** | **Test switches removed:** NEW FC911…FC986 called directly, C3/C4/C10 = PIW blocks FC925/FC932/FC955. = v0.2 with all "TESTING DB" bits = 1. **Back: load v0.2 (#2)** | — |
 | 2 | [OB0001 - CYCLIC v0.2 (DB111 switches).AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/READY_TO_DOWNLOAD/OB0001%20-%20CYCLIC%20v0.2%20%28DB111%20switches%29.AWL) | OB1 | 2026-11-18 | ✅ PLCSIM OK | Old/new switch per block (`M280.0`…`M282.4`, all 0 = as today) + `CALL FC 1210` (width measure). **Compile #6 first** | same |
 | 3 | [NEW_FC9xx_SYMBOLS.asc](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/READY_TO_DOWNLOAD/NEW_FC9xx_SYMBOLS.asc) | Symbols | 2026-11-18 | — | Names for FC911…FC986 and the switch bits | same |
 | 4a | [FC1208 - HMI PACKET COUNTER NEW v0.12.AWL](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/READY_TO_DOWNLOAD/FC1208%20-%20HMI%20PACKET%20COUNTER%20NEW%20v0.12.AWL) | FC1208 | **v0.12** | ⏳ **to load** (needs width measure v0.10 + DB30/DB31 in the PLC: ✅) | **C11/C12/C13 + C21/C22/C23 count with the CLEANED blanking pulses** (DB31) instead of the raw sensors: U-shape sags no longer count. FC8 Space 400 / Preset 200 / butted 0 on these 6 calls. C13/C23 delivery count-down and C3…C10 unchanged. **Back: load v0.8 (#4)** | [PACKET_WIDTH/measurements/README.md](https://github.com/michelcrou7575-eng/404-Trans-System/blob/main/PACKET_WIDTH/measurements/README.md), desk check `PACKET_WIDTH/desk_check_fc1208_v012.py` |
@@ -31,6 +32,7 @@ This folder always holds the **latest** version of each block to load. **Every m
 ## Change log (latest first)
 | Date | Block | Change |
 |---|---|---|
+| 2026-11-23 | OB1 v0.3 | Test switches (DB111 "TESTING DB") removed, new blocks + PIW blocks called directly |
 | 2026-11-23 | FC1208 v0.12 | C11..C13 / C21..C23 counters use the blanking pulses (DB31). Shadow proof 2026-11-20..23: ~4670 packets per level, 28/14/7 sags removed |
 | 2026-11-23 | DB30 v0.10 (single file) | CPU still had DB30 v0.6 (2 bytes shorter): FC1211 write to `S6.Last_Width_ms` (DBW160) = area length error. Download DB30 v0.10 |
 | 2026-11-20 | OB35 v0.2 | LAUER F19 (`M153.7`) set ON every 100 ms right after "LAUER CALL" (blocker B2 of the LAUER → NS12 replacement) |
