@@ -1,0 +1,333 @@
+FUNCTION "WIDTH SENSOR" : VOID
+TITLE =Width Sensor - One Sensor, Encoder Based
+//Measures every packet passing one sensor with the C10 encoder (0.31 mm/pulse).
+//An OFF shorter than Gap_Min = Sag inside the same packet (U-Shape / low
+//packet), an OFF longer than Gap_Min = real gap: the packet is closed.
+//The width is kept in mm (encoder) AND in mS (time front -> end, sags included):
+//C11...C23 have no encoder, they need the mS at the same speed.
+//Measurement only - writes only its own Data.
+VERSION : 0.9
+
+
+VAR_INPUT
+  Sensor : BOOL ;	//Packet Sensor
+  Active : BOOL ;	//Transfer Active
+  Start : BOOL ;	//First Scan of Transfer
+  Stop : BOOL ;	//First Scan After Transfer
+  Enc : DINT ;	//Encoder Counter [Pulses]
+  Gap_Min_Pulse : DINT ;	//Real Gap Minimum [Pulses]
+  Scan_mS : INT ;	//PLC Scan Time [mS]
+END_VAR
+VAR_IN_OUT
+  Data : "Width Sensor Struct";	
+END_VAR
+VAR_TEMP
+  D : DINT ;	
+  MM : INT ;	
+  CLOSE : BOOL ;	
+  RUN : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Transfer Start - Reset
+
+      A     #Start; 
+      JCN   S001; 
+
+      L     0; 
+      T     #Data.Count; 
+      T     #Data.Skipped; 
+      T     #Data.Sag_Count; 
+      T     #Data.Width_Max_mm; 
+      T     #Data.Width_Avg_mm; 
+      T     #Data.Sag_Max_mm; 
+      L     L#0; 
+      T     #Data.Width_Sum_mm; 
+      T     #Data.Width_Sum_ms; 
+      T     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
+      L     32767; 
+      T     #Data.Width_Min_mm; 
+      T     #Data.Gap_Min_mm; 
+      L     #Enc; 
+      T     #Data.Start_Pos; 
+      T     #Data.Fall_Pos; 
+      A     #Sensor; // Already Covered = Partial Packet
+      =     #Data.Open; 
+      =     #Data.Skip; 
+      CLR   ; 
+      =     #Data.Low; 
+
+S001: NOP   0; 
+NETWORK
+TITLE =Only While Transfering (or Last Scan)
+
+      CLR   ; 
+      =     #CLOSE; 
+      =     #Data.Front; 
+//;
+      A(    ; 
+      O     #Active; 
+      O     #Stop; 
+      )     ; 
+      AN    #Start; 
+      =     #RUN; 
+
+NETWORK
+TITLE =Sensor ON - Sag End or New Packet
+
+      A     #RUN; 
+      A     #Sensor; 
+      AN    #Data.Was_On; 
+      JCN   S010; 
+
+      A     #Data.Open; 
+      A     #Data.Low; 
+      JCN   S011; 
+
+      L     #Enc; // Sag: Covered Again Before Gap_Min
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S012; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S012: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; // Encoder 0.31 mm/pulse
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      L     #Data.Sag_Count; 
+      L     1; 
+      +I    ; 
+      T     #Data.Sag_Count; 
+      L     #MM; 
+      L     #Data.Sag_Max_mm; 
+      >I    ; 
+      JCN   S013; 
+
+      L     #MM; 
+      T     #Data.Sag_Max_mm; 
+
+S013: SET   ; 
+      R     #Data.Low; 
+      JU    S010; 
+
+S011: A     #Data.Open; 
+      JC    S010; 
+
+      L     #Data.Count; // New Packet - Gap Since Last One
+      L     0; 
+      >I    ; 
+      JCN   S014; 
+
+      L     #Enc; 
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S015; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S015: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; 
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      L     #MM; 
+      L     #Data.Gap_Min_mm; 
+      <I    ; 
+      JCN   S014; 
+
+      L     #MM; 
+      T     #Data.Gap_Min_mm; 
+
+S014: SET   ; 
+      S     #Data.Front; // New Packet Front
+      S     #Data.Open; 
+      R     #Data.Low; 
+      R     #Data.Skip; 
+      L     #Enc; 
+      T     #Data.Start_Pos; 
+      L     L#0; 
+      T     #Data.Time_ms; 
+
+S010: NOP   0; 
+NETWORK
+TITLE =Packet Time [mS] - Front to Now (Sags Included)
+
+      A     #RUN; 
+      A     #Data.Open; 
+      JCN   S016; 
+
+      L     #Data.Time_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #Data.Time_ms; 
+//;
+      L     #Data.Time_ms; 
+      L     L#30000; 
+      >D    ; // Clamp 30s
+      JCN   S016; 
+
+      L     L#30000; 
+      T     #Data.Time_ms; 
+
+S016: NOP   0; 
+NETWORK
+TITLE =Sensor OFF - Remember Position
+
+      A     #RUN; 
+      AN    #Sensor; 
+      A     #Data.Was_On; 
+      A     #Data.Open; 
+      JCN   S020; 
+
+      L     #Enc; 
+      T     #Data.Fall_Pos; 
+      L     #Data.Time_ms; 
+      T     #Data.Fall_ms; 
+      SET   ; 
+      S     #Data.Low; 
+
+S020: NOP   0; 
+NETWORK
+TITLE =OFF Longer than Gap_Min = Real Gap - Close Packet
+
+      A     #RUN; 
+      AN    #Sensor; 
+      A     #Data.Open; 
+      A     #Data.Low; 
+      JCN   S030; 
+
+      L     #Enc; 
+      L     #Data.Fall_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S031; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S031: L     #D; 
+      L     #Gap_Min_Pulse; 
+      >=D   ; 
+      =     #CLOSE; 
+
+S030: NOP   0; 
+NETWORK
+TITLE =Transfer End - Close Last Packet / Discard Covered One
+
+      A     #Stop; 
+      A     #Data.Open; 
+      A     #Data.Low; 
+      S     #CLOSE; 
+//;
+      A     #Stop; 
+      A     #Data.Open; 
+      AN    #Data.Low; // Still Covered = Not Complete
+      R     #Data.Open; 
+
+NETWORK
+TITLE =Close Packet - Record Width
+
+      A     #CLOSE; 
+      JCN   S090; 
+
+      A     #Data.Skip; // Partial Packet - Not Recorded
+      JCN   S041; 
+
+      L     #Data.Skipped; 
+      L     1; 
+      +I    ; 
+      T     #Data.Skipped; 
+      JU    S049; 
+
+S041: L     #Data.Fall_Pos; 
+      L     #Data.Start_Pos; 
+      -D    ; 
+      T     #D; 
+      L     L#0; 
+      >=D   ; 
+      JC    S042; 
+
+      L     #D; 
+      NEGD  ; 
+      T     #D; 
+
+S042: L     #D; 
+      DTR   ; 
+      L     3.100000e-001; 
+      *R    ; 
+      RND   ; 
+      T     #MM; 
+      T     #Data.Last_Width_mm; 
+      L     #Data.Count; 
+      L     1; 
+      +I    ; 
+      T     #Data.Count; 
+      L     #MM; 
+      ITD   ; 
+      L     #Data.Width_Sum_mm; 
+      +D    ; 
+      T     #Data.Width_Sum_mm; 
+      L     #MM; 
+      L     #Data.Width_Min_mm; 
+      <I    ; 
+      JCN   S043; 
+
+      L     #MM; 
+      T     #Data.Width_Min_mm; 
+
+S043: L     #MM; 
+      L     #Data.Width_Max_mm; 
+      >I    ; 
+      JCN   S044; 
+
+      L     #MM; 
+      T     #Data.Width_Max_mm; 
+
+S044: L     #Data.Width_Sum_mm; 
+      L     #Data.Count; 
+      ITD   ; 
+      /D    ; 
+      T     #Data.Width_Avg_mm; 
+//;
+      L     #Data.Fall_ms; // Width [mS] = Front -> End
+      T     #Data.Last_Width_ms; 
+      L     #Data.Width_Sum_ms; 
+      +D    ; 
+      T     #Data.Width_Sum_ms; 
+      L     #Data.Count; 
+      ITD   ; 
+      /D    ; 
+      T     #Data.Width_Avg_ms; 
+
+S049: SET   ; 
+      R     #Data.Open; 
+      R     #Data.Low; 
+      R     #Data.Skip; 
+
+S090: NOP   0; 
+NETWORK
+TITLE =Sensor State for Next Scan
+
+      A     #Sensor; 
+      =     #Data.Was_On; 
+END_FUNCTION
+

@@ -1,0 +1,22 @@
+TYPE "Blanking Struct"
+VERSION : 0.1
+
+
+  STRUCT 	
+   Was_On : BOOL ;	//Sensor State Last Scan
+   Pulse : BOOL ;	//Cleaned Packet Pulse (Info)
+   Spare_1 : BOOL ;	
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Spare_5 : BOOL ;	
+   Spare_6 : BOOL ;	
+   T_ms : DINT  := L#60000;	//Belt Run Time Since Last Counted Packet [mS]
+   Pulse_ms : INT ;	//Pulse Time Left [mS]
+   Count : INT ;	//Packets Counted (Cleaned) - Total
+   Raw : INT ;	//Raw Sensor Fronts - Total
+   Sag : INT ;	//Fronts Ignored (Inside Blanking = Sag of a U-Shape) - Total
+   Butt : INT ;	//Butted Packets Counted (Sensor Never Cleared) - Total
+  END_STRUCT ;	
+END_TYPE
+

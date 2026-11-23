@@ -1,0 +1,67 @@
+FUNCTION "BLINKER" : VOID
+TITLE =Blinker
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      AN    "M 145.1"; 
+      AN    "M 54.7"; 
+      L     S5T#200MS; 
+      SD    "Timer 98"; 
+NETWORK
+TITLE =
+
+      AN    "M 145.1"; 
+      A     "M 54.7"; 
+      L     S5T#1S500MS; 
+      SD    "Timer 99"; 
+NETWORK
+TITLE =Blinker Mem
+
+      O     "Timer 99"; 
+      O     "Timer 98"; 
+      =     "M 145.1"; 
+NETWORK
+TITLE =Blinker Bit Out - Fast
+
+      A     "M 145.1"; 
+      AN    "M 145.2"; 
+      S     "M 145.0"; 
+//;
+      A     "M 145.1"; 
+      A     "M 145.2"; 
+      R     "M 145.0"; 
+NETWORK
+TITLE =Blinker Mem
+
+      AN    "M 145.1"; 
+      A     "M 145.0"; 
+      S     "M 145.2"; 
+//;
+      AN    "M 145.0"; 
+      AN    "M 145.1"; 
+      R     "M 145.2"; 
+NETWORK
+TITLE =Blinker Bit Out - Slow
+
+      A     "M 145.0"; 
+      AN    "M 145.6"; 
+      S     "M 145.4"; 
+//;
+      A     "M 145.0"; 
+      A     "M 145.6"; 
+      R     "M 145.4"; 
+NETWORK
+TITLE =Blinker Mem
+
+      AN    "M 145.0"; 
+      A     "M 145.4"; 
+      S     "M 145.6"; 
+//;
+      AN    "M 145.4"; 
+      AN    "M 145.0"; 
+      R     "M 145.6"; 
+END_FUNCTION
+

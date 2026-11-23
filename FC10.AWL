@@ -1,0 +1,113 @@
+FUNCTION "SCALER" : REAL
+TITLE =Linear interpolation between two points
+AUTHOR : APC
+FAMILY : CONV_LIB
+NAME : LINEAR
+VERSION : 1.0
+
+
+VAR_INPUT
+  X : REAL ;	//[-] Input value
+  X1 : REAL ;	//[-] First interpolation point, x-value
+  Y1 : REAL ;	//[-] First interpolation point, y-value
+  X2 : REAL ;	//[-] Second interpolation point, x-value
+  Y2 : REAL ;	//[-] Second interpolation point, y-value
+END_VAR
+VAR_TEMP
+  X_CALC_1 : REAL ;	//[-] x1 for Calculation
+  Y_CALC_1 : REAL ;	//[-] y1 for Calculation
+  X_CALC_2 : REAL ;	//[-] x2 for Calculation
+  Y_CALC_2 : REAL ;	//[-] y2 for Calculation
+END_VAR
+BEGIN
+NETWORK
+TITLE =SCL network
+//compiled by SCL compiler version:  SCLCOMP K05.06.00.00_11.01.00.01 release
+//      SET   
+//     SAVE  
+//     =     L     16.1
+      L     0.000000e+000; 
+      T     #RET_VAL; 
+//;
+      L     #X1; 
+      L     #X2; 
+      <>R   ; 
+      JCN   A7d0; 
+//;
+      L     #X1; 
+      L     #X2; 
+      >R    ; 
+      JCN   A7d1; 
+//;
+      L     #X2; 
+      T     #X_CALC_1; 
+//;
+      L     #Y2; 
+      T     #Y_CALC_1; 
+//;
+      L     #X1; 
+      T     #X_CALC_2; 
+//;
+      L     #Y1; 
+      T     #Y_CALC_2; 
+      JU    A7d2; 
+
+A7d1: L     #X1; 
+      T     #X_CALC_1; 
+//;
+      L     #Y1; 
+      T     #Y_CALC_1; 
+//;
+      L     #X2; 
+      T     #X_CALC_2; 
+//;
+      L     #Y2; 
+      T     #Y_CALC_2; 
+A7d2: L     #X; 
+
+      L     #X_CALC_1; 
+      <=R   ; 
+      JCN   A7d3; 
+      L     #Y_CALC_1; 
+      T     #RET_VAL; 
+      JU    A7d0; 
+
+A7d3: L     #X; 
+      L     #X_CALC_2; 
+      >=R   ; 
+      JCN   A7d5; 
+      L     #Y_CALC_2; 
+      T     #RET_VAL; 
+      JU    A7d0; 
+
+A7d5: L     #X; 
+      L     #X_CALC_1; 
+      -R    ; 
+      L     #X_CALC_2; 
+      TAK   ; 
+      T     LD    18; 
+      TAK   ; 
+      L     #X_CALC_1; 
+      -R    ; 
+      L     LD    18; 
+      TAK   ; 
+      /R    ; 
+      L     #Y_CALC_2; 
+      TAK   ; 
+      T     LD    18; 
+      TAK   ; 
+      L     #Y_CALC_1; 
+      -R    ; 
+      L     LD    18; 
+      *R    ; 
+      L     #Y_CALC_1; 
+      +R    ; 
+      T     #RET_VAL; 
+
+A7d0: CLR   ; 
+
+//    A     L     16.1
+//    SAVE  
+//    BE    
+END_FUNCTION
+

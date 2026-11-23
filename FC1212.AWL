@@ -1,0 +1,164 @@
+FUNCTION "PACKET BLANKING" : VOID
+TITLE =Packet Blanking - One Sensor (Shadow)
+//v0.1 2026-11-19: one count per packet from a raw sensor, with the packet time
+//measured at C10 (DB30 Width_ms_31, same speed on C11/C12/C21/C22).
+//- Front (OFF->ON) counts if the belt has run >= Blank_Pct of a packet time
+//  since the last count; an earlier front = sag of a U-Shape -> ignored.
+//- Sensor still ON after Butt_Pct of a packet time = butted packet -> +1.
+//- Time only runs while the belt runs (Run): a stop does not open the window.
+//- Pulse: Pulse_ms long per counted packet (for FC8 later).
+VERSION : 0.1
+
+
+VAR_INPUT
+  Sensor : BOOL ;	//Raw Packet Sensor
+  Run : BOOL ;	//Belt Under the Sensor Runs
+  Width_ms : INT ;	//Packet Time [mS]
+  Blank_Pct : INT ;	//Blanking [%]
+  Butt_Pct : INT ;	//Butted [%]
+  Pulse_Len : INT ;	//Pulse [mS]
+  Scan_mS : INT ;	//PLC Scan [mS]
+END_VAR
+VAR_OUTPUT
+  Pulse : BOOL ;	//One Pulse per Counted Packet
+END_VAR
+VAR_IN_OUT
+  D : "Blanking Struct";	
+END_VAR
+VAR_TEMP
+  BLANK : DINT ;	
+  BUTT : DINT ;	
+  CNT : BOOL ;	
+  BTD : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Belt Run Time Since Last Count
+
+      CLR   ; 
+      =     #CNT; 
+      =     #BTD; 
+//;
+      A     #Run; 
+      JCN   B001; 
+
+      L     #D.T_ms; 
+      L     #Scan_mS; 
+      ITD   ; 
+      +D    ; 
+      T     #D.T_ms; 
+      L     #D.T_ms; 
+      L     L#60000; 
+      >D    ; // Clamp 60s
+      JCN   B001; 
+
+      L     L#60000; 
+      T     #D.T_ms; 
+
+B001: NOP   0; 
+NETWORK
+TITLE =Windows [mS]
+
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Blank_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BLANK; 
+//;
+      L     #Width_ms; 
+      ITD   ; 
+      L     #Butt_Pct; 
+      ITD   ; 
+      *D    ; 
+      L     L#100; 
+      /D    ; 
+      T     #BUTT; 
+NETWORK
+TITLE =Front - Count, or Ignore Inside Blanking (Sag)
+
+      A     #Sensor; 
+      AN    #D.Was_On; 
+      JCN   B010; 
+
+      L     #D.Raw; 
+      L     1; 
+      +I    ; 
+      T     #D.Raw; 
+//;
+      L     #D.T_ms; 
+      L     #BLANK; 
+      >=D   ; 
+      =     #CNT; // Front Counts
+      JC    B010; 
+
+      L     #D.Sag; // Front Inside Blanking = Sag
+      L     1; 
+      +I    ; 
+      T     #D.Sag; 
+
+B010: NOP   0; 
+NETWORK
+TITLE =Sensor Still ON - Butted Packet
+
+      A     #Sensor; 
+      A     #Run; 
+      AN    #CNT; 
+      JCN   B020; 
+
+      L     #D.T_ms; 
+      L     #BUTT; 
+      >=D   ; 
+      JCN   B020; 
+
+      L     #D.Butt; 
+      L     1; 
+      +I    ; 
+      T     #D.Butt; 
+      SET   ; 
+      =     #CNT; 
+      =     #BTD; // Next Butted Packet One Packet Time Later
+
+B020: NOP   0; 
+NETWORK
+TITLE =Count + Pulse
+
+      A     #CNT; 
+      JCN   B030; 
+
+      L     #D.Count; 
+      L     1; 
+      +I    ; 
+      T     #D.Count; 
+      L     L#0; 
+      T     #D.T_ms; 
+      A     #BTD; 
+      JCN   B032; 
+
+      L     #BUTT; // Butted: T = Butt - Packet Time
+      L     #Width_ms; 
+      ITD   ; 
+      -D    ; 
+      T     #D.T_ms; 
+
+B032: L     #Pulse_Len; 
+      T     #D.Pulse_ms; 
+
+B030: L     #D.Pulse_ms; 
+      L     0; 
+      >I    ; 
+      =     #Pulse; 
+      =     #D.Pulse; 
+      JCN   B031; 
+
+      L     #D.Pulse_ms; 
+      L     #Scan_mS; 
+      -I    ; 
+      T     #D.Pulse_ms; 
+
+B031: A     #Sensor; 
+      =     #D.Was_On; 
+END_FUNCTION
+

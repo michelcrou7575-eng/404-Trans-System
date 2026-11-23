@@ -1,0 +1,64 @@
+FUNCTION "SETUP" : VOID
+TITLE =Setup Values
+//Do Not Change These Values !!!
+NAME : SETUP
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Setup Values - Slat Conveyor 3
+
+      L     8000; 
+      T     "COLLATORS DB".Conveyor_Length_C3; 
+NETWORK
+TITLE =Setup Values - Conveyor 4
+
+      L     800; //900
+      T     "COLLATORS DB".Surface_Length_C4; 
+NETWORK
+TITLE =Setup Value  - TurnTable - Need " Packet IN " to Start
+
+      S     "M 47.4"; 
+
+NETWORK
+TITLE =Setup Values - Conveyor 10
+
+      L     13000; 
+      T     "COLLATORS DB".Surface_Length_10; 
+NETWORK
+TITLE =Counter Setup
+
+
+      S     "M 167.7"; 
+NETWORK
+TITLE =Packet Counter Constants 11.0 & 5.5
+
+      L     1.000000e+001; 
+      T     "DB UTILITY".LENGTH_CONST; 
+//;
+      L     5.200000e-001; 
+      T     "DB UTILITY".WIDTH_CONST; 
+NETWORK
+TITLE =HMI - Conveyor Time 
+
+      L     150; 
+      T     "HMI_DB".CONV_7_POS_mS; 
+//;
+      L     30; 
+      T     "HMI_DB".CONV_8_POS_FWD_mS; 
+//;
+      L     70; 
+      T     "HMI_DB".CONV_8_POS_REV_mS; 
+//;
+      L     15; 
+      T     "HMI_DB".CONV_9_POS_mS; 
+NETWORK
+TITLE =HMI Control - Reset
+
+      R     "HMI_DB".ON_SW; 
+      R     "HMI_DB".SERVICE_SW_1_STATUS; 
+      R     "HMI_DB".SERVICE_SW_2_STATUS; 
+      R     "HMI_DB".SERVICE_SW_3_STATUS; 
+      R     "HMI_DB".SERVICE_SW_1_2_STATUS; 
+END_FUNCTION
+

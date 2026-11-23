@@ -1,0 +1,14 @@
+TYPE "Sensor Check Struct"
+VERSION : 0.1
+
+
+  STRUCT 	
+   Rising_Pulse_1 : BOOL ;	
+   Rising_Pulse_2 : BOOL ;	
+   Memory_Bit_1 : BOOL ;	
+   Memory_Bit_2 : BOOL ;	
+   Word_buffer : INT ;	
+   Word_Result : INT ;	
+  END_STRUCT ;	
+END_TYPE
+

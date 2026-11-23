@@ -1,0 +1,234 @@
+FUNCTION "SENSOR DE-BOUNCER" : VOID
+TITLE =Sensor Debouncer
+//Counting Foul Sensor Switching of less than PreSet Time
+VERSION : 0.2
+
+
+VAR_INPUT
+  Bit_0 : BOOL ;	
+  Bit_1 : BOOL ;	
+  Preset_mS : INT ;	
+  Debounce_mS : INT ;	
+  Plc_Scan_mS : INT ;	
+END_VAR
+VAR_IN_OUT
+  Rising_Pulse_1 : BOOL ;	//Db Struct
+  Rising_Pulse_2 : BOOL ;	//Db Struct
+  Rising_Pulse_3 : BOOL ;	//Db Struct
+  Rising_Pulse_4 : BOOL ;	//Db Struct
+  Rising_Pulse_5 : BOOL ;	//Db Struct
+  Rising_Pulse_6 : BOOL ;	//Db Struct
+  Rising_Pulse_7 : BOOL ;	//Db Struct
+  Rising_Pulse_8 : BOOL ;	//Db Struct
+  Memory_Bit_1 : BOOL ;	//Db Struct
+  Memory_Bit_2 : BOOL ;	//Db Struct
+  Memory_Bit_3 : BOOL ;	//Db Struct
+  Memory_Bit_4 : BOOL ;	//Db Struct
+  Memory_Bit_5 : BOOL ;	//Db Struct
+  Memory_Bit_6 : BOOL ;	//Db Struct
+  Spare_1 : BOOL ;	//Db Struct
+  Spare_2 : BOOL ;	//Db Struct
+  Word_Buffer_1 : INT ;	//Db Struct
+  Word_Buffer_2 : INT ;	//Db Struct
+  Word_Result : INT ;	//Db Struct
+  Word_Count_Limit : INT ;	//Db Data
+  Word_Count : INT ;	//Db/HMI Data
+END_VAR
+VAR_TEMP
+  MEMORY_1 : BOOL ;	
+  MEMORY_2 : BOOL ;	
+  MEMORY_3 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Init on First Call
+
+      A     #Memory_Bit_6; 
+      JNB   INI1; 
+      JU    INI2; 
+
+INI1: L     0; 
+      T     #Word_Buffer_1; 
+      T     #Word_Buffer_2; 
+      R     #Memory_Bit_1; 
+      R     #Memory_Bit_2; 
+      R     #Memory_Bit_3; 
+      R     #Memory_Bit_4; 
+      R     #Memory_Bit_5; 
+      S     #Memory_Bit_6; 
+
+INI2: NOP   0; 
+
+NETWORK
+TITLE =Input Bits - Start Event
+//- #Bit_0 : Conveyor X InFeed Sensor
+//- #Bit_1 : Conveyor X Exit Sensor
+      A     #Bit_0; 
+      FP    #Rising_Pulse_1; 
+      JNB   K001; 
+      L     0; 
+      T     #Word_Buffer_1; 
+      R     #Memory_Bit_4; 
+      S     #Memory_Bit_1; 
+
+K001: NOP   0; 
+
+      A     #Bit_1; 
+      FP    #Rising_Pulse_2; 
+      JNB   K002; 
+      L     0; 
+      T     #Word_Buffer_2; 
+      S     #Memory_Bit_2; 
+
+K002: NOP   0; 
+
+NETWORK
+TITLE =TimeBase
+//TimeBase -> ScanTime
+      A     #Memory_Bit_1; 
+      A     #Bit_0; 
+      JNB   K003; 
+      L     #Word_Buffer_1; 
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #Word_Buffer_1; 
+
+K003: NOP   0; 
+
+      A     #Memory_Bit_2; 
+      A     #Bit_1; 
+      JNB   K004; 
+      L     #Word_Buffer_2; 
+      L     #Plc_Scan_mS; 
+      +I    ; 
+      T     #Word_Buffer_2; 
+
+K004: NOP   0; 
+
+NETWORK
+TITLE =Debounce mS Compare
+
+      A(    ; 
+      L     #Word_Buffer_1; 
+      L     #Debounce_mS; 
+      >=I   ; 
+      )     ; 
+      =     #MEMORY_1; 
+//;
+      A(    ; 
+      L     #Word_Buffer_2; 
+      L     #Debounce_mS; 
+      >=I   ; 
+      )     ; 
+      =     #MEMORY_2; 
+
+NETWORK
+TITLE =Add to Packet Number with Bit_0
+//Validated ON event on Bit_0 adds +1 one time
+      A     #Memory_Bit_1; 
+      A     #MEMORY_1; 
+      A     #Bit_0; 
+      FP    #Rising_Pulse_4; 
+      JNB   K005; 
+      L     #Word_Count; 
+      L     1; 
+      +I    ; 
+      T     #Word_Count; 
+      R     #Memory_Bit_1; 
+
+K005: NOP   0; 
+
+NETWORK
+TITLE =Subtract from Packet Number with Bit_1
+//Validated ON event on Bit_1 subtracts -1 on falling edge
+      AN    #Bit_1; 
+      FP    #Rising_Pulse_5; 
+      JNB   K006; 
+
+      A     #Memory_Bit_2; 
+      A     #MEMORY_2; 
+      JNB   K006; 
+//;
+      L     #Word_Count; 
+      L     1; 
+      -I    ; 
+      T     #Word_Count; 
+      R     #Memory_Bit_2; 
+
+K006: NOP   0; 
+
+NETWORK
+TITLE =Clamp Packet Number
+
+      L     #Word_Count; 
+      L     0; 
+      <I    ; 
+      JNB   K007; 
+      L     0; 
+      T     #Word_Count; 
+
+K007: NOP   0; 
+
+      L     #Word_Count; 
+      L     #Word_Count_Limit; 
+      >I    ; 
+      JNB   K008; 
+      L     #Word_Count_Limit; 
+      T     #Word_Count; 
+
+K008: NOP   0; 
+
+NETWORK
+TITLE =Disable Over 5s ON
+//Long switching event on Bit_0 -> bypass foul count
+      L     #Word_Buffer_1; 
+      L     5000; 
+      >=I   ; 
+      =     #MEMORY_3; 
+//;
+      A     #Bit_0; 
+      A     #MEMORY_3; 
+      S     #Memory_Bit_4; 
+
+NETWORK
+TITLE =Result
+//Word_Result +1 if Bit_0 turns OFF before Preset_mS and was not bypassed
+      AN    #Bit_0; 
+      FP    #Rising_Pulse_6; 
+      JNB   K009; 
+
+      A     #Memory_Bit_1; 
+      AN    #Memory_Bit_4; 
+      JNB   K010; 
+//;
+      L     #Word_Buffer_1; 
+      L     #Preset_mS; 
+      <I    ; 
+      JNB   K010; 
+//;
+      L     #Word_Result; 
+      L     1; 
+      +I    ; 
+      T     #Word_Result; 
+
+K010: R     #Memory_Bit_1; 
+      R     #Memory_Bit_4; 
+      L     0; 
+      T     #Word_Buffer_1; 
+
+K009: NOP   0; 
+
+NETWORK
+TITLE =Reset Exit Event on Falling Edge
+
+      AN    #Bit_1; 
+      FP    #Rising_Pulse_7; 
+      JNB   K011; 
+      R     #Memory_Bit_2; 
+      L     0; 
+      T     #Word_Buffer_2; 
+
+K011: NOP   0; 
+
+END_FUNCTION
+
