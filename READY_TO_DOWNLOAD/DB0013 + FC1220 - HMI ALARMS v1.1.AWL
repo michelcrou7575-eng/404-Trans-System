@@ -2,7 +2,9 @@ DATA_BLOCK DB 13
 TITLE =HMI Alarms - NS12
 //One BOOL per alarm, written by FC1220 every scan (no latching here: the
 //fault bits keep their own latch / reset). NS12 address: SERIALA:DB0013_DBXbbbbb.ii
-VERSION : 1.0
+//v1.1 2026-11-24: DBX9.6 Any_Fault (bytes 0...8) and DBX9.7 Any_Alarm (+ status
+//9.0...9.3) for the NS12 alarm bar Control Flag (bar shown only when needed).
+VERSION : 1.1
 
   STRUCT 
    Fuse_Fault : BOOL ;	//DBX0.0 Fuse fault
@@ -83,8 +85,8 @@ VERSION : 1.0
    Start_Ready : BOOL ;	//DBX9.3 Start ready (10 s)
    Spare_9_4 : BOOL ;	//DBX9.4 Spare
    Spare_9_5 : BOOL ;	//DBX9.5 Spare
-   Spare_9_6 : BOOL ;	//DBX9.6 Spare
-   Spare_9_7 : BOOL ;	//DBX9.7 Spare
+   Any_Fault : BOOL ;	//DBX9.6 At Least One Fault (DBX0.0...8.7) - NS12 Alarm Bar Display
+   Any_Alarm : BOOL ;	//DBX9.7 At Least One Fault or Status Message (DBX0.0...9.3)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -97,7 +99,8 @@ TITLE =HMI Alarms - NS12 (DB13)
 //tested M4.1 = C10 by mistake). Sensor messages: only while the line is empty
 //(LAUER cue: M0.3 AND M11.6 AND NOT M9.7), as before.
 //Writes only DB13. Changes nothing on the machine.
-VERSION : 1.0
+//v1.1 2026-11-24: + Any_Fault (DBX9.6) / Any_Alarm (DBX9.7) for the NS12 alarm bar.
+VERSION : 1.1
 
 
 VAR_TEMP
@@ -347,4 +350,34 @@ TITLE =Status
       A     "M 0.2"; 
       AN    "M 0.3"; 
       =     "HMI ALARMS".Start_Ready; // DBX9.3
+NETWORK
+TITLE =Any Fault / Any Alarm - NS12 Alarm Bar (Control Flag)
+//Bytes 0...8 = faults (spare bits are never set). Byte 9 bits 0...3 = status.
+
+      A(    ; 
+      L     DB13.DBD    0; // Bytes 0...3
+      L     L#0; 
+      <>D   ; 
+      )     ; 
+      O(    ; 
+      L     DB13.DBD    4; // Bytes 4...7
+      L     L#0; 
+      <>D   ; 
+      )     ; 
+      O(    ; 
+      L     DB13.DBB    8; // Byte 8
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     "HMI ALARMS".Any_Fault; // DBX9.6
+//;
+      A(    ; 
+      L     DB13.DBB    9; // Status 9.0...9.3
+      L     B#16#F; 
+      AW    ; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      O     "HMI ALARMS".Any_Fault; 
+      =     "HMI ALARMS".Any_Alarm; // DBX9.7
 END_FUNCTION
