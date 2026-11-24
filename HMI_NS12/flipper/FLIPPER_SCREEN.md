@@ -52,3 +52,10 @@ Stop time = C7 belt run after the packet tail leaves B7.4 (was a fixed 1.5 s). O
 | 31 | >975 | `SERIALA:DB0015_DBX00016.07` |
 
 `NS12_Symbols_DB15_Flipper.txt`: all these addresses as NS12 symbols (Symbol Table → Import).
+
+## v1.1 - packet drawing (centered, 4 width pairs)
+| Object | Address | Settings |
+|---|---|---|
+| Left half meter (Display Direction **Left**), right half meter (Direction **Right**), side by side from the fork center | `SERIALA:DB0015_DBW00086` (both) | INT, **Min 0, Max = fork length in mm** (the whole fork width), so the drawn length is in proportion |
+| Width pair 1 / 2 / 3 / 4 (Control Flag → Display) | `DB0015_DBX00090.00` / `.01` / `.02` / `.03` | < 450 / 450-500 / 500-550 / >= 550 mm (limits in DB15 DBW92 / 94 / 96) |
+| Packet width (numeric, optional) | `SERIALA:DB0015_DBW00088` | INT [mm] |

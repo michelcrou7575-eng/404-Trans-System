@@ -3,7 +3,9 @@ TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
 //One stop time per packet length class (15 mm classes, 510 ... > 975 mm).
 //Time = belt run after the packet tail leaves B7.4 (step 8N5 -> 8N6, Timer 42).
 //Time_ms[class] = 0 -> Default_ms (1500 = as before v1.0).
-VERSION : 1.0
+//v1.1 2026-11-24: HMI packet drawing: Disp_Length_mm (DBW86) + 4 width class
+//bits (DBX90.0...90.3, one ON) from the C10 measured width (DB30 Width_mm_Cal).
+VERSION : 1.1
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -24,6 +26,19 @@ VERSION : 1.0
    Class_Lamps : DWORD ;	//One Bit per Class (HMI Lamps) - Class 0 = DBX19.0 ... 7 = DBX19.7, 8 = DBX18.0 ... 31 = DBX16.7
    Stop_S5T : S5TIME  := S5T#1S500MS;	//Stop Time for FC942 Timer 42
    Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//Stop Time per Class [mS] - 0 = Default_ms
+   Disp_Length_mm : INT ;	//HMI Packet Drawing - Length [mm] (DBW86)
+   Width_mm : INT ;	//Packet Width Used [mm] ("PACKET WIDTH DB".Width_mm_Cal, C10 Measured)
+   Width_Class_1 : BOOL ;	//HMI Drawing Pair 1 - Width < Width_Lim_1 (DBX90.0)
+   Width_Class_2 : BOOL ;	//HMI Drawing Pair 2 - Width_Lim_1 ... Width_Lim_2 (DBX90.1)
+   Width_Class_3 : BOOL ;	//HMI Drawing Pair 3 - Width_Lim_2 ... Width_Lim_3 (DBX90.2)
+   Width_Class_4 : BOOL ;	//HMI Drawing Pair 4 - Width >= Width_Lim_3 (DBX90.3)
+   Spare_5 : BOOL ;	
+   Spare_6 : BOOL ;	
+   Spare_7 : BOOL ;	
+   Spare_8 : BOOL ;	
+   Width_Lim_1 : INT  := 450;	//Width Class Limit 1/2 [mm]
+   Width_Lim_2 : INT  := 500;	//Width Class Limit 2/3 [mm]
+   Width_Lim_3 : INT  := 550;	//Width Class Limit 3/4 [mm]
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -34,7 +49,8 @@ TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
 //of the packets (C4 measurement), lights the class lamp, and lets the operator
 //change that class time with the HMI arrows (+/- Step_ms, Min_ms...Max_ms).
 //Writes only DB15 "FLIPPER POS DB". Empty table = Default_ms = 1.5 s as before.
-VERSION : 1.0
+//v1.1 2026-11-24: HMI packet drawing: length (DBW86) + width class bits (DBX90.x).
+VERSION : 1.1
 
 
 VAR_TEMP
@@ -171,6 +187,50 @@ K022: SET   ; // Momentary: Reset by the PLC
       R     "FLIPPER POS DB".Plus_PB; 
       R     "FLIPPER POS DB".Minus_PB; 
       R     "FLIPPER POS DB".Reset_PB; 
+NETWORK
+TITLE =HMI Packet Drawing - Length + Width Class (4 Pairs of Level Meters)
+//Width = C10 measured width (DB30 Width_mm_Cal, last verified, same order).
+//0 (not measured yet) = smallest class.
+
+      L     "FLIPPER POS DB".Length_mm; 
+      T     "FLIPPER POS DB".Disp_Length_mm; 
+//;
+      L     "PACKET WIDTH DB".Width_mm_Cal; 
+      T     "FLIPPER POS DB".Width_mm; 
+//;
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_1; 
+      <I    ; 
+      =     "FLIPPER POS DB".Width_Class_1; 
+//;
+      A(    ; 
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_1; 
+      >=I   ; 
+      )     ; 
+      A(    ; 
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_2; 
+      <I    ; 
+      )     ; 
+      =     "FLIPPER POS DB".Width_Class_2; 
+//;
+      A(    ; 
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_2; 
+      >=I   ; 
+      )     ; 
+      A(    ; 
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_3; 
+      <I    ; 
+      )     ; 
+      =     "FLIPPER POS DB".Width_Class_3; 
+//;
+      L     "FLIPPER POS DB".Width_mm; 
+      L     "FLIPPER POS DB".Width_Lim_3; 
+      >=I   ; 
+      =     "FLIPPER POS DB".Width_Class_4; 
 NETWORK
 TITLE =Stop Time Used -> S5TIME for FC942 Timer 42
 
