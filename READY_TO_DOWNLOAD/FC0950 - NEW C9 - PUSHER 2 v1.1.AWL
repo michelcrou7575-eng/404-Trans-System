@@ -3,9 +3,10 @@ TITLE =NEW FC950 (was FC1050) - Conveyor 9 / Pusher 2 Pos.11
 // 
 NAME : POS_11
 //v1.0 2026-11-24: OMRON HMI positioning time (Timer 62) per packet length class
-//from DB15 "FLIPPER POS DB".C9_Stop_S5T (FC1215 "PACKET POSITIONING", called
+//from DB15 "PACKET POSITION DB".C9_Stop_S5T (FC1215 "PACKET POSITIONING", called
 //by FC942). Class without time = "HMI_DB".CONV_9_POS_mS x 10 as before.
-VERSION : 1.0
+//v1.1 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" - no code change.
+VERSION : 1.1
 
 
 VAR_TEMP
@@ -146,7 +147,7 @@ BYP1: CLR   ;
       A     "M 51.5"; 
       AN    "M 51.6"; 
       A     "M 0.3"; 
-      L     "FLIPPER POS DB".C9_Stop_S5T; // Was MW 184 - Now per Length Class (DB15)
+      L     "PACKET POSITION DB".C9_Stop_S5T; // Was MW 184 - Now per Length Class (DB15)
       SD    "Timer 62"; // OMRON HMI
 NETWORK
 TITLE =Conveyor 9 - Lateral Packet Position to Feeder - Adj.(HMI)

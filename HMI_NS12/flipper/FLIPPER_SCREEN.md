@@ -1,4 +1,4 @@
-# Flipper conveyor adjust screen - NS12 side (DB15 "FLIPPER POS DB", FC1215, was FC1221)
+# Flipper conveyor adjust screen - NS12 side (DB15 "PACKET POSITION DB", FC1215, was FC1221)
 
 Stop time = C7 belt run after the packet tail leaves B7.4 (was a fixed 1.5 s). One time per packet length class (15 mm).
 

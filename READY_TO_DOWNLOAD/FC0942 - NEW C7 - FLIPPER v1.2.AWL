@@ -3,12 +3,13 @@ TITLE =NEW FC942 (was FC1042) - Flipper Pos.9
 //Service : With FLIPPER Service SW "ON", To Flip, Hold the FLIP SW Until Reached 
 //or JOG to Position.
 //v1.0 2026-11-23: Flipper conveyor stop time (Timer 42, step 8N5 -> 8N6) from
-//DB15 "FLIPPER POS DB": one time per packet length class, set with the HMI
+//DB15 "PACKET POSITION DB": one time per packet length class, set with the HMI
 //arrows (FC1221, called here). Empty table = 1.5 s as before.
 //v1.1 2026-11-24: calls FC1215 "PACKET POSITIONING" (was FC1221 "FLIPPER POS ADJ"),
 //which also gives the C9 Pusher 2 stop time to FC950.
+//v1.2 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" - no code change.
 NAME : POS_9
-VERSION : 1.1
+VERSION : 1.2
 
 
 VAR_TEMP
@@ -302,7 +303,7 @@ TITLE =Flipper Conveyor Stop - Packet in Position
       AN    "M 43.5"; 
       A     "M 42.2"; 
 // L     MW   122
-      L     "FLIPPER POS DB".Stop_S5T; // Was S5T#1S500MS - Now per Length Class (DB15)
+      L     "PACKET POSITION DB".Stop_S5T; // Was S5T#1S500MS - Now per Length Class (DB15)
       SD    "Timer 42"; 
 NETWORK
 TITLE =Step 8N6 - Flipper Belt - Stop
