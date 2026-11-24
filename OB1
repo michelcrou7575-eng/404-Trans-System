@@ -8,7 +8,8 @@ TITLE =Main Cycle
 //all "TESTING DB" switches = 1): FC911...FC986 with FC925 / FC932 / FC955 (direct
 //PIW) for C3 / C4 / C10. OLD FC1011...FC1086 and FC924 / FC931 / FC954 no longer
 //called, "TESTING DB" (DB111) no longer read. Back: load OB1 v0.2.
-VERSION : 0.3
+//v1.0 2026-11-23: CALL FC1220 "HMI ALARMS FC" (NS12 alarm bits in DB13).
+VERSION : 1.0
 
 
 VAR_TEMP
@@ -69,6 +70,7 @@ TITLE =Utility Blocks
       CALL "BLINKER" ;
       CALL "LIGHT CURTAIN - SAFETY" ;
       CALL "HMI PACKET COUNTER  NEW" ;
+      CALL "HMI ALARMS FC" ;                // FC1220 - NS12 Alarm Bits (DB13)
 NETWORK
 TITLE =Program Blocks
 
