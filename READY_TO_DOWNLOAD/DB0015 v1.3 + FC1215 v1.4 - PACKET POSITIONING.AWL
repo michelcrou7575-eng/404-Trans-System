@@ -8,7 +8,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.2 2026-11-24: + C9 Pusher 2 conveyor (feeder lateral position, Timer 62): one
 //time per length class too, Time 0 = "HMI_DB".CONV_9_POS_mS x 10 (as before).
 //DBW98 / DBW100 reserved for the flipper drawing (tail / front, later).
-VERSION : 1.2
+//v1.3 2026-11-24: C9 HMI drawing: one packet drawing, 16 copies at 16 lateral
+//positions, one shown (C9_Pos_Bits, one bit ON) from the C9 stop time used.
+VERSION : 1.3
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -55,6 +57,10 @@ VERSION : 1.2
    Spare_12 : BOOL ;	
    C9_Stop_S5T : S5TIME ;	//C9 Stop Time for FC950 Timer 62 (DBW106)
    C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
+   C9_Pos_Bits : WORD ;	//C9 Drawing: One Bit ON = Copy Shown - Copy 0 = DBX173.0 ... 7 = DBX173.7, 8 = DBX172.0 ... 15 = DBX172.7
+   C9_View_Min_ms : INT ;	//C9 Drawing: Time of Copy 0 (Left) [mS] (DBW174)
+   C9_View_Step_ms : INT  := 60;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...900 mS
+   C9_Pos_Step : INT ;	//C9 Drawing: Copy Shown 0...15 (DBW178)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -71,7 +77,8 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.3 2026-11-24: renamed "PACKET POSITIONING". + C9 Pusher 2 conveyor: same
 //length class, own table / arrows, default = "HMI_DB".CONV_9_POS_mS x 10 (as
 //before). Output C9_Stop_S5T for FC950 v1.0 Timer 62.
-VERSION : 1.3
+//v1.4 2026-11-24: C9 HMI drawing: C9_Pos_Bits (one of 16 lateral positions).
+VERSION : 1.4
 
 
 VAR_TEMP
@@ -397,4 +404,41 @@ C031: T     "FLIPPER POS DB".C9_Time_Used_ms;
 
       L     #S5; 
       T     "FLIPPER POS DB".C9_Stop_S5T; 
+NETWORK
+TITLE =C9 Pusher 2 - HMI Drawing: 1 of 16 Lateral Positions (Longer Time = Right)
+
+      L     "FLIPPER POS DB".C9_View_Step_ms; // Step 0 -> Copy 0
+      L     0; 
+      >I    ; 
+      JC    C040; 
+
+      L     0; 
+      JU    C042; 
+
+C040: L     "FLIPPER POS DB".C9_Time_Used_ms; 
+      L     "FLIPPER POS DB".C9_View_Min_ms; 
+      -I    ; 
+      L     "FLIPPER POS DB".C9_View_Step_ms; 
+      /I    ; 
+      T     #T_NEW; 
+      L     0; 
+      >=I   ; 
+      JC    C041; 
+
+      L     0; 
+      T     #T_NEW; 
+
+C041: L     #T_NEW; 
+      L     15; 
+      <=I   ; 
+      L     #T_NEW; 
+      JC    C042; 
+
+      L     15; 
+C042: T     "FLIPPER POS DB".C9_Pos_Step; 
+//;
+      L     "FLIPPER POS DB".C9_Pos_Step; // One Bit = Step
+      L     L#1; 
+      SLD   ; 
+      T     "FLIPPER POS DB".C9_Pos_Bits; 
 END_FUNCTION

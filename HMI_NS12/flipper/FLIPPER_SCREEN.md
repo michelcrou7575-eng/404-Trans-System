@@ -72,3 +72,20 @@ Same length class as the flipper (`DB0015_DBW00002`, lamps DBX16..19). Time 0 = 
 | Packet length (numeric / drawing) | `SERIALA:DB0015_DBW00086` | as on the flipper screen |
 
 Reserved for the moving drawing (later): `DB0015_DBW00098` tail, `DB0015_DBW00100` front.
+
+## v1.3 / v1.4 - C9 drawing: ONE packet moved laterally (16 positions)
+16 copies of the same packet drawing (Bit Lamp, rectangle), same size, each one step to the right. **Control Flag -> Display** of copy n = its bit below (only one ON). Lamp address of all copies: `SERIALA:M00000.00` (M0.0 always ON) -> always khaki.
+Position = C9 stop time used: copy = (time - C9_View_Min_ms) / C9_View_Step_ms (defaults 0 / 60 mS -> 0...900 mS).
+
+| Copy | Address | Copy | Address |
+|---|---|---|---|
+| 0 (left) | `DB0015_DBX00173.00` | 8 | `DB0015_DBX00172.00` |
+| 1 | `DB0015_DBX00173.01` | 9 | `DB0015_DBX00172.01` |
+| 2 | `DB0015_DBX00173.02` | 10 | `DB0015_DBX00172.02` |
+| 3 | `DB0015_DBX00173.03` | 11 | `DB0015_DBX00172.03` |
+| 4 | `DB0015_DBX00173.04` | 12 | `DB0015_DBX00172.04` |
+| 5 | `DB0015_DBX00173.05` | 13 | `DB0015_DBX00172.05` |
+| 6 | `DB0015_DBX00173.06` | 14 | `DB0015_DBX00172.06` |
+| 7 | `DB0015_DBX00173.07` | 15 (right) | `DB0015_DBX00172.07` |
+
+Settable: `DBW174` C9_View_Min_ms, `DBW176` C9_View_Step_ms. Display: `DBW178` copy shown.
