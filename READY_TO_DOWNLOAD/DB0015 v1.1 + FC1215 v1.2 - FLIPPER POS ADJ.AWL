@@ -43,14 +43,16 @@ VERSION : 1.1
 BEGIN
 END_DATA_BLOCK
 
-FUNCTION FC 1221 : VOID
+FUNCTION FC 1215 : VOID
 TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
 //v1.0 2026-11-23: called by FC942 v1.0. Picks the stop time of the length class
 //of the packets (C4 measurement), lights the class lamp, and lets the operator
 //change that class time with the HMI arrows (+/- Step_ms, Min_ms...Max_ms).
 //Writes only DB15 "FLIPPER POS DB". Empty table = Default_ms = 1.5 s as before.
 //v1.1 2026-11-24: HMI packet drawing: length (DBW86) + width class bits (DBX90.x).
-VERSION : 1.1
+//v1.2 2026-11-24: renumbered FC1221 -> FC1215 (same name "FLIPPER POS ADJ", no
+//code change). FC942 calls it by name.
+VERSION : 1.2
 
 
 VAR_TEMP
