@@ -1,11 +1,14 @@
 DATA_BLOCK DB 15
-TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
+TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI)
 //One stop time per packet length class (15 mm classes, 510 ... > 975 mm).
 //Time = belt run after the packet tail leaves B7.4 (step 8N5 -> 8N6, Timer 42).
 //Time_ms[class] = 0 -> Default_ms (1500 = as before v1.0).
 //v1.1 2026-11-24: HMI packet drawing: Disp_Length_mm (DBW86) + 4 width class
 //bits (DBX90.0...90.3, one ON) from the C10 measured width (DB30 Width_mm_Cal).
-VERSION : 1.1
+//v1.2 2026-11-24: + C9 Pusher 2 conveyor (feeder lateral position, Timer 62): one
+//time per length class too, Time 0 = "HMI_DB".CONV_9_POS_mS x 10 (as before).
+//DBW98 / DBW100 reserved for the flipper drawing (tail / front, later).
+VERSION : 1.2
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -39,12 +42,25 @@ VERSION : 1.1
    Width_Lim_1 : INT  := 450;	//Width Class Limit 1/2 [mm]
    Width_Lim_2 : INT  := 500;	//Width Class Limit 2/3 [mm]
    Width_Lim_3 : INT  := 550;	//Width Class Limit 3/4 [mm]
+   Tail_mm : INT ;	//Reserved: Flipper Drawing - Packet Tail Position [mm] (DBW98)
+   Front_mm : INT ;	//Reserved: Flipper Drawing - Packet Front Position [mm] (DBW100)
+   C9_Time_Used_ms : INT ;	//C9 Stop Time Used for This Class [mS] - HMI Display (DBW102)
+   C9_Plus_PB : BOOL ;	//HMI C9 Arrow -> : Longer - Momentary (DBX104.0)
+   C9_Minus_PB : BOOL ;	//HMI C9 Arrow <- : Shorter - Momentary (DBX104.1)
+   C9_Reset_PB : BOOL ;	//HMI C9: This Class Back to Default - Momentary (DBX104.2)
+   C9_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = "HMI_DB".CONV_9_POS_mS Always (DBX104.3)
+   Spare_9 : BOOL ;	
+   Spare_10 : BOOL ;	
+   Spare_11 : BOOL ;	
+   Spare_12 : BOOL ;	
+   C9_Stop_S5T : S5TIME ;	//C9 Stop Time for FC950 Timer 62 (DBW106)
+   C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
 
 FUNCTION FC 1215 : VOID
-TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
+TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI)
 //v1.0 2026-11-23: called by FC942 v1.0. Picks the stop time of the length class
 //of the packets (C4 measurement), lights the class lamp, and lets the operator
 //change that class time with the HMI arrows (+/- Step_ms, Min_ms...Max_ms).
@@ -52,13 +68,17 @@ TITLE =Flipper Conveyor 7 - Stop Time per Packet Length (HMI)
 //v1.1 2026-11-24: HMI packet drawing: length (DBW86) + width class bits (DBX90.x).
 //v1.2 2026-11-24: renumbered FC1221 -> FC1215 (same name "FLIPPER POS ADJ", no
 //code change). FC942 calls it by name.
-VERSION : 1.2
+//v1.3 2026-11-24: renamed "PACKET POSITIONING". + C9 Pusher 2 conveyor: same
+//length class, own table / arrows, default = "HMI_DB".CONV_9_POS_mS x 10 (as
+//before). Output C9_Stop_S5T for FC950 v1.0 Timer 62.
+VERSION : 1.3
 
 
 VAR_TEMP
   CLASS : INT ;	
   T_TAB : INT ;	
   T_NEW : INT ;	
+  T_DEF : INT ;	
   T_TIME : TIME ;	
   S5 : S5TIME ;	
 END_VAR
@@ -96,7 +116,7 @@ K002: L     #CLASS;
       SLD   ; 
       T     "FLIPPER POS DB".Class_Lamps; 
 NETWORK
-TITLE =Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x Class)
+TITLE =C7 Flipper - Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x Class)
 
       L     #CLASS; 
       SLW   1; 
@@ -108,7 +128,7 @@ TITLE =Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x Class)
       L     DBW [AR1,P#0.0]; 
       T     #T_TAB; 
 NETWORK
-TITLE =HMI Arrows / Reset - Change This Class Time
+TITLE =C7 Flipper - HMI Arrows / Reset - Change This Class Time
 //The HMI sets Plus_PB / Minus_PB / Reset_PB, the PLC resets them after use:
 //one press = one step.
 
@@ -157,7 +177,7 @@ K014: L     #T_NEW;
 
 K015: NOP   0; 
 NETWORK
-TITLE =Write Back After an Arrow / Reset
+TITLE =C7 Flipper - Write Back After an Arrow / Reset
 
       A     "FLIPPER POS DB".Reset_PB; 
       JCN   K020; 
@@ -234,7 +254,7 @@ TITLE =HMI Packet Drawing - Length + Width Class (4 Pairs of Level Meters)
       >=I   ; 
       =     "FLIPPER POS DB".Width_Class_4; 
 NETWORK
-TITLE =Stop Time Used -> S5TIME for FC942 Timer 42
+TITLE =C7 Flipper - Stop Time Used -> S5TIME for FC942 Timer 42
 
       L     #T_TAB; 
       L     0; 
@@ -256,4 +276,125 @@ K031: T     "FLIPPER POS DB".Time_Used_ms;
 
       L     #S5; 
       T     "FLIPPER POS DB".Stop_S5T; 
+NETWORK
+TITLE =C9 Pusher 2 - Read the Class Time (C9_Time_ms[Class], DB15.DBW108 + 2 x Class)
+
+      L     "FLIPPER POS DB".Class; 
+      T     #CLASS; 
+      SLW   1; 
+      L     108; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "FLIPPER POS DB"; 
+      L     DBW [AR1,P#0.0]; 
+      T     #T_TAB; 
+//;
+      L     "HMI_DB".CONV_9_POS_mS; // C9 Default = HMI Time x 10 mS (as Before)
+      L     10; 
+      *I    ; 
+      T     #T_DEF; 
+NETWORK
+TITLE =C9 Pusher 2 - HMI Arrows / Reset - Change This Class Time
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      JC    C010; 
+
+      L     #T_DEF; 
+      JU    C011; 
+
+C010: L     #T_TAB; 
+C011: T     #T_NEW; 
+//;
+      A     "FLIPPER POS DB".C9_Plus_PB; 
+      JCN   C012; 
+
+      L     #T_NEW; 
+      L     "FLIPPER POS DB".Step_ms; 
+      +I    ; 
+      T     #T_NEW; 
+
+C012: A     "FLIPPER POS DB".C9_Minus_PB; 
+      JCN   C013; 
+
+      L     #T_NEW; 
+      L     "FLIPPER POS DB".Step_ms; 
+      -I    ; 
+      T     #T_NEW; 
+
+C013: L     #T_NEW; // Clamp 1...Max (0 Means Default)
+      L     1; 
+      >=I   ; 
+      JC    C014; 
+
+      L     1; 
+      T     #T_NEW; 
+
+C014: L     #T_NEW; 
+      L     "FLIPPER POS DB".Max_ms; 
+      <=I   ; 
+      JC    C015; 
+
+      L     "FLIPPER POS DB".Max_ms; 
+      T     #T_NEW; 
+
+C015: NOP   0; 
+NETWORK
+TITLE =C9 Pusher 2 - Write Back After an Arrow / Reset
+
+      A     "FLIPPER POS DB".C9_Reset_PB; 
+      JCN   C020; 
+
+      L     0; // Class Back to Default
+      T     #T_TAB; 
+      JU    C021; 
+
+C020: A(    ; 
+      O     "FLIPPER POS DB".C9_Plus_PB; 
+      O     "FLIPPER POS DB".C9_Minus_PB; 
+      )     ; 
+      JCN   C022; 
+
+      L     #T_NEW; 
+      T     #T_TAB; 
+
+C021: L     #CLASS; 
+      SLW   1; 
+      L     108; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "FLIPPER POS DB"; 
+      L     #T_TAB; 
+      T     DBW [AR1,P#0.0]; 
+
+C022: SET   ; // Momentary: Reset by the PLC
+      R     "FLIPPER POS DB".C9_Plus_PB; 
+      R     "FLIPPER POS DB".C9_Minus_PB; 
+      R     "FLIPPER POS DB".C9_Reset_PB; 
+NETWORK
+TITLE =C9 Pusher 2 - Stop Time Used -> S5TIME for FC950 Timer 62
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      A     "FLIPPER POS DB".C9_Use_Table; 
+      JC    C030; 
+
+      L     #T_DEF; 
+      JU    C031; 
+
+C030: L     #T_TAB; 
+C031: T     "FLIPPER POS DB".C9_Time_Used_ms; 
+      ITD   ; 
+      T     #T_TIME; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #T_TIME,
+           RET_VAL                  := #S5);
+
+      L     #S5; 
+      T     "FLIPPER POS DB".C9_Stop_S5T; 
 END_FUNCTION

@@ -59,3 +59,16 @@ Stop time = C7 belt run after the packet tail leaves B7.4 (was a fixed 1.5 s). O
 | Left half meter (Display Direction **Left**), right half meter (Direction **Right**), side by side from the fork center | `SERIALA:DB0015_DBW00086` (both) | INT, **Min 0, Max = fork length in mm** (the whole fork width), so the drawn length is in proportion |
 | Width pair 1 / 2 / 3 / 4 (Control Flag → Display) | `DB0015_DBX00090.00` / `.01` / `.02` / `.03` | < 450 / 450-500 / 500-550 / >= 550 mm (limits in DB15 DBW92 / 94 / 96) |
 | Packet width (numeric, optional) | `SERIALA:DB0015_DBW00088` | INT [mm] |
+
+## v1.2 / v1.3 - C9 Pusher 2 (Loader -> Feeder screen), FC1215 "PACKET POSITIONING"
+Same length class as the flipper (`DB0015_DBW00002`, lamps DBX16..19). Time 0 = `"HMI_DB".CONV_9_POS_mS` x 10 (the existing HMI value, as before).
+
+| Object | NS12 address | Settings |
+|---|---|---|
+| C9 stop time [mS] (numeric) | `SERIALA:DB0015_DBW00102` | INT |
+| C9 arrow -> (longer) | `SERIALA:DB0015_DBX00104.00` | Momentary (PLC resets: one press = +10 mS) |
+| C9 arrow <- (shorter) | `SERIALA:DB0015_DBX00104.01` | Momentary (-10 mS) |
+| C9 DEFAULT button (optional) | `SERIALA:DB0015_DBX00104.02` | Momentary: this class back to CONV_9_POS_mS x 10 |
+| Packet length (numeric / drawing) | `SERIALA:DB0015_DBW00086` | as on the flipper screen |
+
+Reserved for the moving drawing (later): `DB0015_DBW00098` tail, `DB0015_DBW00100` front.
