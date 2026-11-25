@@ -11,7 +11,8 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.3 2026-11-24: C9 HMI drawing: one packet drawing, 16 copies at 16 lateral
 //positions, one shown (C9_Pos_Bits, one bit ON) from the C9 stop time used.
 //v1.4 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" (was "FLIPPER POS DB").
-VERSION : 1.4
+//v1.5 2026-11-25: Spare_9 -> FP_Tst_On (DBX104.4, edge memory of M140.3), layout unchanged.
+VERSION : 1.5
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -52,7 +53,7 @@ VERSION : 1.4
    C9_Minus_PB : BOOL ;	//HMI C9 Arrow <- : Shorter - Momentary (DBX104.1)
    C9_Reset_PB : BOOL ;	//HMI C9: This Class Back to Default - Momentary (DBX104.2)
    C9_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = "HMI_DB".CONV_9_POS_mS Always (DBX104.3)
-   Spare_9 : BOOL ;	
+   FP_Tst_On : BOOL ;	//Edge Memory - M140.3 (NS12 Takes Over) (DBX104.4)
    Spare_10 : BOOL ;	
    Spare_11 : BOOL ;	
    Spare_12 : BOOL ;	
@@ -80,7 +81,12 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //before). Output C9_Stop_S5T for FC950 v1.0 Timer 62.
 //v1.4 2026-11-24: C9 HMI drawing: C9_Pos_Bits (one of 16 lateral positions).
 //v1.5 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" - no code change.
-VERSION : 1.5
+//v1.6 2026-11-25: LAUER in charge (M140.3 = 0): the NS12 times are a PREVIEW
+//(arrows + drawings work, the machine keeps the LAUER values: flipper 1.5 s,
+//C9 = LAUER time via FC950 Timer 50). When the NS12 takes over (M140.3 0 -> 1)
+//the current class starts from the LAUER actual values: flipper = Default
+//1500 mS, C9 = LAUER DB50.DBW248 (x 10 mS, also copied to CONV_9_POS_mS).
+VERSION : 1.6
 
 
 VAR_TEMP
@@ -88,10 +94,17 @@ VAR_TEMP
   T_TAB : INT ;	
   T_NEW : INT ;	
   T_DEF : INT ;	
+  TST_ON : BOOL ;	//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
   T_TIME : TIME ;	
   S5 : S5TIME ;	
 END_VAR
 BEGIN
+NETWORK
+TITLE =NS12 Takes Over (M140.3 0 -> 1) - Start From the LAUER Actual Values
+
+      A     "M 140.3"; // NS12 in Control (FC1100, Tst)
+      FP    "PACKET POSITION DB".FP_Tst_On; 
+      =     #TST_ON; 
 NETWORK
 TITLE =Packet Length -> Class (15 mm Steps from 510 mm, 0...31)
 
@@ -189,6 +202,7 @@ NETWORK
 TITLE =C7 Flipper - Write Back After an Arrow / Reset
 
       A     "PACKET POSITION DB".Reset_PB; 
+      O     #TST_ON; // NS12 Takes Over: LAUER Actual = 1.5 s = Default
       JCN   K020; 
 
       L     0; // Class Back to Default
@@ -275,8 +289,12 @@ TITLE =C7 Flipper - Stop Time Used -> S5TIME for FC942 Timer 42
       JU    K031; 
 
 K030: L     #T_TAB; 
-K031: T     "PACKET POSITION DB".Time_Used_ms; 
-      ITD   ; 
+K031: T     "PACKET POSITION DB".Time_Used_ms; // HMI (Preview When LAUER)
+      A     "M 140.3"; // Machine: Table Only When NS12 in Control
+      JC    K032; 
+
+      L     "PACKET POSITION DB".Default_ms; // LAUER in Control: Fixed 1.5 s
+K032: ITD   ; 
       T     #T_TIME; 
 
       CALL "TIM_S5TI" (
@@ -353,7 +371,17 @@ C015: NOP   0;
 NETWORK
 TITLE =C9 Pusher 2 - Write Back After an Arrow / Reset
 
-      A     "PACKET POSITION DB".C9_Reset_PB; 
+      A     #TST_ON; // NS12 Takes Over: Start From the LAUER C9 Time
+      JCN   C018; 
+
+      L     DB50.DBW  248; // LAUER C9 Time [x 10 mS] (FC950 Timer 50)
+      T     "HMI_DB".CONV_9_POS_mS; // Also the NS12 Default
+      L     10; 
+      *I    ; 
+      T     #T_TAB; 
+      JU    C021; 
+
+C018: A     "PACKET POSITION DB".C9_Reset_PB; 
       JCN   C020; 
 
       L     0; // Class Back to Default
