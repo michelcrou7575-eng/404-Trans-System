@@ -12,7 +12,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //positions, one shown (C9_Pos_Bits, one bit ON) from the C9 stop time used.
 //v1.4 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" (was "FLIPPER POS DB").
 //v1.5 2026-11-25: Spare_9 -> FP_Tst_On (DBX104.4, edge memory of M140.3), layout unchanged.
-VERSION : 1.5
+//v1.6 2026-11-25: + C9_Default_ms 250 (center) and C9_Max_ms 500 (physical limit
+//from the sensor), DBW180 / DBW182. Drawing step 32 mS (16 copies = 0...500 mS).
+VERSION : 1.6
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -61,8 +63,10 @@ VERSION : 1.5
    C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
    C9_Pos_Bits : WORD ;	//C9 Drawing: One Bit ON = Copy Shown - Copy 0 = DBX173.0 ... 7 = DBX173.7, 8 = DBX172.0 ... 15 = DBX172.7
    C9_View_Min_ms : INT ;	//C9 Drawing: Time of Copy 0 (Left) [mS] (DBW174)
-   C9_View_Step_ms : INT  := 60;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...900 mS
+   C9_View_Step_ms : INT  := 32;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...500 mS
    C9_Pos_Step : INT ;	//C9 Drawing: Copy Shown 0...15 (DBW178)
+   C9_Default_ms : INT  := 250;	//C9 Default (DEFAULT Button / Class Without Time) [mS] - Center (DBW180)
+   C9_Max_ms : INT  := 500;	//C9 Highest Time [mS] - Physical Limit From the Sensor (DBW182)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -86,7 +90,10 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //C9 = LAUER time via FC950 Timer 50). When the NS12 takes over (M140.3 0 -> 1)
 //the current class starts from the LAUER actual values: flipper = Default
 //1500 mS, C9 = LAUER DB50.DBW248 (x 10 mS, also copied to CONV_9_POS_mS).
-VERSION : 1.6
+//v1.7 2026-11-25: C9 default = "PACKET POSITION DB".C9_Default_ms (250 mS, center)
+//instead of CONV_9_POS_mS x 10. C9 limited to 1...C9_Max_ms (500 mS). The LAUER
+//time copied at takeover is limited the same way.
+VERSION : 1.7
 
 
 VAR_TEMP
@@ -317,9 +324,7 @@ TITLE =C9 Pusher 2 - Read the Class Time (C9_Time_ms[Class], DB15.DBW108 + 2 x C
       L     DBW [AR1,P#0.0]; 
       T     #T_TAB; 
 //;
-      L     "HMI_DB".CONV_9_POS_mS; // C9 Default = HMI Time x 10 mS (as Before)
-      L     10; 
-      *I    ; 
+      L     "PACKET POSITION DB".C9_Default_ms; // C9 Default = 250 mS (Center)
       T     #T_DEF; 
 NETWORK
 TITLE =C9 Pusher 2 - HMI Arrows / Reset - Change This Class Time
@@ -360,11 +365,11 @@ C013: L     #T_NEW; // Clamp 1...Max (0 Means Default)
       T     #T_NEW; 
 
 C014: L     #T_NEW; 
-      L     "PACKET POSITION DB".Max_ms; 
+      L     "PACKET POSITION DB".C9_Max_ms; 
       <=I   ; 
       JC    C015; 
 
-      L     "PACKET POSITION DB".Max_ms; 
+      L     "PACKET POSITION DB".C9_Max_ms; 
       T     #T_NEW; 
 
 C015: NOP   0; 
@@ -375,9 +380,15 @@ TITLE =C9 Pusher 2 - Write Back After an Arrow / Reset
       JCN   C018; 
 
       L     DB50.DBW  248; // LAUER C9 Time [x 10 mS] (FC950 Timer 50)
-      T     "HMI_DB".CONV_9_POS_mS; // Also the NS12 Default
+      T     "HMI_DB".CONV_9_POS_mS; // Also the NS12 "x 10 mS" Field
       L     10; 
       *I    ; 
+      T     #T_TAB; 
+      L     "PACKET POSITION DB".C9_Max_ms; // Not Above the Physical Limit
+      <=I   ; 
+      JC    C021; 
+
+      L     "PACKET POSITION DB".C9_Max_ms; 
       T     #T_TAB; 
       JU    C021; 
 

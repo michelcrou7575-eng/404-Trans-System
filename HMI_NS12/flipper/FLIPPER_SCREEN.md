@@ -89,3 +89,6 @@ Position = C9 stop time used: copy = (time - C9_View_Min_ms) / C9_View_Step_ms (
 | 7 | `DB0015_DBX00173.07` | 15 (right) | `DB0015_DBX00172.07` |
 
 Settable: `DBW174` C9_View_Min_ms, `DBW176` C9_View_Step_ms. Display: `DBW178` copy shown.
+
+## DB15 v1.6 / FC1215 v1.7 - C9 limits
+C9 time used `DB0015_DBW00102` [mS], 1...500 mS (`DBW182` C9_Max_ms). DEFAULT / size without time = `DBW180` C9_Default_ms = 250 mS (center). Drawing: copy = time / 32 mS (`DBW176`) -> 250 mS = copy 7, 500 mS = copy 15.
