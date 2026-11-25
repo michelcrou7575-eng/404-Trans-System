@@ -1,0 +1,17 @@
+FUNCTION "LAUER RESTART FC" : VOID
+TITLE =
+NAME : COFF
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+//;                     // Presets emergancy case
+//;// Clear all keys
+      L     W#16#0; 
+      T     DBW    8; 
+      T     DBW   10; 
+      T     DBW   12; 
+      T     DBW   14; 
+      T     DBW   46; 
+END_FUNCTION

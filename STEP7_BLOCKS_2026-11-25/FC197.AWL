@@ -1,0 +1,72 @@
+FUNCTION "LAUER KEYS 3" : VOID
+TITLE =Lauer Keys 3
+//
+NAME : _TIMER
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =
+
+      AN    "M 171.0"; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      AN    "M 151.7"; 
+      JC    M001; 
+      L     2#100000000; 
+      T     DBW   72; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    "M 151.7"; 
+      JC    M002; 
+      L     2#1011; 
+      T     DBW   76; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      A     "M 151.7"; 
+      JC    M003; 
+      JU    M004; 
+M003: JCN   X000; 
+
+      CALL "LAUER TIME" (
+           QUEL                     := DBW  242,
+           _TIME                    := MW   122);
+
+X000: NOP   0; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DBB   32; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      A     "M 151.7"; 
+      JC    M005; 
+      JU    M006; 
+M005: JCN   X001; 
+
+      CALL "LAUER TIME" (
+           QUEL                     := DBW  252,
+           _TIME                    := MW   124);
+
+X001: NOP   0; 
+M006: NOP   0; 
+END_FUNCTION

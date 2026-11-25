@@ -1,0 +1,191 @@
+TYPE "CounterCmd"
+
+
+  STRUCT 	
+   JOB_WR : STRUCT 	// write commands
+    NO : BYTE ;	// number
+    BUSY : BOOL ;	// job in working
+    DONE : BOOL ;	// job is done
+    IMPOSS : BOOL ;	// job impossible
+    UNKOWN : BOOL ;	// job unkown
+   END_STRUCT ;	
+   JOB_RD : STRUCT 	// read commands
+    NO : BYTE ;	// number
+    BUSY : BOOL ;	// job in working
+    DONE : BOOL ;	// job is done
+    IMPOSS : BOOL ;	// job impossible
+    UNKOWN : BOOL ;	// job unkown
+   END_STRUCT ;	
+   RESERV_0 : ARRAY  [1 .. 3 ] OF WORD  := 3 (W#16#0) ;	// reserved
+   RESERV_1 : WORD ;	// reserved
+   MOD_ADR : WORD ;	// module address
+   CH_ADR : DWORD ;	// channel address
+   DS_OFFS : BYTE ;	// data block offset
+   RESERV_2 : BYTE ;	// reserved
+   CONTROL_SIGNALS : STRUCT 	// control signals
+    BIT0_0 : BOOL ;	// reserved
+    BIT0_1 : BOOL ;	// reserved
+    BIT0_2 : BOOL ;	// reserved
+    BIT0_3 : BOOL ;	// reserved
+    BIT0_4 : BOOL ;	// reserved
+    BIT0_5 : BOOL ;	// reserved
+    BIT0_6 : BOOL ;	// reserved
+    BIT0_7 : BOOL ;	// reserved
+    CTRL_DQ0 : BOOL ;	// control digital output DQ0
+    CTRL_DQ1 : BOOL ;	// control digital output DQ1
+    CTRL_DQ2 : BOOL ;	// control digital output DQ2
+    CTRL_DQ3 : BOOL ;	// control digital output DQ3
+    CTRL_DQ4 : BOOL ;	// control digital output DQ4
+    CTRL_DQ5 : BOOL ;	// control digital output DQ5
+    CTRL_DQ6 : BOOL ;	// control digital output DQ6
+    CTRL_DQ7 : BOOL ;	// control digital output DQ7
+    SET_DQ0 : BOOL ;	// set digital output DQ0
+    SET_DQ1 : BOOL ;	// set digital output DQ1
+    SET_DQ2 : BOOL ;	// set digital output DQ2
+    SET_DQ3 : BOOL ;	// set digital output DQ3
+    SET_DQ4 : BOOL ;	// set digital output DQ4
+    SET_DQ5 : BOOL ;	// set digital output DQ5
+    SET_DQ6 : BOOL ;	// set digital output DQ6
+    SET_DQ7 : BOOL ;	// set digital output DQ7
+    SW_GATE0 : BOOL ;	// software gate 0
+    SW_GATE1 : BOOL ;	// software gate 1
+    SW_GATE2 : BOOL ;	// software gate 2
+    SW_GATE3 : BOOL ;	// software gate 3
+    SW_GATE4 : BOOL ;	// software gate 4
+    SW_GATE5 : BOOL ;	// software gate 5
+    SW_GATE6 : BOOL ;	// software gate 6
+    SW_GATE7 : BOOL ;	// software gate 7
+    CTRL_DWORD1 : DWORD ;	// reserved
+    CTRL_DWORD2 : DWORD ;	// reserved
+    CTRL_DWORD3 : DWORD ;	// reserved
+   END_STRUCT ;	
+   CHECKBACK_SIGNALS : STRUCT 	// checkback signals
+    BIT0_0 : BOOL ;	// reserved
+    STS_TFB : BOOL ;	// status test free bit
+    BIT0_2 : BOOL ;	// reserved
+    BIT0_3 : BOOL ;	// reserved
+    DATA_ERR : BOOL ;	// data error bit
+    BIT0_5 : BOOL ;	// reserved
+    BIT0_6 : BOOL ;	// reserved
+    PARA : BOOL ;	// module parametrized
+    STS_CMP0 : BOOL ;	// status compare event 0
+    STS_CMP1 : BOOL ;	// status compare event 1
+    STS_CMP2 : BOOL ;	// status compare event 2
+    STS_CMP3 : BOOL ;	// status compare event 3
+    STS_CMP4 : BOOL ;	// status compare event 4
+    STS_CMP5 : BOOL ;	// status compare event 5
+    STS_CMP6 : BOOL ;	// status compare event 6
+    STS_CMP7 : BOOL ;	// status compare event 7
+    STS_UFLW0 : BOOL ;	// status counter 0 passed the underflow value
+    STS_UFLW1 : BOOL ;	// status counter 1 passed the underflow value
+    STS_UFLW2 : BOOL ;	// status counter 2 passed the underflow value
+    STS_UFLW3 : BOOL ;	// status counter 3 passed the underflow value
+    STS_UFLW4 : BOOL ;	// status counter 4 passed the underflow value
+    STS_UFLW5 : BOOL ;	// status counter 5 passed the underflow value
+    STS_UFLW6 : BOOL ;	// status counter 6 passed the underflow value
+    STS_UFLW7 : BOOL ;	// status counter 7 passed the underflow value
+    STS_OFLW0 : BOOL ;	// status counter 0 passed the overflow value
+    STS_OFLW1 : BOOL ;	// status counter 1 passed the overflow value
+    STS_OFLW2 : BOOL ;	// status counter 2 passed the overflow value
+    STS_OFLW3 : BOOL ;	// status counter 3 passed the overflow value
+    STS_OFLW4 : BOOL ;	// status counter 4 passed the overflow value
+    STS_OFLW5 : BOOL ;	// status counter 5 passed the overflow value
+    STS_OFLW6 : BOOL ;	// status counter 6 passed the overflow value
+    STS_OFLW7 : BOOL ;	// status counter 7 passed the overflow value
+    STS_DIR0 : BOOL ;	// status counter 0 direction
+    STS_DIR1 : BOOL ;	// status counter 1 direction
+    STS_DIR2 : BOOL ;	// status counter 2 direction
+    STS_DIR3 : BOOL ;	// status counter 3 direction
+    STS_DIR4 : BOOL ;	// status counter 4 direction
+    STS_DIR5 : BOOL ;	// status counter 5 direction
+    STS_DIR6 : BOOL ;	// status counter 6 direction
+    STS_DIR7 : BOOL ;	// status counter 7 direction
+    STS_DI0 : BOOL ;	// status of the digital input 0
+    STS_DI1 : BOOL ;	// status of the digital input 1
+    STS_DI2 : BOOL ;	// status of the digital input 2
+    STS_DI3 : BOOL ;	// status of the digital input 3
+    STS_DI4 : BOOL ;	// status of the digital input 4
+    STS_DI5 : BOOL ;	// status of the digital input 5
+    STS_DI6 : BOOL ;	// status of the digital input 6
+    STS_DI7 : BOOL ;	// status of the digital input 7
+    STS_DQ0 : BOOL ;	// status of the digital output 0
+    STS_DQ1 : BOOL ;	// status of the digital output 1
+    STS_DQ2 : BOOL ;	// status of the digital output 2
+    STS_DQ3 : BOOL ;	// status of the digital output 3
+    STS_DQ4 : BOOL ;	// status of the digital output 4
+    STS_DQ5 : BOOL ;	// status of the digital output 5
+    STS_DQ6 : BOOL ;	// status of the digital output 6
+    STS_DQ7 : BOOL ;	// status of the digital output 7
+    STS_GATE0 : BOOL ;	// status of the internal gate 0
+    STS_GATE1 : BOOL ;	// status of the internal gate 1
+    STS_GATE2 : BOOL ;	// status of the internal gate 2
+    STS_GATE3 : BOOL ;	// status of the internal gate 3
+    STS_GATE4 : BOOL ;	// status of the internal gate 4
+    STS_GATE5 : BOOL ;	// status of the internal gate 5
+    STS_GATE6 : BOOL ;	// status of the internal gate 6
+    STS_GATE7 : BOOL ;	// status of the internal gate 7
+    USER_STAT_WORD0 : WORD ;	// user specific status
+    USER_STAT_WORD1 : WORD ;	// user specific status
+    USER_STAT_WORD2 : WORD ;	// user specific status
+    USER_STAT_WORD3 : WORD ;	// user specific status
+   END_STRUCT ;	
+   LOAD_VAL0 : DINT ;	// load value counter 0
+   LOAD_VAL1 : DINT ;	// load value counter 1
+   LOAD_VAL2 : DINT ;	// load value counter 2
+   LOAD_VAL3 : DINT ;	// load value counter 3
+   LOAD_VAL4 : DINT ;	// load value counter 4
+   LOAD_VAL5 : DINT ;	// load value counter 5
+   LOAD_VAL6 : DINT ;	// load value counter 6
+   LOAD_VAL7 : DINT ;	// load value counter 7
+   LOAD_PREPARE_VAL0 : DINT ;	// load prepare value counter 0
+   LOAD_PREPARE_VAL1 : DINT ;	// load prepare value counter 1
+   LOAD_PREPARE_VAL2 : DINT ;	// load prepare value counter 2
+   LOAD_PREPARE_VAL3 : DINT ;	// load prepare value counter 3
+   LOAD_PREPARE_VAL4 : DINT ;	// load prepare value counter 4
+   LOAD_PREPARE_VAL5 : DINT ;	// load prepare value counter 5
+   LOAD_PREPARE_VAL6 : DINT ;	// load prepare value counter 6
+   LOAD_PREPARE_VAL7 : DINT ;	// load prepare value counter 7
+   CMP_VAL0 : DINT ;	// comparator value 0
+   CMP_VAL1 : DINT ;	// comparator value 1
+   CMP_VAL2 : DINT ;	// comparator value 2
+   CMP_VAL3 : DINT ;	// comparator value 3
+   CMP_VAL4 : DINT ;	// comparator value 4
+   CMP_VAL5 : DINT ;	// comparator value 5
+   CMP_VAL6 : DINT ;	// comparator value 6
+   CMP_VAL7 : DINT ;	// comparator value 7
+   ACT_CNTV0 : DINT ;	// actual counter value 0
+   ACT_MSRV0 : DINT ;	// act. measurement value 0
+   ACT_CNTV1 : DINT ;	// actual counter value 1
+   ACT_MSRV1 : DINT ;	// act. measurement value 1
+   ACT_CNTV2 : DINT ;	// actual counter value 2
+   ACT_MSRV2 : DINT ;	// act. measurement value 2
+   ACT_CNTV3 : DINT ;	// actual counter value 3
+   ACT_MSRV3 : DINT ;	// act. measurement value 3
+   ACT_CNTV4 : DINT ;	// actual counter value 4
+   ACT_MSRV4 : DINT ;	// act. measurement value 4
+   ACT_CNTV5 : DINT ;	// actual counter value 5
+   ACT_MSRV5 : DINT ;	// act. measurement value 5
+   ACT_CNTV6 : DINT ;	// actual counter value 6
+   ACT_MSRV6 : DINT ;	// act. measurement value 6
+   ACT_CNTV7 : DINT ;	// actual counter value 7
+   ACT_MSRV7 : DINT ;	// act. measurement value 7
+   DIAGNOSTIC_INT_INFO : STRUCT 	// diagnostic int. information
+    BYTE0 : BYTE ;	// byte 0
+    BYTE1 : BYTE ;	// byte 1
+    BYTE2 : BYTE ;	// byte 2
+    BYTE3 : BYTE ;	// byte 3
+    BYTE4 : BYTE ;	// channel type info
+    BYTE5 : BYTE ;	// channel info length
+    BYTE6 : BYTE ;	// number of channels
+    BYTE7 : BYTE ;	// channel error vector
+    BYTE8 : BYTE ;	// error counter 0
+    BYTE9 : BYTE ;	// error counter 1
+    BYTE10 : BYTE ;	// error counter 2
+    BYTE11 : BYTE ;	// error counter 3
+    BYTE12 : BYTE ;	// error counter 4
+    BYTE13 : BYTE ;	// error counter 5
+    BYTE14 : BYTE ;	// error counter 6
+    BYTE15 : BYTE ;	// error counter 7
+   END_STRUCT ;	
+  END_STRUCT ;	
+END_TYPE

@@ -1,0 +1,951 @@
+FUNCTION "LAUER MESSAGE1" : VOID
+TITLE =Faults
+NAME : FEHLER1
+VERSION : 0.0
+
+
+VAR_TEMP
+  MESSAGE_CUE : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =MESSAGE CUE
+
+      A     "M 0.3"; 
+      A     "M 11.6"; 
+      AN    "M 9.7"; 
+      =     #MESSAGE_CUE; 
+NETWORK
+TITLE =Init All
+
+      L     W#16#0; 
+      T     DBW   80; 
+      T     DBW   82; 
+      T     DBW   84; 
+      T     DBW   86; 
+      T     DBW   88; 
+      T     DBW   90; 
+      T     DBW  226; 
+      T     DBW   92; 
+      T     DBW   94; 
+NETWORK
+TITLE =
+
+      A     "M 0.4"; 
+      JC    M001; 
+      JU    M002; 
+M001: L     2#100000000000; 
+      T     DBW   82; 
+      BEC   ; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 22.7"; 
+      JC    M003; 
+      JU    M004; 
+M003: L     2#1000; 
+      T     DBW   84; 
+      BEC   ; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 1.0"; 
+      JC    M005; 
+      JU    M006; 
+M005: L     2#10000; 
+      T     DBW   84; 
+      BEC   ; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 1.1"; 
+      JC    M007; 
+      JU    M008; 
+M007: L     2#100000; 
+      T     DBW   84; 
+      BEC   ; 
+M008: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 1.2"; 
+      JC    M009; 
+      JU    M010; 
+M009: L     2#1000000; 
+      T     DBW   84; 
+      BEC   ; 
+M010: NOP   0; 
+NETWORK
+TITLE =
+
+// Ancien alarme arrêt urgence élévateur 3
+// maintenant libre
+//      A     "M 1.3"
+//      AN    "M 1.3"
+//      JC    M011
+//      JU    M012
+///: L     2#10000000
+//      T     DBW   84
+//      BEC   
+//M012: NOP   0
+NETWORK
+TITLE =
+
+      A     "M 1.3"; 
+      JC    M013; 
+      JU    M014; 
+M013: L     2#100000000; 
+      T     DBW   84; 
+      BEC   ; 
+M014: NOP   0; 
+NETWORK
+TITLE =
+
+//     A     "M 1.5"
+//     JC    M015
+//      JU    M016
+//M015: L     2#1000000000
+//      T     DBW   84
+//      BEC   
+//M016: NOP   0
+NETWORK
+TITLE =
+
+      A     "M 0.5"; 
+      JC    M017; 
+      JU    M018; 
+M017: L     2#10000000000; 
+      T     DBW   82; 
+      BEC   ; 
+M018: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 0.6"; 
+      JC    M019; 
+      JU    M020; 
+M019: L     2#1000000000000; 
+      T     DBW   82; 
+//;
+      L     "MW 180"; 
+      T     DBW  228; 
+      T     DBW  230; 
+      BEC   ; 
+M020: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 0.7"; 
+      JC    M021; 
+      JU    M022; 
+M021: L     2#10000000000000; 
+      T     DBW   82; 
+      BEC   ; 
+M022: NOP   0; 
+NETWORK
+TITLE =
+
+      O     "M 1.5"; 
+      JC    M023; 
+      JU    M024; 
+M023: L     2#1; 
+      T     DBW   86; 
+      BEC   ; 
+M024: NOP   0; 
+NETWORK
+TITLE =
+
+      O     "M 30.1"; 
+      JC    M025; 
+      JU    M026; 
+M025: L     2#10; 
+      T     DBW   86; 
+      BEC   ; 
+M026: NOP   0; 
+NETWORK
+TITLE =
+
+      O     "M 30.2"; 
+      JC    M027; 
+      JU    M028; 
+M027: L     2#100; 
+      T     DBW   86; 
+      BEC   ; 
+M028: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 1.6"; 
+      JC    M029; 
+      JU    M030; 
+M029: L     2#100000000000000; 
+      T     DBW   84; 
+      BEC   ; 
+M030: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 1.7"; 
+      JC    M031; 
+      JU    M032; 
+M031: L     2#1000000000000000; 
+      T     DBW   84; 
+      BEC   ; 
+M032: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 30.7"; 
+      JC    M033; 
+      JU    M034; 
+M033: L     2#1000; 
+      T     DBW   86; 
+      BEC   ; 
+M034: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 38.7"; 
+      JC    M035; 
+      JU    M036; 
+M035: L     2#10000; 
+      T     DBW   86; 
+      BEC   ; 
+M036: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 54.7"; 
+      JC    M037; 
+      JU    M038; 
+M037: L     2#100000; 
+      T     DBW   86; 
+      BEC   ; 
+M038: NOP   0; 
+NETWORK
+TITLE =
+
+      O     "M 66.7"; 
+      O     "M 86.7"; 
+      JC    M039; 
+      JC    M040; 
+M039: L     2#1000000; 
+      T     DBW   86; 
+      BEC   ; 
+M040: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 30.0"; 
+      JC    M041; 
+      JU    M042; 
+M041: L     2#100000000; 
+      T     DBW   86; 
+      BEC   ; 
+M042: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 98.1"; 
+      JC    M043; 
+      JU    M044; 
+M043: L     2#10000000; 
+      T     DBW   86; 
+      BEC   ; 
+M044: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 14.7"; 
+      JC    M045; 
+      JU    M046; 
+M045: L     2#1000000000; 
+      T     DBW   86; 
+      BEC   ; 
+M046: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 42.7"; 
+      JC    M047; 
+      JU    M048; 
+M047: L     2#10000000000; 
+      T     DBW   86; 
+      BEC   ; 
+M048: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 5.1"; 
+      JC    M049; 
+      JU    M050; 
+M049: L     2#100000000000; 
+      T     DBW   86; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M050: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 5.2"; 
+      JC    M051; 
+      JU    M052; 
+M051: L     2#1000000000000; 
+      T     DBW   86; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M052: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 5.4"; 
+      JC    M053; 
+      JU    M054; 
+M053: L     2#10000000000000; 
+      T     DBW   86; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M054: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 5.5"; 
+      JC    M055; 
+      JU    M056; 
+M055: L     2#100000000000000; 
+      T     DBW   86; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M056: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 6.0"; 
+      JC    M057; 
+      JU    M058; 
+M057: L     2#1000000000000000; 
+      T     DBW   86; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M058: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 6.7"; 
+      O     "M 33.7"; 
+      JC    M059; 
+      JU    M060; 
+M059: L     2#1; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M060: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 7.0"; 
+      JC    M061; 
+      JU    M062; 
+M061: L     2#10; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M062: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 7.1"; 
+      JC    M063; 
+      JU    M064; 
+M063: L     2#100; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M064: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 7.2"; 
+      JC    M065; 
+      JU    M066; 
+M065: L     2#1000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M066: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 7.3"; 
+      JC    M067; 
+      JU    M068; 
+M067: L     2#10000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M068: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 7.4"; 
+      JC    M069; 
+      JU    M070; 
+M069: L     2#100000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M070: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 98.2"; 
+      JC    M071; 
+      JU    M072; 
+M071: L     2#1000000; 
+      T     DBW   88; 
+      BEC   ; 
+M072: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 8.2"; 
+      JC    M073; 
+      JU    M074; 
+M073: L     2#10000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M074: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 9.6"; 
+      JC    M075; 
+      JU    M076; 
+M075: L     2#100000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M076: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 9.7"; 
+      JC    M077; 
+      JU    M078; 
+M077: L     2#1000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M078: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 10.4"; 
+      JC    M079; 
+      JU    M080; 
+M079: L     2#10000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M080: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 10.5"; 
+      JC    M081; 
+      JU    M082; 
+M081: L     2#100000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M082: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 10.7"; 
+      JC    M083; 
+      JU    M084; 
+M083: L     2#1000000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M084: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 11.0"; 
+      JC    M085; 
+      JU    M086; 
+M085: L     2#10000000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M086: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      A     "B 11.1"; 
+      JC    M087; 
+      JU    M088; 
+M087: L     2#100000000000000; 
+      T     DBW   88; 
+      L     2#10; 
+      T     DBW  232; 
+      BEC   ; 
+M088: NOP   0; 
+NETWORK
+TITLE =
+
+//   A     #MESSAGE_CUE
+//    AN    "B 11.1"
+//     JC    M089
+//     JU    M090
+//M089: L     2#10
+//      T     DBW   90
+//      BEC   
+//M090: NOP   0
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      AN    "B 5.4"; 
+      JC    M091; 
+      JU    M092; 
+M091: L     2#100; 
+      T     DBW   90; 
+      BEC   ; 
+M092: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #MESSAGE_CUE; 
+      AN    "B 9.7"; 
+      JC    M093; 
+      JU    M094; 
+M093: L     2#1000; 
+      T     DBW   90; 
+      BEC   ; 
+M094: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 11.7"; 
+      JC    M095; 
+      JU    M096; 
+M095: L     2#1000000; 
+      T     DBW   90; 
+      BEC   ; 
+M096: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.5"; 
+      JC    M097; 
+      JU    M098; 
+M097: L     2#10000; 
+      T     DBW   90; 
+      L     1; 
+      T     DBW  226; 
+      BEC   ; 
+M098: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.0"; 
+      JC    M099; 
+      JU    M100; 
+M099: L     2#10000; 
+      T     DBW   90; 
+      L     2; 
+      T     DBW  226; 
+      BEC   ; 
+M100: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.0"; 
+      JC    M101; 
+      JU    M102; 
+M101: L     2#10000; 
+      T     DBW   90; 
+      L     3; 
+      T     DBW  226; 
+      BEC   ; 
+M102: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.3"; 
+      JC    M103; 
+      JU    M104; 
+M103: L     2#10000; 
+      T     DBW   90; 
+      L     4; 
+      T     DBW  226; 
+      BEC   ; 
+M104: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.5"; 
+      JC    M105; 
+      JU    M106; 
+M105: L     2#10000; 
+      T     DBW   90; 
+      L     5; 
+      T     DBW  226; 
+      BEC   ; 
+M106: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.1"; 
+      AN    "E 13.4"; 
+      JC    M107; 
+      JU    M108; 
+M107: L     2#10000; 
+      T     DBW   90; 
+      L     6; 
+      T     DBW  226; 
+      BEC   ; 
+M108: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.4"; 
+      AN    "E 13.7"; 
+      JC    M109; 
+      JU    M110; 
+M109: L     2#10000; 
+      T     DBW   90; 
+      L     7; 
+      T     DBW  226; 
+      BEC   ; 
+M110: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.1"; 
+      JC    M111; 
+      JU    M112; 
+M111: L     2#10000; 
+      T     DBW   90; 
+      L     8; 
+      T     DBW  226; 
+      BEC   ; 
+M112: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.2"; 
+      JC    M113; 
+      JU    M114; 
+M113: L     2#10000; 
+      T     DBW   90; 
+      L     9; 
+      T     DBW  226; 
+      BEC   ; 
+M114: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.4"; 
+      JC    M115; 
+      JU    M116; 
+M115: L     2#10000; 
+      T     DBW   90; 
+      L     10; 
+      T     DBW  226; 
+      BEC   ; 
+M116: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.6"; 
+      JC    M117; 
+      JU    M118; 
+M117: L     2#10000; 
+      T     DBW   90; 
+      L     11; 
+      T     DBW  226; 
+      BEC   ; 
+M118: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 3.7"; 
+      JC    M119; 
+      JU    M120; 
+M119: L     2#10000; 
+      T     DBW   90; 
+      L     12; 
+      T     DBW  226; 
+      BEC   ; 
+M120: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.6"; 
+      JC    M121; 
+      JU    M122; 
+M121: L     2#10000; 
+      T     DBW   90; 
+      L     13; 
+      T     DBW  226; 
+      BEC   ; 
+M122: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.1"; 
+      JC    M123; 
+      JU    M124; 
+M123: L     2#10000; 
+      T     DBW   90; 
+      L     14; 
+      T     DBW  226; 
+      BEC   ; 
+M124: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.3"; 
+      AN    "E 13.6"; 
+      JC    M125; 
+      JU    M126; 
+M125: L     2#10000; 
+      T     DBW   90; 
+      L     15; 
+      T     DBW  226; 
+      BEC   ; 
+M126: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.1"; 
+      AN    "E 28.0"; 
+      JC    M127; 
+      JU    M128; 
+M127: L     2#10000; 
+      T     DBW   90; 
+      L     16; 
+      T     DBW  226; 
+      BEC   ; 
+M128: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.1"; 
+      AN    "E 28.1"; 
+      JC    M129; 
+      JU    M130; 
+M129: L     2#10000; 
+      T     DBW   90; 
+      L     17; 
+      T     DBW  226; 
+      BEC   ; 
+M130: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 4.1"; 
+      AN    "E 28.2"; 
+      JC    M131; 
+      JU    M132; 
+M131: L     2#10000; 
+      T     DBW   90; 
+      L     18; 
+      T     DBW  226; 
+      BEC   ; 
+M132: NOP   0; 
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//      A     "M 0.3"
+//      AN    "M 0.3"
+//      JC    M133
+//      JU    M134
+//M133: L     2#10000
+//      T     DBW   90
+//      L     19
+//      T     DBW  226
+//      BEC   
+//M134: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+////      A     "M 0.3"
+//      AN    "M 0.3"
+//      JC    M135
+//     JU    M136
+//M135: L     2#10000
+//      T     DBW   90
+//      L     20
+//      T     DBW  226
+//      BEC   
+//M136: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//     A     "M 0.3"
+//     AN    "M 0.3"
+//      JC    M137
+//      JU    M138
+//M137: L     2#10000
+//      T     DBW   90
+//      L     21
+//      T     DBW  226
+//      BEC   
+//M138: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//      A     "M 0.3"
+//      AN    "M 0.3"
+//      JC    M139
+//      JU    M140
+//M139: L     2#10000
+//      T     DBW   90
+//      L     22
+//      T     DBW  226
+//      BEC   
+//M140: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//     A     "M 0.3"
+//     AN    "M 0.3"
+//     JC    M141
+//     JU    M142
+//M141: L     2#10000
+//      T     DBW   90
+//      L     23
+//      T     DBW  226
+//      BEC   
+//M142: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//      A     "M 0.3"
+//      AN    "M 0.3"
+//      JC    M143
+//      JU    M144
+//M143: L     2#10000
+//      T     DBW   90
+//      L     24
+//      T     DBW  226
+//      BEC   
+//M144: NOP   0
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//      A     "M 0.3"
+////      AN    "M 0.3"
+//      JC    M145
+//      JU    M146
+//M145: L     2#10000
+//      T     DBW   90
+//      L     25
+//      T     DBW  226
+//      BEC   
+//M146: NOP   0
+NETWORK
+TITLE =
+
+      A     "Timer 0"; 
+      JC    M147; 
+      JC    M148; 
+M147: L     2#100000; 
+      T     DBW   94; 
+      BEC   ; 
+M148: NOP   0; 
+NETWORK
+TITLE =
+
+// Affichage d'alarme libéré de l'ancien 506
+// maintenant libre
+//      A     M      2.3
+//      AN    M      2.3
+//      JC    M149
+//      JC    M150
+//M149: L     2#1000
+//     T     DBW   94
+//     BEC   
+//M150: NOP   0
+NETWORK
+TITLE =
+
+      O     "M 150.2"; 
+      JC    M151; 
+      JC    M152; 
+M151: L     2#10000; 
+      T     DBW   94; 
+//;
+      BEC   ; 
+M152: NOP   0; 
+NETWORK
+TITLE =
+
+      A     "M 10.0"; 
+      JC    M153; 
+      JU    M154; 
+M153: L     2#10000000; 
+      T     DBW   90; 
+      BEC   ; 
+M154: NOP   0; 
+END_FUNCTION

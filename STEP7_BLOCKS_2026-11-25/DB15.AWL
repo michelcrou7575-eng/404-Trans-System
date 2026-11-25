@@ -1,0 +1,178 @@
+DATA_BLOCK "PACKET POSITION DB"
+TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Lengt
+//One stop time per packet length class (15 mm classes, 510 ... > 975 mm).
+//Time = belt run after the packet tail leaves B7.4 (step 8N5 -> 8N6, Timer 42).
+//Time_ms[class] = 0 -> Default_ms (1500 = as before v1.0).
+//v1.1 2026-11-24: HMI packet drawing: Disp_Length_mm (DBW86) + 4 width class
+//bits (DBX90.0...90.3, one ON) from the C10 measured width (DB30 Width_mm_Cal).
+//v1.2 2026-11-24: + C9 Pusher 2 conveyor (feeder lateral position, Timer 62): one
+//time per length class too, Time 0 = "HMI_DB".CONV_9_POS_mS x 10 (as before).
+//DBW98 / DBW100 reserved for the flipper drawing (tail / front, later).
+//v1.3 2026-11-24: C9 HMI drawing: one packet drawing, 16 copies at 16 lateral
+//positions, one shown (C9_Pos_Bits, one bit ON) from the C9 stop time used.
+//v1.4 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" (was "FLIPPER POS DB").
+VERSION : 1.4
+
+
+  STRUCT 	
+   Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
+   Class : INT ;	//Length Class 0 = < 525 mm ... 31 = >= 975 mm (15 mm Steps from 510)
+   Time_Used_ms : INT ;	//Stop Time Used for This Class [mS] - HMI Display
+   Default_ms : INT  := 1500;	//Stop Time When the Class Has No Time Set [mS] (= Before v1.0)
+   Step_ms : INT  := 10;	//One Arrow Press [mS]
+   Min_ms : INT  := 200;	//Lowest Time Allowed [mS]
+   Max_ms : INT  := 5000;	//Highest Time Allowed [mS]
+   Plus_PB : BOOL ;	//HMI Arrow -> : Longer (Packet Stops Further) - Momentary
+   Minus_PB : BOOL ;	//HMI Arrow <- : Shorter (Packet Stops Earlier) - Momentary
+   Reset_PB : BOOL ;	//HMI: This Class Back to Default - Momentary
+   Use_Table : BOOL  := TRUE;	//1 = Table / 0 = Default_ms Always (Old Fixed 1.5 s)
+   Spare_1 : BOOL ;	
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Class_Lamps : DWORD ;	//One Bit per Class (HMI Lamps) - Class 0 = DBX19.0 ... 7 = DBX19.7, 8 = DBX18.0 
+   Stop_S5T : S5TIME  := S5T#1S500MS;	//Stop Time for FC942 Timer 42
+   Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//Stop Time per Class [mS] - 0 = Default_ms
+   Disp_Length_mm : INT ;	//HMI Packet Drawing - Length [mm] (DBW86)
+   Width_mm : INT ;	//Packet Width Used [mm] ("PACKET WIDTH DB".Width_mm_Cal, C10 Measured)
+   Width_Class_1 : BOOL ;	//HMI Drawing Pair 1 - Width < Width_Lim_1 (DBX90.0)
+   Width_Class_2 : BOOL ;	//HMI Drawing Pair 2 - Width_Lim_1 ... Width_Lim_2 (DBX90.1)
+   Width_Class_3 : BOOL ;	//HMI Drawing Pair 3 - Width_Lim_2 ... Width_Lim_3 (DBX90.2)
+   Width_Class_4 : BOOL ;	//HMI Drawing Pair 4 - Width >= Width_Lim_3 (DBX90.3)
+   Spare_5 : BOOL ;	
+   Spare_6 : BOOL ;	
+   Spare_7 : BOOL ;	
+   Spare_8 : BOOL ;	
+   Width_Lim_1 : INT  := 450;	//Width Class Limit 1/2 [mm]
+   Width_Lim_2 : INT  := 500;	//Width Class Limit 2/3 [mm]
+   Width_Lim_3 : INT  := 550;	//Width Class Limit 3/4 [mm]
+   Tail_mm : INT ;	//Reserved: Flipper Drawing - Packet Tail Position [mm] (DBW98)
+   Front_mm : INT ;	//Reserved: Flipper Drawing - Packet Front Position [mm] (DBW100)
+   C9_Time_Used_ms : INT ;	//C9 Stop Time Used for This Class [mS] - HMI Display (DBW102)
+   C9_Plus_PB : BOOL ;	//HMI C9 Arrow -> : Longer - Momentary (DBX104.0)
+   C9_Minus_PB : BOOL ;	//HMI C9 Arrow <- : Shorter - Momentary (DBX104.1)
+   C9_Reset_PB : BOOL ;	//HMI C9: This Class Back to Default - Momentary (DBX104.2)
+   C9_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = "HMI_DB".CONV_9_POS_mS Always (DBX104.3)
+   Spare_9 : BOOL ;	
+   Spare_10 : BOOL ;	
+   Spare_11 : BOOL ;	
+   Spare_12 : BOOL ;	
+   C9_Stop_S5T : S5TIME ;	//C9 Stop Time for FC950 Timer 62 (DBW106)
+   C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
+   C9_Pos_Bits : WORD ;	//C9 Drawing: One Bit ON = Copy Shown - Copy 0 = DBX173.0 ... 7 = DBX173.7, 8 = D
+   C9_View_Min_ms : INT ;	//C9 Drawing: Time of Copy 0 (Left) [mS] (DBW174)
+   C9_View_Step_ms : INT  := 60;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...900 mS
+   C9_Pos_Step : INT ;	//C9 Drawing: Copy Shown 0...15 (DBW178)
+  END_STRUCT ;	
+BEGIN
+   Length_mm := 0; 
+   Class := 0; 
+   Time_Used_ms := 0; 
+   Default_ms := 1500; 
+   Step_ms := 10; 
+   Min_ms := 200; 
+   Max_ms := 5000; 
+   Plus_PB := FALSE; 
+   Minus_PB := FALSE; 
+   Reset_PB := FALSE; 
+   Use_Table := TRUE; 
+   Spare_1 := FALSE; 
+   Spare_2 := FALSE; 
+   Spare_3 := FALSE; 
+   Spare_4 := FALSE; 
+   Class_Lamps := DW#16#0; 
+   Stop_S5T := S5T#1S500MS; 
+   Time_ms[0] := 0; 
+   Time_ms[1] := 0; 
+   Time_ms[2] := 0; 
+   Time_ms[3] := 0; 
+   Time_ms[4] := 0; 
+   Time_ms[5] := 0; 
+   Time_ms[6] := 0; 
+   Time_ms[7] := 0; 
+   Time_ms[8] := 0; 
+   Time_ms[9] := 0; 
+   Time_ms[10] := 0; 
+   Time_ms[11] := 0; 
+   Time_ms[12] := 0; 
+   Time_ms[13] := 0; 
+   Time_ms[14] := 0; 
+   Time_ms[15] := 0; 
+   Time_ms[16] := 0; 
+   Time_ms[17] := 0; 
+   Time_ms[18] := 0; 
+   Time_ms[19] := 0; 
+   Time_ms[20] := 0; 
+   Time_ms[21] := 0; 
+   Time_ms[22] := 0; 
+   Time_ms[23] := 0; 
+   Time_ms[24] := 0; 
+   Time_ms[25] := 0; 
+   Time_ms[26] := 0; 
+   Time_ms[27] := 0; 
+   Time_ms[28] := 0; 
+   Time_ms[29] := 0; 
+   Time_ms[30] := 0; 
+   Time_ms[31] := 0; 
+   Disp_Length_mm := 0; 
+   Width_mm := 0; 
+   Width_Class_1 := FALSE; 
+   Width_Class_2 := FALSE; 
+   Width_Class_3 := FALSE; 
+   Width_Class_4 := FALSE; 
+   Spare_5 := FALSE; 
+   Spare_6 := FALSE; 
+   Spare_7 := FALSE; 
+   Spare_8 := FALSE; 
+   Width_Lim_1 := 450; 
+   Width_Lim_2 := 500; 
+   Width_Lim_3 := 550; 
+   Tail_mm := 0; 
+   Front_mm := 0; 
+   C9_Time_Used_ms := 0; 
+   C9_Plus_PB := FALSE; 
+   C9_Minus_PB := FALSE; 
+   C9_Reset_PB := FALSE; 
+   C9_Use_Table := TRUE; 
+   Spare_9 := FALSE; 
+   Spare_10 := FALSE; 
+   Spare_11 := FALSE; 
+   Spare_12 := FALSE; 
+   C9_Stop_S5T := S5T#0MS; 
+   C9_Time_ms[0] := 0; 
+   C9_Time_ms[1] := 0; 
+   C9_Time_ms[2] := 0; 
+   C9_Time_ms[3] := 0; 
+   C9_Time_ms[4] := 0; 
+   C9_Time_ms[5] := 0; 
+   C9_Time_ms[6] := 0; 
+   C9_Time_ms[7] := 0; 
+   C9_Time_ms[8] := 0; 
+   C9_Time_ms[9] := 0; 
+   C9_Time_ms[10] := 0; 
+   C9_Time_ms[11] := 0; 
+   C9_Time_ms[12] := 0; 
+   C9_Time_ms[13] := 0; 
+   C9_Time_ms[14] := 0; 
+   C9_Time_ms[15] := 0; 
+   C9_Time_ms[16] := 0; 
+   C9_Time_ms[17] := 0; 
+   C9_Time_ms[18] := 0; 
+   C9_Time_ms[19] := 0; 
+   C9_Time_ms[20] := 0; 
+   C9_Time_ms[21] := 0; 
+   C9_Time_ms[22] := 0; 
+   C9_Time_ms[23] := 0; 
+   C9_Time_ms[24] := 0; 
+   C9_Time_ms[25] := 0; 
+   C9_Time_ms[26] := 0; 
+   C9_Time_ms[27] := 0; 
+   C9_Time_ms[28] := 0; 
+   C9_Time_ms[29] := 0; 
+   C9_Time_ms[30] := 0; 
+   C9_Time_ms[31] := 0; 
+   C9_Pos_Bits := W#16#0; 
+   C9_View_Min_ms := 0; 
+   C9_View_Step_ms := 60; 
+   C9_Pos_Step := 0; 
+END_DATA_BLOCK

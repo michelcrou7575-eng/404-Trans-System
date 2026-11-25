@@ -1,0 +1,128 @@
+FUNCTION "FM350 COUNTERS" : VOID
+TITLE =Counters
+//FM350-2 : Counter Module Added to measure Collator Conveyors 4 & 10 Filling 
+//Surface Left, and to measure Packets Length & Width in order to Fit the Most 
+//Packets Number onto the Respective Conveyor... May 22
+VERSION : 0.1
+
+
+VAR_TEMP
+  ENCODER_STOP : BOOL ;	
+  RETURN_RD : INT ;	//Print Pulse Read Function Return
+  PRESS_LENGTH_3 : WORD ;	//Slat Conveyor 3 - Surface per Packet
+  PACKET_LENGTH_4 : WORD ;	//Collator Conveyor 4 - Packet Length 
+  HALF_PACKET_LENGTH_4 : WORD ;	//Collator Conveyor 4 - Packet Length - Half
+  PACKET_LENGTH_HALF_4 : WORD ;	//Collator Conveyor 4 - Packet Length + Half
+  SURFACE_LENGTH_LEFT_4 : WORD ;	//Collator Conveyor 4 - Surface Length Left
+  QTY_MAX_4 : REAL ;	
+  PACKET_WIDTH_10 : WORD ;	//Collator Conveyor 10 - Packet Width 
+  HALF_PACKET_WIDTH_10 : WORD ;	//Collator Conveyor 10 - Packet Width - Half
+  PACKET_WIDTH_HALF_10 : WORD ;	//Collator Conveyor 10 - Packet Width + Half
+  SURFACE_LENGTH_LEFT_10 : WORD ;	
+  QTY_MAX_10 : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Call DB
+
+      OPN   "FM350 DB"; 
+      CALL "CNT2_CTR" (//Control the FM 350-2
+           DB_NO                    := W#16#2);
+
+NETWORK
+TITLE =FM350-2 Address Resets
+
+      A     "M 167.7"; 
+      JNB   M677; 
+      L     W#16#140; 
+      T     DBW   12; 
+//;
+      L     DW#16#A00; 
+      T     DBD   14; 
+//;
+      R     "M 167.7"; 
+
+M677: NOP   0; 
+NETWORK
+TITLE =Read Counters Jobs
+//FM350-2 :  Job 100 = Read Counter 0,1,2,3
+//           Job 101 = Read Counter 4,5,6,7 
+//           Then Transfer to DB2
+      A     "M 6.0"; 
+      FP    "FP 154.0"; 
+      JNB   M154; 
+      L     100; 
+      T     DBB    2; 
+      CALL "CNT2_RD" (
+           DB_NO                    := W#16#2,
+           RET_VAL                  := #RETURN_RD);
+
+M154: NOP   0; 
+
+      A     "M 6.0"; 
+      FN    "FN 155.0"; 
+      JNB   M155; 
+      L     101; 
+      T     DBB    2; 
+      CALL "CNT2_RD" (
+           DB_NO                    := W#16#2,
+           RET_VAL                  := #RETURN_RD);
+
+M155: NOP   0; 
+NETWORK
+TITLE =
+//Encoder Health Monitor
+
+
+NETWORK
+TITLE =Collator Conveyor 4 - has Stop - Timer  1.5s
+
+      A     "A 44.3"; 
+      AN    "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      L     S5T#1S500MS; 
+      SD    "Timer 130"; 
+NETWORK
+TITLE =Collator Conveyor 4 - has Stop - Timer  1.5s
+
+      A     "A 44.3"; 
+      A     "E 6.6"; 
+      AN    "M 30.0"; 
+      A     "M 0.3"; 
+      L     S5T#1S500MS; 
+      SD    "Timer 131"; 
+NETWORK
+TITLE =Collator Conveyors 4 - Fault
+
+      A(    ; 
+      A     "A 44.3"; 
+      A     "E 6.6"; 
+      A     "Timer 131"; 
+      O     ; 
+      A     "A 44.3"; 
+      AN    "E 6.6"; 
+      A     "Timer 130"; 
+      )     ; 
+      A     "M 0.3"; 
+      S     "M 30.0"; 
+//;
+      O     "M 171.5"; 
+      R     "M 30.0"; 
+NETWORK
+TITLE =Collator Conveyors 4 - Lauer Comm
+
+      OPN   "DB LAUER"; 
+
+      A     "E 6.6"; 
+      JC    M001; 
+
+      L     2#0; 
+      T     DBW  232; 
+      JU    M002; 
+
+M001: L     2#1; 
+      T     DBW  232; 
+
+M002: NOP   0; 
+END_FUNCTION

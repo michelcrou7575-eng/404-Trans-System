@@ -1,0 +1,484 @@
+FUNCTION "SENSOR CHECK CALLS" : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 5.1",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B5_1.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B5_1.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B5_1.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B5_1.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B5_1.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B5_1.Word_Result);
+
+NETWORK
+TITLE =
+
+      AN    "K 42.6"; 
+      A     "B 5.2"; 
+      =     L      0.0; 
+//;
+      CALL "SENSOR CHECK" (
+           Bit                      := L      0.0,
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B5_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B5_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B5_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B5_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B5_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B5_2.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 5.4",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B5_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B5_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B5_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B5_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B5_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B5_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 5.5",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B5_5.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B5_5.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B5_5.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B5_5.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B5_5.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B5_5.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 6.0",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B6_0.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B6_0.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B6_0.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B6_0.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B6_0.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B6_0.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 6.1",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B6_1.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B6_1.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B6_1.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B6_1.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B6_1.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B6_1.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 6.2",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B6_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B6_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B6_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B6_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B6_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B6_2.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 6.4",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B6_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B6_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B6_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B6_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B6_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B6_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 6.7",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B6_7.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B6_7.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B6_7.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B6_7.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B6_7.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B6_7.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 7.0",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B7_0.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B7_0.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B7_0.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B7_0.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B7_0.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B7_0.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 7.1",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B7_1.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B7_1.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B7_1.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B7_1.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B7_1.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B7_1.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 7.2",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B7_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B7_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B7_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B7_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B7_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B7_2.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 7.3",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B7_3.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B7_3.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B7_3.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B7_3.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B7_3.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B7_3.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 7.4",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B7_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B7_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B7_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B7_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B7_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B7_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 8.2",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B8_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B8_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B8_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B8_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B8_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B8_2.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 9.6",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B9_6.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B9_6.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B9_6.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B9_6.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B9_6.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B9_6.Word_Result);
+
+NETWORK
+TITLE =
+
+      AN    "K 47.7"; 
+      A     "B 9.7"; 
+      =     L      0.1; 
+//;
+      CALL "SENSOR CHECK" (
+           Bit                      := L      0.1,
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B9_7.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B9_7.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B9_7.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B9_7.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B9_7.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B9_7.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 10.3",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B10_3.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B10_3.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B10_3.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B10_3.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B10_3.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B10_3.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 10.4",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B10_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B10_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B10_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B10_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B10_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B10_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 10.5",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B10_5.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B10_5.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B10_5.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B10_5.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B10_5.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B10_5.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 10.6",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B10_6.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B10_6.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B10_6.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B10_6.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B10_6.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B10_6.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 10.7",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B10_7.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B10_7.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B10_7.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B10_7.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B10_7.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B10_7.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 11.0",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B11_0.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B11_0.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B11_0.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B11_0.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B11_0.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B11_0.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 11.1",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B11_1.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B11_1.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B11_1.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B11_1.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B11_1.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B11_1.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 12.3",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B12_3.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B12_3.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B12_3.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B12_3.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B12_3.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B12_3.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 15.4",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B15_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B15_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B15_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B15_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B15_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B15_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 15.5",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B15_5.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B15_5.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B15_5.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B15_5.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B15_5.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B15_5.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 15.6",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B15_6.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B15_6.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B15_6.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B15_6.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B15_6.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B15_6.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 15.7",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B15_7.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B15_7.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B15_7.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B15_7.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B15_7.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B15_7.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 35.2",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B35_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B35_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B35_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B35_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B35_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B35_2.Word_Result);
+
+NETWORK
+TITLE =
+
+      A     "K 62.3"; 
+      A     "B 35.3"; 
+      =     L      0.2; 
+
+      CALL "SENSOR CHECK" (
+           Bit                      := L      0.2,
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B35_3.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B35_3.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B35_3.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B35_3.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B35_3.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B35_3.Word_Result);
+
+NETWORK
+TITLE =
+
+      A     "K 62.3"; 
+      A     "B 35.4"; 
+      =     L      0.3; 
+//;
+      CALL "SENSOR CHECK" (
+           Bit                      := L      0.3,
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B35_4.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B35_4.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B35_4.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B35_4.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B35_4.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B35_4.Word_Result);
+
+NETWORK
+TITLE =
+
+      CALL "SENSOR CHECK" (
+           Bit                      := "B 11.2",
+           Preset_ms                := 500,
+           Plc_Scan_ms              := "DB UTILITY".Scan_Cycle_Previous,
+           Rising_Pulse_1           := "DB SENSOR CHECK".B11_2.Rising_Pulse_1,
+           Rising_Pulse_2           := "DB SENSOR CHECK".B11_2.Rising_Pulse_2,
+           Memory_Bit_1             := "DB SENSOR CHECK".B11_2.Memory_Bit_1,
+           Memory_Bit_2             := "DB SENSOR CHECK".B11_2.Memory_Bit_2,
+           Word_Buffer              := "DB SENSOR CHECK".B11_2.Word_buffer,
+           Word_Result              := "DB SENSOR CHECK".B11_2.Word_Result);
+
+END_FUNCTION

@@ -1,0 +1,468 @@
+FUNCTION "LAUER COMM FC" : VOID
+TITLE =Handling Block Profibus
+//
+NAME : PROFIBUS
+VERSION : 0.0
+
+
+VAR_INPUT
+  UBDB : BLOCK_DB ;	// UBDB
+  RXFA : INT ;	// RXFA
+  RXLE : INT ;	// RXLE
+  TXFA : INT ;	// TXFA
+  TXLE : INT ;	// TXLE
+  RSET : BOOL ;	// RSET
+  TIMT : TIMER ;	// TIMT
+  TIMZ : S5TIME ;	// TIMZ
+  COFF : BLOCK_FC ;	// COFF
+  INIT : BLOCK_FC ;	// INIT
+END_VAR
+VAR_OUTPUT
+  RFLM : BOOL ;	// RFLM
+  EROR : BOOL ;	// EROR
+END_VAR
+VAR_TEMP
+  conv_akku1 : DWORD ;	
+  conv_akku2 : DWORD ;	
+  conv_stw : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      OPN   #UBDB; //  --------------------------
+      AN    #RFLM; //  First action in FB?
+      JC    OK; 
+      A     #TIMT; //  Timeout and no restart?
+      AN    #RSET; 
+      JC    ERR; 
+      A     #TIMT; 
+      AN    #EROR; 
+      JC    ERR; 
+      JU    OK; 
+
+ERR:  A     #EROR; 
+      JC    ERR1; 
+      UC    #COFF; //  Call COFF once.
+      OPN   #UBDB; 
+
+ERR1: A     #TIMT; //  If timeout set error-flag.
+      S     #EROR; 
+      BEU   ; 
+
+OK:   A     #RFLM; //  First action?
+      JC    CONT; 
+      UC    #INIT; //  Call INIT once.
+      OPN   #UBDB; 
+      L     W#16#0; //  Init ----------------------
+      T     DBW    0; 
+      T     DBW    2; 
+      T     DBW    4; 
+      T     DBW    6; 
+      AN    #RFLM; 
+      S     #RFLM; //  Set reset-ready-flag
+//;
+      AN    #RFLM; //  Trigger timer
+      L     #TIMZ; 
+      SD    #TIMT; 
+//;
+      A     #RFLM; 
+      L     #TIMZ; 
+      SD    #TIMT; 
+
+CONT: L     #RXFA; 
+      T     "MW 244"; //  ----------------------------
+      +     1; //  Adress Handle1 E-Box
+      T     "MW 252"; 
+      L     #RXLE; //  Adress of first instruction
+      +     -2; 
+      T     "MW 250"; //  Lenght E-Box Userdatas
+//;
+      L     #TXFA; 
+      T     "MW 242"; 
+      +     1; //  Adress Handle1 A-Box
+      T     "MW 248"; 
+      L     #TXLE; //  Adress of first senddata
+      +     -2; 
+      T     "MW 246"; //  Lenght A-Box-Userdatas
+//;
+      L     "MW 244"; //  Handle2 != Handle1? ---------
+      L     #RXLE; 
+      +I    ; 
+      +     -1; 
+      T     "MW 238"; //  Adress Handle2
+      T     #conv_akku1; 
+//;
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 239"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      T     "MW 238"; //  Handle2
+      T     #conv_akku1; //  Adress Handle1
+//;
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 245"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      L     "MW 238"; 
+      <>I   ; 
+      BEC   ; //  Handle1 != Handle2 -> EXIT
+//; 
+      T     #conv_akku1; //  Handle1 != HandleAlt? -------
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 245"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      L     DBW    0; //  HandleAlt in UBDB (0)
+      ==I   ; 
+      BEC   ; 
+//;
+      AN    #RFLM; //  Start timeout-timer
+      L     #TIMZ; 
+      SD    #TIMT; 
+//;
+      A     #RFLM; 
+      L     #TIMZ; 
+      SD    #TIMT; 
+//;
+      T     #conv_akku1; //  First action requiered?
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 245"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      L     W#16#80; //  Handle == 0x80?
+      <>I   ; 
+      JC    SLP1; 
+      A     #RSET; // Clear Restart-Flag.
+      R     #RSET; 
+
+END:  NOP   0; 
+
+      T     #conv_akku1; // Get Handle1(E) from RX-Box.
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 245"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      T     DBW    0; // Save to HandleAlt.
+      INVI  ; // Invert.
+      T     "MW 236"; // Temporary saved.
+      L     "MW 236"; 
+      T     #conv_akku1; // Take inverted Handle1(E) to
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 243"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     QB [AR1,P#0.0]; // Handle1(A).
+//;
+      L     "MW 242"; 
+      L     #TXLE; 
+      +I    ; 
+      +     -1; 
+      T     "MW 238"; // Take inverted Handle1(E) to
+      L     "MW 236"; 
+      T     #conv_akku1; 
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 239"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     QB [AR1,P#0.0]; 
+//;
+      AN    #TIMT; // Clear Error-Mark.
+      R     #EROR; 
+      BEU   ; // see you later...
+
+SLP1: L     #RXFA; // Reached Rx-Box-End?
+      L     #RXLE; 
+      +I    ; 
+      +     -1; 
+      L     "MW 252"; 
+      ==I   ; 
+      JC    END; 
+
+      T     #conv_akku1; //  Start/Continue--------------
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 253"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IW [AR1,P#0.0]; 
+      L     W#16#0; //  Is anything usable?
+      ==I   ; 
+      JC    END; 
+
+      T     #conv_akku1; //  Get first ABW.
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 253"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; 
+      T     "MW 240"; //  Adress(UBDB) in ABW.
+      L     "MW 252"; 
+      +     1; //  Increment RX-Pointer.
+      T     "MW 252"; 
+      T     #conv_akku1; 
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 253"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IB [AR1,P#0.0]; //  Count of ABW: Bit3..0.
+      T     "MW 238"; //  Command of ABW: Bit 7..4.
+      L     "MW 252"; //  ABW pointer to next ABW
+      +     1; //  or first data.
+      T     "MW 252"; 
+//;
+      L     "MW 238"; //  Check for right command.
+      L     W#16#F0; 
+      AW    ; 
+      T     "MW 236"; //  Temporary saved.
+//;
+      L     "MW 236"; 
+      L     W#16#10; 
+      ==I   ; 
+      JC    IOK; 
+//;
+      L     "MW 236"; 
+      L     W#16#20; 
+      ==I   ; 
+      JC    IOK; 
+//;
+      L     "MW 236"; 
+      L     W#16#40; 
+      ==I   ; 
+      JC    IOK; 
+//;
+      L     "MW 236"; 
+      L     W#16#80; 
+      ==I   ; 
+      JC    IOK; 
+      BEU   ; //  Command is wrong!
+//;
+IOK:  L     "MW 238"; //  Command is ok.
+SLP2: L     W#16#F; 
+      AW    ; //  Count == 0:
+      JZ    SLP1; //  Next subpaket
+//;
+      AN    "M 239.4"; 
+      JC    ELS1; 
+      OPN   #UBDB; 
+
+      T     #conv_akku1; //  Offset ABW Adress in UBDB
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     DBW [AR1,P#0.0]; 
+      T     #conv_akku1; //  Pointer to TX-Box
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 249"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     QW [AR1,P#0.0]; //  Write to TX-Box.
+      L     "MW 248"; 
+      +     2; 
+      T     "MW 248"; 
+      JU    COMM; 
+
+ELS1: NOP   0; 
+
+      T     #conv_akku1; //  Pointer to RX-Box.
+
+      L     STW; 
+      T     #conv_stw; 
+//;
+      L     "MB 253"; 
+      SLW   3; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     IW [AR1,P#0.0]; 
+      T     "MW 236"; //  Read Data/Mask from RX-Box.
+      L     "MW 252"; //  Increment Pointer to RX-Box.
+      +     2; 
+      T     "MW 252"; 
+//;
+      AN    "M 239.5"; //  WRITE/(AND/OR)
+      JC    ELS2; 
+      L     "MW 236"; 
+      OPN   #UBDB; 
+
+      T     #conv_akku1; //  Offset ABW Adress in UBDB.
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     DBW [AR1,P#0.0]; //  Write to UBDB.
+      JU    COMM; 
+
+ELS2: AN    "M 239.6"; 
+      JC    ELS3; 
+      L     "MW 236"; 
+      OPN   #UBDB; 
+
+      T     #conv_akku1; //  Offset ABW Adress in UBDB.
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     DBW [AR1,P#0.0]; 
+      AW    ; 
+      OPN   #UBDB; 
+      T     #conv_akku1; 
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     DBW [AR1,P#0.0]; //  And to UBDB
+      JU    COMM; 
+
+ELS3: NOP   0; 
+
+      L     "MW 236"; 
+      OPN   #UBDB; 
+      T     #conv_akku1; 
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku1; 
+      L     DBW [AR1,P#0.0]; 
+      OW    ; 
+      OPN   #UBDB; 
+
+      T     #conv_akku1; 
+      TAK   ; 
+      T     #conv_akku2; 
+      L     STW; 
+      T     #conv_stw; 
+      L     "MB 241"; 
+      SLW   4; 
+      LAR1  ; 
+      L     #conv_stw; 
+      T     STW; 
+//;
+      L     #conv_akku2; 
+      L     #conv_akku1; 
+      T     DBW [AR1,P#0.0]; 
+COMM: L     "MW 240"; 
+      +     1; 
+      T     "MW 240"; 
+      L     "MW 238"; //  Decrement counter of ABW.
+      +     -1; 
+      T     "MW 238"; 
+      JU    SLP2; 
+END_FUNCTION

@@ -1,0 +1,32 @@
+TYPE "Width Sensor Struct"
+VERSION : 0.9
+
+
+  STRUCT 	
+   Was_On : BOOL ;	//Sensor State Last Scan
+   Open : BOOL ;	//Packet in Progress
+   Low : BOOL ;	//Sensor OFF Inside a Packet (Sag or Gap - Not Decided Yet)
+   Skip : BOOL ;	//Packet Already Covering at Start = Partial, Not Recorded
+   Front : BOOL ;	//New Packet Front This Scan (Pulse)
+   Spare_2 : BOOL ;	
+   Spare_3 : BOOL ;	
+   Spare_4 : BOOL ;	
+   Start_Pos : DINT ;	//Encoder at Packet Front [Pulses]
+   Fall_Pos : DINT ;	//Encoder at Last OFF [Pulses]
+   Count : INT ;	//Packets Measured This Transfer
+   Skipped : INT ;	//Partial Packets Not Measured (0 or 1)
+   Sag_Count : INT ;	//OFF Shorter than Gap_Min = Sag (U-Shape / Low Packet)
+   Width_Sum_mm : DINT ;	//Sum of Widths [mm]
+   Width_Min_mm : INT ;	//Smallest Width [mm]
+   Width_Max_mm : INT ;	//Largest Width [mm]
+   Width_Avg_mm : INT ;	//Average Width [mm]
+   Last_Width_mm : INT ;	//Last Packet Width [mm]
+   Sag_Max_mm : INT ;	//Longest Sag [mm]
+   Gap_Min_mm : INT ;	//Shortest Real Gap Between Packets [mm]
+   Time_ms : DINT ;	//Time Since Packet Front [mS]
+   Fall_ms : DINT ;	//Time at Last OFF [mS]
+   Width_Sum_ms : DINT ;	//Sum of Widths [mS]
+   Width_Avg_ms : INT ;	//Average Width [mS] @ C10 Fast = C11/C12/C21/C22 Speed
+   Last_Width_ms : INT ;	//Last Packet Width [mS]
+  END_STRUCT ;	
+END_TYPE

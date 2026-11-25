@@ -1,0 +1,92 @@
+DATA_BLOCK "BLANKING DB"
+TITLE =Packet Blanking - Shadow Counters
+VERSION : 0.1
+
+
+  STRUCT 	
+   Width_ms : INT ;	//Packet Time Used [mS] (DB30 Width_ms_31, Else 855)
+   Blank_Pct : INT  := 90;	//TUNE - Blanking After a Front [% of Packet Time]
+   Butt_Pct : INT  := 140;	//TUNE - Sensor Still ON -> Butted Packet [% of Packet Time]
+   Pulse_ms : INT  := 400;	//Cleaned Pulse Length [mS] (FC8: > 300 ON, Gap > 300)
+   C10_Exit_B10_6 : "Blanking Struct";	//C10 Exit = C11 / C21 InFeed (Run: C10 Fast A48.0+A48.1)
+   C11_Exit_B10_7 : "Blanking Struct";	//C11 Exit = C12 InFeed (Run: C11 A48.3)
+   C12_Exit_B11_0 : "Blanking Struct";	//C12 Exit = C13 InFeed (Run: C12 A48.6)
+   C21_Exit_B15_4 : "Blanking Struct";	//C21 Exit = C22 InFeed (Run: C21 A53.4)
+   C22_Exit_B15_5 : "Blanking Struct";	//C22 Exit = C23 InFeed (Run: C22 A53.6)
+  END_STRUCT ;	
+BEGIN
+   Width_ms := 0; 
+   Blank_Pct := 90; 
+   Butt_Pct := 140; 
+   Pulse_ms := 400; 
+   C10_Exit_B10_6.Was_On := FALSE; 
+   C10_Exit_B10_6.Pulse := FALSE; 
+   C10_Exit_B10_6.Spare_1 := FALSE; 
+   C10_Exit_B10_6.Spare_2 := FALSE; 
+   C10_Exit_B10_6.Spare_3 := FALSE; 
+   C10_Exit_B10_6.Spare_4 := FALSE; 
+   C10_Exit_B10_6.Spare_5 := FALSE; 
+   C10_Exit_B10_6.Spare_6 := FALSE; 
+   C10_Exit_B10_6.T_ms := L#60000; 
+   C10_Exit_B10_6.Pulse_ms := 0; 
+   C10_Exit_B10_6.Count := 0; 
+   C10_Exit_B10_6.Raw := 0; 
+   C10_Exit_B10_6.Sag := 0; 
+   C10_Exit_B10_6.Butt := 0; 
+   C11_Exit_B10_7.Was_On := FALSE; 
+   C11_Exit_B10_7.Pulse := FALSE; 
+   C11_Exit_B10_7.Spare_1 := FALSE; 
+   C11_Exit_B10_7.Spare_2 := FALSE; 
+   C11_Exit_B10_7.Spare_3 := FALSE; 
+   C11_Exit_B10_7.Spare_4 := FALSE; 
+   C11_Exit_B10_7.Spare_5 := FALSE; 
+   C11_Exit_B10_7.Spare_6 := FALSE; 
+   C11_Exit_B10_7.T_ms := L#60000; 
+   C11_Exit_B10_7.Pulse_ms := 0; 
+   C11_Exit_B10_7.Count := 0; 
+   C11_Exit_B10_7.Raw := 0; 
+   C11_Exit_B10_7.Sag := 0; 
+   C11_Exit_B10_7.Butt := 0; 
+   C12_Exit_B11_0.Was_On := FALSE; 
+   C12_Exit_B11_0.Pulse := FALSE; 
+   C12_Exit_B11_0.Spare_1 := FALSE; 
+   C12_Exit_B11_0.Spare_2 := FALSE; 
+   C12_Exit_B11_0.Spare_3 := FALSE; 
+   C12_Exit_B11_0.Spare_4 := FALSE; 
+   C12_Exit_B11_0.Spare_5 := FALSE; 
+   C12_Exit_B11_0.Spare_6 := FALSE; 
+   C12_Exit_B11_0.T_ms := L#60000; 
+   C12_Exit_B11_0.Pulse_ms := 0; 
+   C12_Exit_B11_0.Count := 0; 
+   C12_Exit_B11_0.Raw := 0; 
+   C12_Exit_B11_0.Sag := 0; 
+   C12_Exit_B11_0.Butt := 0; 
+   C21_Exit_B15_4.Was_On := FALSE; 
+   C21_Exit_B15_4.Pulse := FALSE; 
+   C21_Exit_B15_4.Spare_1 := FALSE; 
+   C21_Exit_B15_4.Spare_2 := FALSE; 
+   C21_Exit_B15_4.Spare_3 := FALSE; 
+   C21_Exit_B15_4.Spare_4 := FALSE; 
+   C21_Exit_B15_4.Spare_5 := FALSE; 
+   C21_Exit_B15_4.Spare_6 := FALSE; 
+   C21_Exit_B15_4.T_ms := L#60000; 
+   C21_Exit_B15_4.Pulse_ms := 0; 
+   C21_Exit_B15_4.Count := 0; 
+   C21_Exit_B15_4.Raw := 0; 
+   C21_Exit_B15_4.Sag := 0; 
+   C21_Exit_B15_4.Butt := 0; 
+   C22_Exit_B15_5.Was_On := FALSE; 
+   C22_Exit_B15_5.Pulse := FALSE; 
+   C22_Exit_B15_5.Spare_1 := FALSE; 
+   C22_Exit_B15_5.Spare_2 := FALSE; 
+   C22_Exit_B15_5.Spare_3 := FALSE; 
+   C22_Exit_B15_5.Spare_4 := FALSE; 
+   C22_Exit_B15_5.Spare_5 := FALSE; 
+   C22_Exit_B15_5.Spare_6 := FALSE; 
+   C22_Exit_B15_5.T_ms := L#60000; 
+   C22_Exit_B15_5.Pulse_ms := 0; 
+   C22_Exit_B15_5.Count := 0; 
+   C22_Exit_B15_5.Raw := 0; 
+   C22_Exit_B15_5.Sag := 0; 
+   C22_Exit_B15_5.Butt := 0; 
+END_DATA_BLOCK

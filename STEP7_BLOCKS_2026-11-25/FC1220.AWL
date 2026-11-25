@@ -1,0 +1,289 @@
+FUNCTION "ALARM MANAGER" : VOID
+TITLE =HMI Alarms - NS12 (DB13)
+//v1.0 2026-11-23: all LAUER messages (FC199 / FC201) as single alarm bits for
+//the NS12 alarm list, ALL at the same time (LAUER showed only the first one).
+//Drive faults: one per drive M3.0...M4.7 (LAUER lines for C11 / C21 / C22 / C23
+//tested M4.1 = C10 by mistake). Sensor messages: only while the line is empty
+//(LAUER cue: M0.3 AND M11.6 AND NOT M9.7), as before.
+//Writes only DB13. Changes nothing on the machine.
+//v1.1 2026-11-24: + Any_Fault (DBX9.6) / Any_Alarm (DBX9.7) for the NS12 alarm bar.
+VERSION : 1.1
+
+
+VAR_TEMP
+  CUE : BOOL ;	//Control ON + Conveyors 1..10 Empty + Clearing Not Done
+END_VAR
+BEGIN
+NETWORK
+TITLE =Message Cue (as LAUER MESSAGE1)
+
+      A     "M 0.3"; 
+      A     "M 11.6"; 
+      AN    "M 9.7"; 
+      =     #CUE; 
+NETWORK
+TITLE =General
+
+      A     "M 0.4"; 
+      =     "HMI ALARMS".Fuse_Fault; // DBX0.0
+//;
+      A     "M 0.5"; 
+      =     "HMI ALARMS".Motor_Protect; // DBX0.1
+//;
+      A     "M 0.6"; 
+      =     "HMI ALARMS".Motor_Temp; // DBX0.2
+//;
+      A     "M 0.7"; 
+      =     "HMI ALARMS".Air_Low; // DBX0.3
+NETWORK
+TITLE =E-Stop
+
+      A     "M 1.0"; 
+      =     "HMI ALARMS".EStop_Desk_X120; // DBX0.4
+//;
+      A     "M 1.1"; 
+      =     "HMI ALARMS".EStop_Desk_X121; // DBX0.5
+//;
+      A     "M 1.2"; 
+      =     "HMI ALARMS".EStop_Elevator; // DBX0.6
+//;
+      A     "M 1.3"; 
+      =     "HMI ALARMS".EStop_Flipper; // DBX0.7
+NETWORK
+TITLE =Door
+
+      A     "M 1.5"; 
+      =     "HMI ALARMS".Door_Feeder; // DBX1.0
+//;
+      A     "M 1.6"; 
+      =     "HMI ALARMS".Door_Elevator; // DBX1.1
+//;
+      A     "M 1.7"; 
+      =     "HMI ALARMS".Door_Flipper; // DBX1.2
+NETWORK
+TITLE =Conveyor
+
+      A     "M 22.7"; 
+      =     "HMI ALARMS".C2_Angle_Fault; // DBX2.0
+//;
+      A     "M 30.1"; 
+      =     "HMI ALARMS".Elev_Rollers_Fault; // DBX2.1
+//;
+      A     "M 30.2"; 
+      =     "HMI ALARMS".Elev_Pusher_Fault; // DBX2.2
+//;
+      A     "M 14.7"; 
+      =     "HMI ALARMS".Elev_Not_Centered; // DBX2.3
+//;
+      A     "M 30.0"; 
+      =     "HMI ALARMS".C4_Fault; // DBX2.4
+//;
+      A     "M 30.7"; 
+      =     "HMI ALARMS".C4_Timeout; // DBX2.5
+//;
+      A     "M 33.7"; 
+      =     "HMI ALARMS".C4_Infeed_Obstruct; // DBX2.6
+//;
+      A     "M 38.7"; 
+      =     "HMI ALARMS".C6_Fault; // DBX2.7
+//;
+      A     "M 42.7"; 
+      =     "HMI ALARMS".Flipper_Obstruct; // DBX3.0
+//;
+      A     "M 54.7"; 
+      =     "HMI ALARMS".C10_Fault; // DBX3.1
+//;
+      A     "M 98.1"; 
+      =     "HMI ALARMS".Pivot_Timeout; // DBX3.2
+//;
+      A     "M 98.2"; 
+      =     "HMI ALARMS".Pivot_Conflict; // DBX3.3
+//;
+      A     "M 66.7"; 
+      =     "HMI ALARMS".C13_Delivery_Fault; // DBX3.4
+//;
+      A     "M 86.7"; 
+      =     "HMI ALARMS".C23_Delivery_Fault; // DBX3.5
+NETWORK
+TITLE =Drive
+
+      A     "M 3.0"; 
+      =     "HMI ALARMS".VFD_U44_3; // DBX4.0
+//;
+      A     "M 3.1"; 
+      =     "HMI ALARMS".VFD_U45_0; // DBX4.1
+//;
+      A     "M 3.2"; 
+      =     "HMI ALARMS".VFD_U45_3; // DBX4.2
+//;
+      A     "M 3.3"; 
+      =     "HMI ALARMS".VFD_U45_6; // DBX4.3
+//;
+      A     "M 3.4"; 
+      =     "HMI ALARMS".VFD_U46_0; // DBX4.4
+//;
+      A     "M 3.5"; 
+      =     "HMI ALARMS".VFD_U46_4; // DBX4.5
+//;
+      A     "M 3.6"; 
+      =     "HMI ALARMS".VFD_U47_0; // DBX4.6
+//;
+      A     "M 3.7"; 
+      =     "HMI ALARMS".VFD_U47_5; // DBX4.7
+//;
+      A     "M 4.0"; 
+      =     "HMI ALARMS".VFD_U47_6; // DBX5.0
+//;
+      A     "M 4.1"; 
+      =     "HMI ALARMS".VFD_U48_0; // DBX5.1
+//;
+      A     "M 4.2"; 
+      =     "HMI ALARMS".VFD_U48_3; // DBX5.2
+//;
+      A     "M 4.3"; 
+      =     "HMI ALARMS".VFD_U48_6; // DBX5.3
+//;
+      A     "M 4.4"; 
+      =     "HMI ALARMS".VFD_U49_0; // DBX5.4
+//;
+      A     "M 4.5"; 
+      =     "HMI ALARMS".VFD_U53_2; // DBX5.5
+//;
+      A     "M 4.6"; 
+      =     "HMI ALARMS".VFD_U53_4; // DBX5.6
+//;
+      A     "M 4.7"; 
+      =     "HMI ALARMS".VFD_U54_0; // DBX5.7
+NETWORK
+TITLE =Sensor
+
+      A     #CUE; 
+      A     "B 5.1"; 
+      =     "HMI ALARMS".Sens_B5_1_On; // DBX6.0
+//;
+      A     #CUE; 
+      A     "B 5.2"; 
+      =     "HMI ALARMS".Sens_B5_2_On; // DBX6.1
+//;
+      A     #CUE; 
+      A     "B 5.4"; 
+      =     "HMI ALARMS".Sens_B5_4_On; // DBX6.2
+//;
+      A     #CUE; 
+      A     "B 5.5"; 
+      =     "HMI ALARMS".Sens_B5_5_On; // DBX6.3
+//;
+      A     #CUE; 
+      A     "B 6.0"; 
+      =     "HMI ALARMS".Sens_B6_0_On; // DBX6.4
+//;
+      A     #CUE; 
+      A     "B 6.7"; 
+      =     "HMI ALARMS".Sens_B6_7_On; // DBX6.5
+//;
+      A     #CUE; 
+      A     "B 7.0"; 
+      =     "HMI ALARMS".Sens_B7_0_On; // DBX6.6
+//;
+      A     #CUE; 
+      A     "B 7.1"; 
+      =     "HMI ALARMS".Sens_B7_1_On; // DBX6.7
+//;
+      A     #CUE; 
+      A     "B 7.2"; 
+      =     "HMI ALARMS".Sens_B7_2_On; // DBX7.0
+//;
+      A     #CUE; 
+      A     "B 7.3"; 
+      =     "HMI ALARMS".Sens_B7_3_On; // DBX7.1
+//;
+      A     #CUE; 
+      A     "B 7.4"; 
+      =     "HMI ALARMS".Sens_B7_4_On; // DBX7.2
+//;
+      A     #CUE; 
+      A     "B 8.2"; 
+      =     "HMI ALARMS".Sens_B8_2_On; // DBX7.3
+//;
+      A     #CUE; 
+      A     "B 9.6"; 
+      =     "HMI ALARMS".Sens_B9_6_On; // DBX7.4
+//;
+      A     #CUE; 
+      A     "B 9.7"; 
+      =     "HMI ALARMS".Sens_B9_7_On; // DBX7.5
+//;
+      A     #CUE; 
+      A     "B 10.4"; 
+      =     "HMI ALARMS".Sens_B10_4_On; // DBX7.6
+//;
+      A     #CUE; 
+      A     "B 10.5"; 
+      =     "HMI ALARMS".Sens_B10_5_On; // DBX7.7
+//;
+      A     #CUE; 
+      A     "B 10.7"; 
+      =     "HMI ALARMS".Sens_B10_7_On; // DBX8.0
+//;
+      A     #CUE; 
+      A     "B 11.0"; 
+      =     "HMI ALARMS".Sens_B11_0_On; // DBX8.1
+//;
+      A     #CUE; 
+      A     "B 11.1"; 
+      =     "HMI ALARMS".Sens_B11_1_On; // DBX8.2
+//;
+      A     #CUE; 
+      AN    "B 5.4"; 
+      =     "HMI ALARMS".Sens_B5_4_Off; // DBX8.3
+//;
+      A     #CUE; 
+      AN    "B 9.7"; 
+      =     "HMI ALARMS".Sens_B9_7_Off; // DBX8.4
+NETWORK
+TITLE =Status
+
+      A     "M 10.0"; 
+      =     "HMI ALARMS".Clearing_Active; // DBX9.0
+//;
+      A     "M 11.7"; 
+      =     "HMI ALARMS".Packets_Present; // DBX9.1
+//;
+      AN    "M 0.3"; 
+      AN    "M 0.2"; 
+      AN    "M 0.1"; 
+      =     "HMI ALARMS".Control_Off; // DBX9.2
+//;
+      A     "M 0.2"; 
+      AN    "M 0.3"; 
+      =     "HMI ALARMS".Start_Ready; // DBX9.3
+NETWORK
+TITLE =Any Fault / Any Alarm - NS12 Alarm Bar (Control Flag)
+//Bytes 0...8 = faults (spare bits are never set). Byte 9 bits 0...3 = status.
+      A(    ; 
+      L     DB13.DBD    0; // Bytes 0...3
+      L     L#0; 
+      <>D   ; 
+      )     ; 
+      O(    ; 
+      L     DB13.DBD    4; // Bytes 4...7
+      L     L#0; 
+      <>D   ; 
+      )     ; 
+      O(    ; 
+      L     DB13.DBB    8; // Byte 8
+      L     0; 
+      <>I   ; 
+      )     ; 
+      =     "HMI ALARMS".Any_Fault; // DBX9.6
+//;
+      A(    ; 
+      L     DB13.DBB    9; // Status 9.0...9.3
+      L     B#16#F; 
+      AW    ; 
+      L     0; 
+      <>I   ; 
+      )     ; 
+      O     "HMI ALARMS".Any_Fault; 
+      =     "HMI ALARMS".Any_Alarm; // DBX9.7
+END_FUNCTION

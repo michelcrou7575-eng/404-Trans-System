@@ -1,0 +1,406 @@
+FUNCTION "LAUER" : VOID
+TITLE =
+NAME : SCHRIANZ
+VERSION : 0.0
+
+
+VAR_TEMP
+  TEMP0 : DWORD ;	
+  TEMP1 : DWORD ;	
+  TEMP2 : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+
+NETWORK
+TITLE =
+
+      AN    "M 150.7"; 
+      JC    M001; 
+      L     2#100000000; 
+      T     DBW   72; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      ON    "M 150.7"; 
+      JC    M002; 
+      L     2#1; 
+      T     DBW   76; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+      O(    ; 
+      L     DBW  300; 
+      L     77; 
+      <I    ; 
+      )     ; 
+      O(    ; 
+      L     DBW  300; 
+      L     102; 
+      >I    ; 
+      )     ; 
+      JC    M003; 
+      JU    M004; 
+M003: L     77; 
+      T     DBW  300; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      L     "DB LAUER".D_150; 
+      L     77; 
+      <>I   ; 
+      JC    M005; 
+      L     "MW 15"; 
+      T     "MW 200"; 
+      L     "MB 17"; 
+      T     MB   202; 
+M005: L     DBW  300; 
+      L     78; 
+      <>I   ; 
+      JC    M006; 
+      L     "MW 19"; 
+      T     "MW 200"; 
+      L     "MB 21"; 
+      T     MB   202; 
+M006: L     DBW  300; 
+      L     79; 
+      <>I   ; 
+      JC    M007; 
+      L     "MW 23"; 
+      T     "MW 200"; 
+      L     "MB 25"; 
+      T     MB   202; 
+M007: L     DBW  300; 
+      L     80; 
+      <>I   ; 
+      JC    M008; 
+      L     "MW 27"; 
+      T     "MW 200"; 
+      L     "MB 29"; 
+      T     MB   202; 
+M008: L     DBW  300; 
+      L     81; 
+      <>I   ; 
+      JC    M009; 
+      L     "MW 31"; 
+      T     "MW 200"; 
+      L     "MB 33"; 
+      T     MB   202; 
+M009: L     DBW  300; 
+      L     82; 
+      <>I   ; 
+      JC    M00a; 
+      L     "MW 35"; 
+      T     "MW 200"; 
+      L     "MB 37"; 
+      T     MB   202; 
+M00a: L     DBW  300; 
+      L     83; 
+      <>I   ; 
+      JC    M00b; 
+      L     "MW 39"; 
+      T     "MW 200"; 
+      L     "MB 41"; 
+      T     MB   202; 
+M00b: L     DBW  300; 
+      L     84; 
+      <>I   ; 
+      JC    M00c; 
+      L     "MW 43"; 
+      T     "MW 200"; 
+      L     "MB 45"; 
+      T     MB   202; 
+M00c: L     DBW  300; 
+      L     85; 
+      <>I   ; 
+      JC    M00d; 
+      L     "MW 47"; 
+      T     "MW 200"; 
+      L     "MB 49"; 
+      T     MB   202; 
+M00d: L     DBW  300; 
+      L     86; 
+      <>I   ; 
+      JC    M00e; 
+      L     "MW 51"; 
+      T     "MW 200"; 
+      L     "MB 53"; 
+      T     MB   202; 
+M00e: L     DBW  300; 
+      L     87; 
+      <>I   ; 
+      JC    M00f; 
+      L     "MW 55"; 
+      T     "MW 200"; 
+      L     "MB 57"; 
+      T     MB   202; 
+M00f: L     DBW  300; 
+      L     88; 
+      <>I   ; 
+      JC    M010; 
+      L     "MW 59"; 
+      T     "MW 200"; 
+      L     "MB 61"; 
+      T     MB   202; 
+M010: L     DBW  300; 
+      L     89; 
+      <>I   ; 
+      JC    M011; 
+      L     "MW 63"; 
+      T     "MW 200"; 
+      T     "MW 200"; 
+      L     "MB 65"; 
+      T     MB   202; 
+M011: L     DBW  300; 
+      L     90; 
+      <>I   ; 
+      JC    M012; 
+      L     "MW 67"; 
+      T     "MW 200"; 
+      L     "MB 69"; 
+      T     MB   202; 
+M012: L     DBW  300; 
+      L     91; 
+      <>I   ; 
+      JC    M013; 
+      L     "MW 71"; 
+      T     "MW 200"; 
+      L     "MB 73"; 
+      T     MB   202; 
+M013: L     DBW  300; 
+      L     92; 
+      <>I   ; 
+      JC    M014; 
+      L     "MW 75"; 
+      T     "MW 200"; 
+      L     "MB 77"; 
+      T     MB   202; 
+M014: L     DBW  300; 
+      L     93; 
+      <>I   ; 
+      JC    M015; 
+      L     "MW 79"; 
+      T     "MW 200"; 
+      L     "MB 81"; 
+      T     MB   202; 
+M015: L     DBW  300; 
+      L     94; 
+      <>I   ; 
+      JC    M016; 
+      L     "MW 83"; 
+      T     "MW 200"; 
+      L     "MB 85"; 
+      T     MB   202; 
+M016: L     DBW  300; 
+      L     95; 
+      <>I   ; 
+      JC    M017; 
+      L     "MW 87"; 
+      T     "MW 200"; 
+      L     "MB 89"; 
+      T     MB   202; 
+M017: L     DBW  300; 
+      L     96; 
+      <>I   ; 
+      JC    M018; 
+      L     "MW 91"; 
+      T     "MW 200"; 
+      L     "MB 93"; 
+      T     MB   202; 
+M018: L     DBW  300; 
+      L     97; 
+      <>I   ; 
+      JC    M019; 
+      L     "MW 95"; 
+      T     "MW 200"; 
+      L     "MB 97"; 
+      T     MB   202; 
+M019: L     DBW  300; 
+      L     98; 
+      <>I   ; 
+      JC    M01a; 
+      L     "MW 99"; 
+      T     "MW 200"; 
+      L     "MB 101"; 
+      T     MB   202; 
+M01a: L     DBW  300; 
+      L     99; 
+      <>I   ; 
+      JC    M01b; 
+      L     "MW 103"; 
+      T     "MW 200"; 
+      L     "MB 105"; 
+      T     MB   202; 
+M01b: L     DBW  300; 
+      L     100; 
+      <>I   ; 
+      JC    M01c; 
+      L     "MW 107"; 
+      T     "MW 200"; 
+      L     "MB 109"; 
+      T     MB   202; 
+M01c: L     DBW  300; 
+      L     101; 
+      <>I   ; 
+      JC    M01d; 
+      L     "MW 111"; 
+      L     "MW 200"; 
+      L     "MB 113"; 
+      T     MB   202; 
+M01d: L     DBW  300; 
+      L     102; 
+      <>I   ; 
+      JC    M01e; 
+      L     "MW 115"; 
+      T     "MW 200"; 
+      L     "MB 117"; 
+      T     MB   202; 
+M01e: NOP   0; 
+NETWORK
+TITLE =
+
+      L     W#16#0; 
+      T     MB   204; 
+      L     W#16#80; 
+      T     MB   207; 
+NETWORK
+TITLE =
+
+      AN    "M 203.0"; 
+      JC    M01f; 
+      L     25; 
+      T     MB   204; 
+M020: L     MB   203; 
+      SRW   1; 
+      T     MB   203; 
+      L     MB   207; 
+      SRW   1; 
+      T     "MW 207"; 
+      AN    "M 203.0"; 
+      JC    M021; 
+      L     MB   204; 
+      INC   1; 
+      T     MB   204; 
+M021: AN    "M 207.0"; 
+      JC    M020; 
+      JU    M022; 
+M01f: AN    "M 202.0"; 
+      JC    M023; 
+      L     17; 
+      T     MB   204; 
+M024: L     MB   202; 
+      SRW   1; 
+      T     MB   202; 
+      L     MB   207; 
+      SRW   1; 
+      T     MB   207; 
+      AN    "M 202.0"; 
+      JC    M025; 
+      L     MB   204; 
+      INC   1; 
+      T     MB   204; 
+M025: AN    "M 207.0"; 
+      JC    M024; 
+      JU    M022; 
+M023: AN    "M 201.0"; 
+      JC    M026; 
+      L     9; 
+      T     MB   204; 
+M027: L     "MB 201"; 
+      SRW   1; 
+      T     "MB 201"; 
+      L     MB   207; 
+      SRW   1; 
+      T     MB   207; 
+      AN    "M 201.0"; 
+      JC    M028; 
+      L     MB   204; 
+      INC   1; 
+      T     MB   204; 
+M028: AN    "M 207.0"; 
+      JC    M027; 
+      JU    M022; 
+M026: AN    "M 200.0"; 
+      JC    M022; 
+      L     1; 
+      T     MB   204; 
+M029: L     "MB 200"; 
+      SRW   1; 
+      T     "MB 200"; 
+      L     MB   207; 
+      SRW   1; 
+      T     MB   207; 
+      AN    "M 200.0"; 
+      JC    M02a; 
+      L     MB   204; 
+      INC   1; 
+      T     MB   204; 
+M02a: AN    "M 207.0"; 
+      JC    M029; 
+M022: NOP   0; 
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+      OPN   "DB LAUER"; 
+      L     MB   204; 
+      T     #TEMP0; 
+      TAK   ; 
+      T     #TEMP1; 
+      L     STW; 
+      T     #TEMP2; 
+      L     DBB  301; 
+      SLW   4; 
+      LAR1  ; 
+      L     #TEMP2; 
+      T     STW; 
+      L     #TEMP1; 
+      L     #TEMP0; 
+      T     DBW [AR1,P#0.0]; 
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+      L     "DB LAUER".D_150; 
+      INC   1; 
+      T     DBW  300; 
+NETWORK
+TITLE =
+
+
+
+NETWORK
+TITLE =
+
+
+
+END_FUNCTION

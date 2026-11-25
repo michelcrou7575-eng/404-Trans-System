@@ -2,15 +2,15 @@
 
 Symbol table exported from CX-Designer, matched with DB12 "HMI_DB" and DB1 "DB UTILITY" (offsets calculated from the DB sources).
 
-⚠️ `Run_PB` = `"HMI_DB".ON_SW` and `ON_Sw` = `"HMI_DB".AERIAL_LINK_RUN_PB`: the two NS12 names are swapped compared with the PLC.
+⚠️ `Run_PB` = `"HMI_DB".TRANS_SYSTEM_ON_SW` (was ON_SW) and `ON_Sw` = `"HMI_DB".TRANS_SYSTEM_RUN_STATUS` (was AERIAL_LINK_RUN_PB, renamed 2026-11-25): the two NS12 names are swapped compared with the PLC.
 
 | NS12 symbol | Type | NS12 address | PLC field | Comment |
 |---|---|---|---|---|
 | AutoGen4 | BOOL | `M00000.00` | "M 0.0" (FL ALWAYS ON) |  |
 | Emergency_Blinker | BOOL | `DB0012_DBX00000.01` | "HMI_DB".EMERGENCY_BLINK | FL Emergency Blink |
 | Compressed_Air | BOOL | `DB0012_DBX00000.03` | "HMI_DB".COMPRESSED_AIR | FLS Compressed Air |
-| Run_PB | BOOL | `DB0012_DBX00000.02` | "HMI_DB".ON_SW | FLS On Sw Temporary |
-| ON_Sw | BOOL | `DB0012_DBX00000.04` | "HMI_DB".AERIAL_LINK_RUN_PB | FLS 508 Link Run SW - Diabled |
+| Run_PB | BOOL | `DB0012_DBX00000.02` | "HMI_DB".TRANS_SYSTEM_ON_SW | FLS On Sw Temporary |
+| ON_Sw | BOOL | `DB0012_DBX00000.04` | "HMI_DB".TRANS_SYSTEM_RUN_STATUS | FLS 508 Link Run SW - Diabled |
 | AutoGen20 | CHANNEL | `DB0012_DBW00008` | "HMI_DB".word of BOOL bytes 8-9 (ELEVATOR_MOTOR_STATUS ... CONVEYOR_10_MOTOR_STATUS) |  |
 | Service_SW_Status_1 | BOOL | `DB0012_DBX00001.00` | "HMI_DB".SERVICE_SW_1_STATUS | FLS Service 1 Switch |
 | Service_SW_Status_3 | BOOL | `DB0012_DBX00001.02` | "HMI_DB".SERVICE_SW_3_STATUS | FLS Service 3 Switch |

@@ -1,0 +1,29 @@
+FUNCTION "LAUER COMM ERR FC" : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+//;    Please choose your PCS and add the commands to your network 
+//;                      // Example PCS900/PCS 920/PCS950
+//;                      // Typical presets
+//;L W#16#1F00;  //(3F00 PCS950/PCS 920)
+//;T DBW 72;
+//;L W#16#00FF;
+//;T DBW 74;
+//;L W#16#0080;
+//:T DBW 76;
+//;                      // Example PCS009/PCS090/PCS095
+//;                      // Typical presets
+//;     L W#16#0FC8;
+//;     T DBW 26;
+//;     L W#16#0080;
+//;     T DBW 28;
+      L     W#16#0; 
+      T     DBW    8; 
+      T     DBW   10; 
+      T     DBW   12; 
+      T     DBW   14; 
+      T     DBW   46; 
+END_FUNCTION

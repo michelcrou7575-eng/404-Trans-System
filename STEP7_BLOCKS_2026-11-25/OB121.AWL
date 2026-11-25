@@ -1,0 +1,22 @@
+ORGANIZATION_BLOCK "PROG_ERR"
+TITLE = "Programming Error"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB121_EV_CLASS : BYTE ;	//16#25, Event class 2, Entering event state, Internal fault event
+  OB121_SW_FLT : BYTE ;	//16#XX Software programming fault
+  OB121_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB121_OB_NUMBR : BYTE ;	//121 (Organization block 121, OB121)
+  OB121_BLK_TYPE : BYTE ;	//16#88/8A/8B/8C/8E Type of block fault occured in
+  OB121_RESERVED_1 : BYTE ;	//Reserved for system
+  OB121_FLT_REG : WORD ;	//16#XX Specific register that caused fault
+  OB121_BLK_NUM : WORD ;	//Number of block that programming fault occured in
+  OB121_PRG_ADDR : WORD ;	//Address in block where programming fault occured
+  OB121_DATE_TIME : DATE_AND_TIME ;	//Date and time OB121 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+END_ORGANIZATION_BLOCK

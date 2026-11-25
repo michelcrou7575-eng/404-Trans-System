@@ -1,0 +1,376 @@
+FUNCTION "PACKET POSITIONING" : VOID
+TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Lengt
+//v1.0 2026-11-23: called by FC942 v1.0. Picks the stop time of the length class
+//of the packets (C4 measurement), lights the class lamp, and lets the operator
+//change that class time with the HMI arrows (+/- Step_ms, Min_ms...Max_ms).
+//Writes only DB15 "PACKET POSITION DB". Empty table = Default_ms = 1.5 s as before.
+//v1.1 2026-11-24: HMI packet drawing: length (DBW86) + width class bits (DBX90.x).
+//v1.2 2026-11-24: renumbered FC1221 -> FC1215 (same name "FLIPPER POS ADJ", no
+//code change). FC942 calls it by name.
+//v1.3 2026-11-24: renamed "PACKET POSITIONING". + C9 Pusher 2 conveyor: same
+//length class, own table / arrows, default = "HMI_DB".CONV_9_POS_mS x 10 (as
+//before). Output C9_Stop_S5T for FC950 v1.0 Timer 62.
+//v1.4 2026-11-24: C9 HMI drawing: C9_Pos_Bits (one of 16 lateral positions).
+//v1.5 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" - no code change.
+VERSION : 1.5
+
+
+VAR_TEMP
+  CLASS : INT ;	
+  T_TAB : INT ;	
+  T_NEW : INT ;	
+  T_DEF : INT ;	
+  T_TIME : TIME ;	
+  S5 : S5TIME ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Packet Length -> Class (15 mm Steps from 510 mm, 0...31)
+
+      L     "HOUSE_KEEPING DB".C4_Packet_Length_mm; 
+      T     "PACKET POSITION DB".Length_mm; 
+      L     510; 
+      -I    ; 
+      L     15; 
+      /I    ; 
+      T     #CLASS; 
+      L     0; 
+      >=I   ; 
+      JC    K001; 
+
+      L     0; 
+      T     #CLASS; 
+
+K001: L     #CLASS; 
+      L     31; 
+      <=I   ; 
+      JC    K002; 
+
+      L     31; 
+      T     #CLASS; 
+
+K002: L     #CLASS; 
+      T     "PACKET POSITION DB".Class; 
+//;
+      L     #CLASS; // Class Lamp: Bit = Class
+      L     L#1; 
+      SLD   ; 
+      T     "PACKET POSITION DB".Class_Lamps; 
+NETWORK
+TITLE =C7 Flipper - Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x 
+
+      L     #CLASS; 
+      SLW   1; 
+      L     22; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "PACKET POSITION DB"; 
+      L     DBW [AR1,P#0.0]; 
+      T     #T_TAB; 
+NETWORK
+TITLE =C7 Flipper - HMI Arrows / Reset - Change This Class Time
+//The HMI sets Plus_PB / Minus_PB / Reset_PB, the PLC resets them after use:
+//one press = one step.
+      L     #T_TAB; // Start From the Time Used (0 = Default)
+      L     0; 
+      <>I   ; 
+      JC    K010; 
+
+      L     "PACKET POSITION DB".Default_ms; 
+      JU    K011; 
+
+K010: L     #T_TAB; 
+K011: T     #T_NEW; 
+//;
+      A     "PACKET POSITION DB".Plus_PB; 
+      JCN   K012; 
+
+      L     #T_NEW; 
+      L     "PACKET POSITION DB".Step_ms; 
+      +I    ; 
+      T     #T_NEW; 
+
+K012: A     "PACKET POSITION DB".Minus_PB; 
+      JCN   K013; 
+
+      L     #T_NEW; 
+      L     "PACKET POSITION DB".Step_ms; 
+      -I    ; 
+      T     #T_NEW; 
+
+K013: L     #T_NEW; // Clamp Min...Max
+      L     "PACKET POSITION DB".Min_ms; 
+      >=I   ; 
+      JC    K014; 
+
+      L     "PACKET POSITION DB".Min_ms; 
+      T     #T_NEW; 
+
+K014: L     #T_NEW; 
+      L     "PACKET POSITION DB".Max_ms; 
+      <=I   ; 
+      JC    K015; 
+
+      L     "PACKET POSITION DB".Max_ms; 
+      T     #T_NEW; 
+
+K015: NOP   0; 
+NETWORK
+TITLE =C7 Flipper - Write Back After an Arrow / Reset
+
+      A     "PACKET POSITION DB".Reset_PB; 
+      JCN   K020; 
+
+      L     0; // Class Back to Default
+      T     #T_TAB; 
+      JU    K021; 
+
+K020: A(    ; 
+      O     "PACKET POSITION DB".Plus_PB; 
+      O     "PACKET POSITION DB".Minus_PB; 
+      )     ; 
+      JCN   K022; 
+
+      L     #T_NEW; 
+      T     #T_TAB; 
+
+K021: L     #CLASS; 
+      SLW   1; 
+      L     22; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "PACKET POSITION DB"; 
+      L     #T_TAB; 
+      T     DBW [AR1,P#0.0]; 
+
+K022: SET   ; // Momentary: Reset by the PLC
+      R     "PACKET POSITION DB".Plus_PB; 
+      R     "PACKET POSITION DB".Minus_PB; 
+      R     "PACKET POSITION DB".Reset_PB; 
+NETWORK
+TITLE =HMI Packet Drawing - Length + Width Class (4 Pairs of Level Meters)
+//Width = C10 measured width (DB30 Width_mm_Cal, last verified, same order).
+//0 (not measured yet) = smallest class.
+      L     "PACKET POSITION DB".Length_mm; 
+      T     "PACKET POSITION DB".Disp_Length_mm; 
+//;
+      L     "PACKET WIDTH DB".Width_mm_Cal; 
+      T     "PACKET POSITION DB".Width_mm; 
+//;
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_1; 
+      <I    ; 
+      =     "PACKET POSITION DB".Width_Class_1; 
+//;
+      A(    ; 
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_1; 
+      >=I   ; 
+      )     ; 
+      A(    ; 
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_2; 
+      <I    ; 
+      )     ; 
+      =     "PACKET POSITION DB".Width_Class_2; 
+//;
+      A(    ; 
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_2; 
+      >=I   ; 
+      )     ; 
+      A(    ; 
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_3; 
+      <I    ; 
+      )     ; 
+      =     "PACKET POSITION DB".Width_Class_3; 
+//;
+      L     "PACKET POSITION DB".Width_mm; 
+      L     "PACKET POSITION DB".Width_Lim_3; 
+      >=I   ; 
+      =     "PACKET POSITION DB".Width_Class_4; 
+NETWORK
+TITLE =C7 Flipper - Stop Time Used -> S5TIME for FC942 Timer 42
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      A     "PACKET POSITION DB".Use_Table; 
+      JC    K030; 
+
+      L     "PACKET POSITION DB".Default_ms; 
+      JU    K031; 
+
+K030: L     #T_TAB; 
+K031: T     "PACKET POSITION DB".Time_Used_ms; 
+      ITD   ; 
+      T     #T_TIME; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #T_TIME,
+           RET_VAL                  := #S5);
+
+      L     #S5; 
+      T     "PACKET POSITION DB".Stop_S5T; 
+NETWORK
+TITLE =C9 Pusher 2 - Read the Class Time (C9_Time_ms[Class], DB15.DBW108 +
+
+      L     "PACKET POSITION DB".Class; 
+      T     #CLASS; 
+      SLW   1; 
+      L     108; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "PACKET POSITION DB"; 
+      L     DBW [AR1,P#0.0]; 
+      T     #T_TAB; 
+//;
+      L     "HMI_DB".CONV_9_POS_mS; // C9 Default = HMI Time x 10 mS (as Before)
+      L     10; 
+      *I    ; 
+      T     #T_DEF; 
+NETWORK
+TITLE =C9 Pusher 2 - HMI Arrows / Reset - Change This Class Time
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      JC    C010; 
+
+      L     #T_DEF; 
+      JU    C011; 
+
+C010: L     #T_TAB; 
+C011: T     #T_NEW; 
+//;
+      A     "PACKET POSITION DB".C9_Plus_PB; 
+      JCN   C012; 
+
+      L     #T_NEW; 
+      L     "PACKET POSITION DB".Step_ms; 
+      +I    ; 
+      T     #T_NEW; 
+
+C012: A     "PACKET POSITION DB".C9_Minus_PB; 
+      JCN   C013; 
+
+      L     #T_NEW; 
+      L     "PACKET POSITION DB".Step_ms; 
+      -I    ; 
+      T     #T_NEW; 
+
+C013: L     #T_NEW; // Clamp 1...Max (0 Means Default)
+      L     1; 
+      >=I   ; 
+      JC    C014; 
+
+      L     1; 
+      T     #T_NEW; 
+
+C014: L     #T_NEW; 
+      L     "PACKET POSITION DB".Max_ms; 
+      <=I   ; 
+      JC    C015; 
+
+      L     "PACKET POSITION DB".Max_ms; 
+      T     #T_NEW; 
+
+C015: NOP   0; 
+NETWORK
+TITLE =C9 Pusher 2 - Write Back After an Arrow / Reset
+
+      A     "PACKET POSITION DB".C9_Reset_PB; 
+      JCN   C020; 
+
+      L     0; // Class Back to Default
+      T     #T_TAB; 
+      JU    C021; 
+
+C020: A(    ; 
+      O     "PACKET POSITION DB".C9_Plus_PB; 
+      O     "PACKET POSITION DB".C9_Minus_PB; 
+      )     ; 
+      JCN   C022; 
+
+      L     #T_NEW; 
+      T     #T_TAB; 
+
+C021: L     #CLASS; 
+      SLW   1; 
+      L     108; 
+      +I    ; 
+      SLD   3; 
+      LAR1  ; 
+      OPN   "PACKET POSITION DB"; 
+      L     #T_TAB; 
+      T     DBW [AR1,P#0.0]; 
+
+C022: SET   ; // Momentary: Reset by the PLC
+      R     "PACKET POSITION DB".C9_Plus_PB; 
+      R     "PACKET POSITION DB".C9_Minus_PB; 
+      R     "PACKET POSITION DB".C9_Reset_PB; 
+NETWORK
+TITLE =C9 Pusher 2 - Stop Time Used -> S5TIME for FC950 Timer 62
+
+      L     #T_TAB; 
+      L     0; 
+      <>I   ; 
+      A     "PACKET POSITION DB".C9_Use_Table; 
+      JC    C030; 
+
+      L     #T_DEF; 
+      JU    C031; 
+
+C030: L     #T_TAB; 
+C031: T     "PACKET POSITION DB".C9_Time_Used_ms; 
+      ITD   ; 
+      T     #T_TIME; 
+
+      CALL "TIM_S5TI" (
+           IN                       := #T_TIME,
+           RET_VAL                  := #S5);
+
+      L     #S5; 
+      T     "PACKET POSITION DB".C9_Stop_S5T; 
+NETWORK
+TITLE =C9 Pusher 2 - HMI Drawing: 1 of 16 Lateral Positions (Longer Time =
+
+      L     "PACKET POSITION DB".C9_View_Step_ms; // Step 0 -> Copy 0
+      L     0; 
+      >I    ; 
+      JC    C040; 
+
+      L     0; 
+      JU    C042; 
+
+C040: L     "PACKET POSITION DB".C9_Time_Used_ms; 
+      L     "PACKET POSITION DB".C9_View_Min_ms; 
+      -I    ; 
+      L     "PACKET POSITION DB".C9_View_Step_ms; 
+      /I    ; 
+      T     #T_NEW; 
+      L     0; 
+      >=I   ; 
+      JC    C041; 
+
+      L     0; 
+      T     #T_NEW; 
+
+C041: L     #T_NEW; 
+      L     15; 
+      <=I   ; 
+      L     #T_NEW; 
+      JC    C042; 
+
+      L     15; 
+C042: T     "PACKET POSITION DB".C9_Pos_Step; 
+//;
+      L     "PACKET POSITION DB".C9_Pos_Step; // One Bit = Step
+      L     L#1; 
+      SLD   ; 
+      T     "PACKET POSITION DB".C9_Pos_Bits; 
+END_FUNCTION

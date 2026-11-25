@@ -1,0 +1,759 @@
+DATA_BLOCK "HMI DB NEW"
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   GRAPHIC_INIT : BOOL ;	//NEW FL Graphic Init
+   EMERGENCY_BLINK : BOOL ;	//NEW FL Emergency Blink
+   ON_SW : BOOL ;	//NEW FLS On Sw Temporary
+   COMPRESSED_AIR : BOOL ;	//NEW FLS Compressed Air 
+   AERIAL_LINK_RUN_PB : BOOL ;	//NEW FLS 508 Link Run SW - Diabled
+   PACKET_in_FLIPPER_SW : BOOL ;	//NEW FLS Service Enable Switch - Disabled
+   SERVICE_INIT_PB : BOOL ;	//NEW FLS Service Initialisation PB
+   ALL_SERVICE_ENABLE_SW : BOOL ;	//NEW FLS All Services Enable Switch
+   SERVICE_SW_1_STATUS : BOOL ;	//NEW FLS Service 1 Switch
+   SERVICE_SW_2_STATUS : BOOL ;	//NEW FLS Service 2 Switch
+   SERVICE_SW_3_STATUS : BOOL ;	//NEW FLS Service 3 Switch
+   SERVICE_SW_1_2_STATUS : BOOL ;	//NEW FLS Service 1 or 2 Switch
+   BIT12 : BOOL ;	//NEW FLS Spare
+   BIT13 : BOOL ;	//NEW FLS Spare
+   SERVICE_SW_2_TIME_ADJ : BOOL ;	//NEW FLS Service 2 Switch - Time Adjust
+   PACKETIZER_GATE_STATUS : BOOL ;	//NEW FLS 2145 Packetizer Flap Gate - Status Bit
+   E_STOP_CONSOLE_STATUS : BOOL ;	//NEW FL E-Stop Console
+   E_STOP_ELEVATOR_STATUS : BOOL ;	//NEW FL E-Stop Elevator
+   E_STOP_FLIPPER_STATUS : BOOL ;	//NEW FL E-Stop Flipper
+   E_STOP_LOADER_STATUS : BOOL ;	//NEW FL E-Stop Loader
+   HAND_FEED_ARROW_STATUS : BOOL ;	//NEW FL Hand Feed Arrow
+   ELEVATOR_DOOR_STATUS : BOOL ;	//NEW FL Elevator Door
+   FLIPPER_DOOR_STATUS : BOOL ;	//NEW FL Flipper Door
+   LOADER_DOOR_STATUS : BOOL ;	//NEW FL Loader Door
+   LIGHT_BARRIER_1_STATUS : BOOL ;	//NEW FL Light Barrier 1 - B5.4 Conveyor 1 Exit - Status Bit
+   LIGHT_BARRIER_2_STATUS : BOOL ;	//NEW FL Light Barrier 2 - B5.5 Conveyor 2 InFeed - Status Bit
+   LIGHT_BARRIER_3_STATUS : BOOL ;	//NEW FL Light Barrier 3 - B6.0 Conveyor 2 Presence - Status Bit
+   LIGHT_BARRIER_4_STATUS : BOOL ;	//NEW FL Light Barrier 4 - B6.1 Conveyor 2 Exit - Status Bit
+   LIGHT_BARRIER_5_STATUS : BOOL ;	//NEW FL Light Barrier 5 - B6.2 Conveyor 3 InFeed - Status Bit
+   LIGHT_BARRIER_6_STATUS : BOOL ;	//NEW FL Light Barrier 6 - B6.4 Conveyor 3 Exit - Status Bit
+   LIGHT_BARRIER_B_STATUS : BOOL ;	//NEW FL Light Barrier B - B5.2 Elevator Limit - Status Bit
+   LIGHT_BARRIER_A_STATUS : BOOL ;	//NEW FL Light Barrier A - B5.1 Elevator InFeed - Status Bit
+   BIT32 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT33 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT34 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT35 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT36 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT37 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT38 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT39 : BOOL ;	//NEW FL Pusher 0 Motion 
+   BIT40 : BOOL ;	//NEW FL Elevator Motion 
+   BIT41 : BOOL ;	//NEW FL Elevator Motion 
+   BIT42 : BOOL ;	//NEW FL Elevator Motion 
+   BIT43 : BOOL ;	//NEW FL Elevator Motion 
+   BIT44 : BOOL ;	//NEW FL Elevator Motion 
+   BIT45 : BOOL ;	//NEW FL Elevator Motion 
+   BIT46 : BOOL ;	//NEW FL Elevator Motion 
+   BIT47 : BOOL ;	//NEW FL Elevator Motion 
+   BIT48 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT49 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT50 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT51 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT52 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT53 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT54 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT55 : BOOL ;	//NEW FL Pusher 1 Motion 
+   BIT56 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT57 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT58 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT59 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT60 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT61 : BOOL ;	//NEW FL Pusher 2 Motion 
+   BIT62 : BOOL ;	//NEW FL Pusher 2 Motion 
+   CONVEYORS_CLEARING : BOOL ;	//NEW FL Conveyors Clearing
+   ELEVATOR_MOTOR_STATUS : BOOL ;	//NEW FL Elevator - Motor M42.0 Status Bit
+   PUSHER_1_MOTOR_STATUS : BOOL ;	//NEW FL Pusher 1 - Motor M42.6 Status Bit
+   CONVEYOR_1_MOTOR_STATUS : BOOL ;	//NEW FL Conv 1 - Motor M43.0 Status Bit
+   CONVEYOR_2B_MOTOR_STATUS : BOOL ;	//NEW FL Conv 2 Belt - Motor M43.4 Status Bit
+   CONVEYOR_2R_MOTOR_STATUS : BOOL ;	//NEW FL Conv 2 Roller - Motor M43.5 Status Bit
+   CONVEYOR_3_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 3 - Motor M44.0 Status Bit
+   CONVEYOR_4_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 4 - Motor M44.3 Status Bit
+   CONVEYOR_5_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 5 - Motor M45.0 Status Bit
+   CONVEYOR_6_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 6 - Motor M45.3 Status Bit
+   CONVEYOR_7_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 7 - Motor M45.6 Status Bit
+   FLIPPER_MOTOR_STATUS : BOOL ;	//NEW FL Flipper Flip - Motor M46.0 Status Bit
+   CONVEYOR_8_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 8 - Motor M46.4 Status Bit
+   TURNTABLE_MOTOR_STATUS : BOOL ;	//NEW FL TurnTable - Motor M47.0 Status Bit
+   CONVEYOR_9_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 9 - Motor M47.5 Status Bit
+   PUSHER_2_MOTOR_STATUS : BOOL ;	//NEW FL Pusher 2 - Motor M47.6 Status Bit
+   CONVEYOR_10_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 10 - Motor M48.0 Status Bit
+   CONVEYOR_11_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 11 - Motor M48.3 Status Bit
+   CONVEYOR_12_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 12 - Motor M48.6 Status Bit
+   CONVEYOR_13_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 13 - Motor M49.0 Status Bit
+   CONVEYOR_21_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 21 - Motor M53.2 Status Bit
+   CONVEYOR_22_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 22 - Motor M53.4 Status Bit
+   CONVEYOR_23_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 23 - Motor M54.0 Status Bit
+   LOADER_LIFT_MOTOR_STATUS : BOOL ;	//NEW FL Loader Lift - Motor M50.0 Status Bit
+   LOADER_FING_MOTOR_STATUS : BOOL ;	//NEW FL Loader Fingers - Motor M50.5 Status Bit
+   LOADER_BELT_MOTOR_STATUS : BOOL ;	//NEW FL Loader Belt - Motor M51.0 Status Bit
+   LIGHT_BARRIER_7_STATUS : BOOL ;	//NEW FL Light Barrier 7 - B6.7 Conv 4 InFeed Sens - Status 
+   LIGHT_BARRIER_8_STATUS : BOOL ;	//NEW FL Light Barrier 8 - B7.0 Conv 4 Exit Sens - Status 
+   LIGHT_BARRIER_9_STATUS : BOOL ;	//NEW FL Light Barrier 9 - B7.1 Conv 5 Exit Sens - Status 
+   LIGHT_BARRIER_10_STATUS : BOOL ;	//NEW FL Light Barrier 10 - B7.2 Conv 6 Slow Sens - Status Bit
+   LIGHT_BARRIER_11_STATUS : BOOL ;	//NEW FL Light Barrier 11 - B7.3 Conv 6 Exit Sens - Status Bit
+   LIGHT_BARRIER_12_STATUS : BOOL ;	//NEW FL Light Barrier 12 - B7.4 FLipper InFeed Sens - Status Bit
+   LIGHT_BARRIER_13_STATUS : BOOL ;	//NEW FL Light Barrier 13 - B8.2 Flipper Exit Sens - Status Bit
+   LIGHT_BARRIER_14_STATUS : BOOL ;	//NEW FL Light Barrier 14 - B9.6 Conv 9 InFeed Sens - Status Bit
+   LIGHT_BARRIER_15_STATUS : BOOL ;	//NEW FL Light Barrier 15 - B9.7 Conv 9 Packet Sens - Status Bit
+   LIGHT_BARRIER_16_STATUS : BOOL ;	//NEW FL Light Barrier 16 - B10.3 Conv 10 Start Sens - Status Bit
+   LIGHT_BARRIER_17_STATUS : BOOL ;	//NEW FL Light Barrier 17 - B10.4 Conv 10 InFeed Sens - Status Bit
+   LIGHT_BARRIER_18_STATUS : BOOL ;	//NEW FL Light Barrier 18 - B10.5 Conv 10 Full Sens - Status Bit
+   LIGHT_BARRIER_19_STATUS : BOOL ;	//NEW FL Light Barrier 19 - B10.6 Conv 10 Exit Sens - Status Bit
+   LIGHT_BARRIER_20_STATUS : BOOL ;	//NEW FL Light Barrier 20 - B10.7 Conv 11 Exit Sens - Status Bit
+   LIGHT_BARRIER_21_STATUS : BOOL ;	//NEW FL Light Barrier 21 - B11.0 Conv 12 Exit Sens - Status Bit- Status Bit
+   LIGHT_BARRIER_22_STATUS : BOOL ;	//NEW FL Light Barrier 22 - B11.1 Conv 13 Slow Sens - Status Bit
+   LIGHT_BARRIER_23_STATUS : BOOL ;	//NEW FL Light Barrier 23 - B11.2 Conv 13 Exit Sens - Status Bit
+   LIGHT_BARRIER_24_STATUS : BOOL ;	//NEW FL Light Barrier 24 - B12.3 Fingers Delivery Sens - Status Bit
+   LIGHT_BARRIER_25_STATUS : BOOL ;	//NEW FL Light Barrier 25 - B13.0 Loader Empty Sens - Status Bit
+   LIGHT_BARRIER_26_STATUS : BOOL ;	//NEW FL Light Barrier 26 - B15.4 Conv 21 Exit Sens - Status Bit
+   LIGHT_BARRIER_27_STATUS : BOOL ;	//NEW FL Light Barrier 27 - B15.5 Conv 22 Exit Sens - Status Bit
+   LIGHT_BARRIER_28_STATUS : BOOL ;	//NEW FL Light Barrier 28 - B15.6 Conv 23 Slow Sens - Status Bit
+   LIGHT_BARRIER_29_STATUS : BOOL ;	//NEW FL Light Barrier 29 - B15.7 Conv 23 Exit Sens - Status Bit
+   LIGHT_BARRIER_30_STATUS : BOOL ;	//NEW FL Light Barrier 30 - B35.2 Conv 0 InFeed Sens - Status Bit
+   LIGHT_BARRIER_31_STATUS : BOOL ;	//NEW FL Light Barrier 31 - B35.3 Conv 0 Exit Sens - Status Bit
+   LIGHT_BARRIER_32_STATUS : BOOL ;	//NEW FL Light Barrier 32 - B35.4 Conv 0 Length Sens - Status Bit
+   PROX_9_STATUS : BOOL ;	//NEW FL Prox 9 - P8.5 TurnTable Rotation InFeed Slow - Status Bit
+   PROX_10_STATUS : BOOL ;	//NEW FL Prox 10 - P8.6 TurnTable Rotation InFeed Stop - Status Bit
+   PROX_11_STATUS : BOOL ;	//NEW FL Prox 11 - P9.2 TurnTable Rotation Exit Slow - Status Bit
+   PROX_12_STATUS : BOOL ;	//NEW FL Prox 12 - P9.3 TurnTable Rotation Exit Stop - Status Bit
+   PROX_13_STATUS : BOOL ;	//NEW FL Prox 13 - P10.0 Pusher 2 Retract Sens - Status Bit
+   PROX_14_STATUS : BOOL ;	//NEW FL Prox 14 - P10.1 Pusher 2 Extend Sens - Status Bit
+   PROX_15_STATUS : BOOL ;	//NEW FL Prox 15 - P15.0 Pivot 10 High Sens - Status Bit
+   PROX_16_STATUS : BOOL ;	//NEW FL Prox 16 - P15.1 Pivot 10 Low Sens - Status Bit
+   PROX_17_STATUS : BOOL ;	//NEW FL Prox 17 - P13.2 Loader H Level Stop - Status Bit
+   PROX_18_STATUS : BOOL ;	//NEW FL Prox 18 - P13.1 Loader H Level Slow - Status Bit
+   PROX_19_STATUS : BOOL ;	//NEW FL Prox 19 - P11.4 Loader L Level Stop - Status Bit
+   PROX_20_STATUS : BOOL ;	//NEW FL Prox 20 - P11.5 Loader L Level Slow - Status Bit
+   PROX_21_STATUS : BOOL ;	//NEW FL Prox 21 - P11.6 Loader Slow Bot - Status Bit
+   PROX_22_STATUS : BOOL ;	//NEW FL Prox 22 - P11.7 Loader Stop Bot - Status Bit
+   PROX_23_STATUS : BOOL ;	//NEW FL Prox 23 - P12.0 Loader Finger Retract - Status Bit
+   PROX_24_STATUS : BOOL ;	//NEW FL Prox 24 - P12.1 Loader Finger Extend - Status Bit
+   FP131 : BOOL ;	//NEW FP One Shot
+   FP132 : BOOL ;	//NEW FP One Shot
+   FP133 : BOOL ;	//NEW FP One Shot
+   FP134 : BOOL ;	//NEW FP One Shot
+   FP135 : BOOL ;	//NEW FP One Shot
+   TURNTABLE_DELIV_POSITION : BOOL ;	//NEW FL TurnTable Delivery Position
+   TURNTABLE_REVERSE_ARROW : BOOL ;	//NEW FL TurnTable Arrow Reverse Packet
+   TURNTABLE_DIR_SELECT_SW : BOOL ;	//NEW FL TurnTable Direction Select SW
+   TURNTABLE_FLICK_MOTION : BOOL ;	//NEW FL TurnTable Flicker - Motion
+   FP140 : BOOL ;	//NEW FP One Shot
+   FP141 : BOOL ;	//NEW FP One Shot
+   FP142 : BOOL ;	//NEW FP One Shot
+   FP143 : BOOL ;	//NEW FP One Shot
+   PROX_1_STATUS : BOOL ;	//NEW FL Prox 1 - P4.0 Elevator Bottom Position - Status Bit 
+   PROX_2_STATUS : BOOL ;	//NEW FL Prox 2 - P4.1 Elevator SlowDown Bot - Status Bit 
+   PROX_3_STATUS : BOOL ;	//NEW FL Prox 3 - P4.2 Elevator SlowDown Top - Status Bit 
+   PROX_4_STATUS : BOOL ;	//NEW FL Prox 4 - P4.3 Elevator Top Position - Status Bit 
+   PROX_5_STATUS : BOOL ;	//NEW FL Prox 5 - P4.4 Pusher 1 Home - Status Bit 
+   PROX_6_STATUS : BOOL ;	//NEW FL Prox 6 - P4.5 Pusher 1 Limit - Status Bit 
+   PROX_7_STATUS : BOOL ;	//NEW FL Prox 7 - P8.0 Flipper Fingers Right Position - Status Bit 
+   PROX_8_STATUS : BOOL ;	//NEW FL Prox 8 - P8.1 Flipper Fingers Left Position - Status Bit 
+   BIT152 : BOOL ;	//NEW FL Loader Motion 
+   BIT153 : BOOL ;	//NEW FL Loader Motion 
+   BIT154 : BOOL ;	//NEW FL Loader Motion 
+   BIT155 : BOOL ;	//NEW FL Loader Motion 
+   BIT156 : BOOL ;	//NEW FL Loader Motion 
+   BIT157 : BOOL ;	//NEW FL Loader Motion 
+   BIT158 : BOOL ;	//NEW FL Loader Motion 
+   BIT159 : BOOL ;	//NEW FL Loader Motion 
+   SERVICE_SSW_MAIN : BOOL ;	//NEW FL Service SW Main Screen 
+   SERVICE_SSW_STATUS : BOOL ;	//NEW FL Service SW Main Screen - Status
+   CLEARING_SSW_MAIN : BOOL ;	//NEW FL Clearing SW Main Screen 
+   CLEARING_SSW_STATUS : BOOL ;	//NEW FL Clearing SW Main Screen - Status
+   MAN_FEED_SSW_MAIN : BOOL ;	//NEW FL Hand Feed SW Main Screen 
+   MAN_FEED_SSW_STATUS : BOOL ;	//NEW FL Hand Feed SW Main Screen - Status
+   TURNTABLE_SSW_MAIN : BOOL ;	//NEW FL Turn Table Turn SW = 1:CCW - 0:CW Main Screen 
+   TURNTABLE_SSW_STATUS : BOOL ;	//NEW FL Turn Table Select Main Screen - Status
+   FLIPPER_SSW_MAIN : BOOL ;	//NEW FL Flipper SW Main Screen 
+   FLIPPER_SSW_STATUS : BOOL ;	//NEW FL Flipper SW Main Screen - Status
+   ROLLER_SSW_MAIN : BOOL ;	//NEW FL Roller SW Main Screen 
+   ROLLER_SSW_STATUS : BOOL ;	//NEW FL Roller SW Main Screen - Status
+   ELEVATOR_ROUND_TRIP_SSW : BOOL ;	//NEW FL Elevator - Round Trip PB
+   BIT173 : BOOL ;	
+   BIT174 : BOOL ;	
+   BIT175 : BOOL ;	
+   HMI_PUSHER_0_TEST_SSW : BOOL ;	//NEW FL Pusher 0 SW
+   HMI_ELEVATOR_SERVICE_SSW : BOOL ;	//NEW FL Elevator Service SW
+   HMI_ELEVATOR_TEST_DN_SSW : BOOL ;	//NEW FL Elevator DN PB
+   HMI_ELEVATOR_TEST_UP_SSW : BOOL ;	//NEW FL Elevator UP PB
+   HMI_ROLLER_TEST_FWD_SSW : BOOL ;	//NEW FL Roller FWD SW
+   HMI_ROLLER_TEST_REV_SSW : BOOL ;	//NEW FL Roller REV SW
+   HMI_PUSHER_1_TEST_SSW : BOOL ;	//NEW FL Pusher 1 SW
+   HMI_CONVEYOR_1_TEST_SSW : BOOL ;	//NEW FL Conv 1 SW
+   HMI_CONVEYOR_2B_TEST_SSW : BOOL ;	//NEW FL Conv 2 Belt SW
+   HMI_CONVEYOR_2L_TEST_SSW : BOOL ;	//NEW FL Conv 2 Lift SW
+   HMI_CONVEYOR_2R_TEST_SSW : BOOL ;	//NEW FL Conv 2 Roller SW
+   HMI_CONVEYOR_3_TEST_SSW : BOOL ;	//NEW FL Conv 3 SW
+   HMI_CONVEYOR_4_TEST_SSW : BOOL ;	//NEW FL Conv 4 SW
+   HMI_CONVEYOR_5_TEST_SSW : BOOL ;	//NEW FL Conv 5 SW
+   HMI_CONVEYOR_6_TEST_SSW : BOOL ;	//NEW FL Conv 6 SW
+   HMI_CONVEYOR_7_TEST_SSW : BOOL ;	//NEW FL Flipper Conv 7 SW
+   HMI_CONVEYOR_8_TEST_SSW : BOOL ;	//NEW FL Turn Table Conv 8 SW
+   HMI_TURNTABLE_CCW_SSW : BOOL ;	//NEW FL Turn Table / Conveyor CCW PB
+   HMI_TURNTABLE_CW_SSW : BOOL ;	//NEW FL Turn Table / Conveyor CW PB
+   HMI_FLIPPER_SERVICE_SSW : BOOL ;	//NEW FL Flipper Service SW
+   HMI_FLIPPER_FLIP_SSW : BOOL ;	//NEW FL Flipper - Flip PB
+   HMI_CONVEYOR_9_TEST_SSW : BOOL ;	//NEW FL Conv 9 SW
+   HMI_PUSHER_2_TEST_SSW : BOOL ;	//NEW FL Pusher 2 SW
+   HMI_PIVOT_SERVICE_SSW : BOOL ;	//NEW FL Conv 10 - Pivot Service SW
+   HMI_PIVOT_TEST_DN_SSW : BOOL ;	//NEW FL Conv 10 - Pivot DN PB
+   HMI_PIVOT_TEST_UP_SSW : BOOL ;	//NEW FL Conv 10 - Pivot UP PB
+   BIT202 : BOOL ;	//NEW FL Spare
+   BIT203 : BOOL ;	//NEW FL Spare
+   TURNTABLE_SERVICE_PBSHOW : BOOL ;	//NEW FL TurnTable Service PB SHOW
+   TURNTABLE_SERVICE_SSW : BOOL ;	//NEW FL TurnTable Service SW
+   HMI_CONVEYOR_10_TEST_SSW : BOOL ;	//NEW FL Conv 10 - Conveyor SW
+   LOADER_FING_SERVICE_SSW : BOOL ;	//NEW FL Loader Service SW - Fingers
+   LOADER_LIFT_SERVICE_SSW : BOOL ;	//NEW FL Loader Service SW - Lift
+   LOADER_LIFT_TOP_PB : BOOL ;	//NEW FL Loader Lift - TOP PB
+   LOADER_LIFT_UP_PB : BOOL ;	//NEW FL Loader Lift - UP PB
+   LOADER_LIFT_DN_PB : BOOL ;	//NEW FL Loader Lift - DOWN PB
+   FINGER_RETRACT_TEST_PB : BOOL ;	//NEW FL Loader Fingers Retract PB
+   FINGER_EXTEND_TEST_PB : BOOL ;	//NEW FL Loader Fingers Extend PB
+   FINGER_TILT_TEST_PB : BOOL ;	//NEW FL Loader Fingers Tilt Down PB
+   FINGER_BELT_TEST_SW : BOOL ;	//NEW FL Loader Fingers Belt SW
+   HMI_CONVEYOR_11_TEST_SSW : BOOL ;	//NEW FL Conv 11 Test SW
+   HMI_CONVEYOR_12_TEST_SSW : BOOL ;	//NEW FL Conv 12 Test SW
+   HMI_CONVEYOR_13_TEST_SSW : BOOL ;	//NEW FL Conv 13 Test SW
+   HMI_CONVEYOR_21_TEST_SSW : BOOL ;	//NEW FL Conv 21 Test SW
+   HMI_CONVEYOR_22_TEST_SSW : BOOL ;	//NEW FL Conv 22 Test SW
+   HMI_CONVEYOR_23_TEST_SSW : BOOL ;	//NEW FL Conv 23 Test SW
+   CONVEYOR_0_MOTOR_STATUS : BOOL ;	//NEW FL Conveyor 0 - Motor M62.0 Status Bit
+   PUSHER_0_MOTOR_STATUS : BOOL ;	//NEW FL Pusher 0 - Motor M62.2 Status Bit
+   PUSHER_0_COLOR_WORD : WORD ;	//NEW WD Pusher 0 - 2145 - Motor Status Color
+   CONV_0_COLOR_WORD : WORD ;	//NEW WD Conveyor 0 - 2145 - Motor Status Color
+   ELEVATOR_COLOR_WORD : WORD ;	//NEW WD Elevator - Motor Status Color
+   PUSHER_1_COLOR_WORD : WORD ;	//NEW WD Pusher 1 - Motor Status Color
+   CONV_1_COLOR_WORD : WORD ;	//NEW WD Conv 1 - Motor Status Color
+   CONV_2_BELT_COLOR_WORD : WORD ;	//NEW WD Conv 2 Belt - Motor Status Color
+   LIFT_ROLLER_2_COLOR_WORD : WORD ;	//NEW WD Lift 2 Roller - Actuator Status Color
+   CONV_2_ROLLER_COLOR_WORD : WORD ;	//NEW WD Conv 2 Roller - Motor Status Color
+   CONV_3_COLOR_WORD : WORD ;	//NEW WD Conveyor 3 - Motor Status Color
+   CONV_4_COLOR_WORD : WORD ;	//NEW WD Conveyor 4 - Motor Status Color
+   CONV_5_COLOR_WORD : WORD ;	//NEW WD Conveyor 5 - Motor Status Color
+   CONV_6_COLOR_WORD : WORD ;	//NEW WD Conveyor 6 - Motor Status Color
+   CONV_7_COLOR_WORD : WORD ;	//NEW WD Conveyor 7 - Motor Status Color
+   FLIPPER_COLOR_WORD : WORD ;	//NEW WD Flipper - Motor M46.0 Status Color
+   CONV_8_COLOR_WORD : WORD ;	//NEW WD Conveyor 8 - Motor M46.4 Status Color
+   TURN_TABLE_COLOR_WORD : WORD ;	//NEW WD TurnTable - Motor M47.0 Status Color
+   CONV_9_COLOR_WORD : WORD ;	//NEW WD Conveyor 9 - Motor M47.5 Status Color
+   PUSHER_2_COLOR_WORD : WORD ;	//NEW WD Pusher 2 - Motor M47.6 Status Color
+   CONV_10_COLOR_WORD : WORD ;	//NEW WD Conveyor 10 - Motor M48.0 Status Color
+   CONV_11_COLOR_WORD : WORD ;	//NEW WD Conveyor 11 - Motor M48.3 Status Color
+   CONV_12_COLOR_WORD : WORD ;	//NEW WD Conveyor 12 - Motor M48.6 Status Color
+   CONV_13_COLOR_WORD : WORD ;	//NEW WD Conveyor 13 - Motor M49.0 Status Color
+   CONV_21_COLOR_WORD : WORD ;	//NEW WD Conveyor 21 - Motor M53.4 Status Color
+   CONV_22_COLOR_WORD : WORD ;	//NEW WD Conveyor 22 - Motor M53.6 Status Color
+   CONV_23_COLOR_WORD : WORD ;	//NEW WD Conveyor 23 - Motor M54.0 Status Color
+   LOADER_LIFT_COLOR_WORD : WORD ;	//NEW WD Loader Lift - Motor M54.6 Status Color
+   LOADER_FING_COLOR_WORD : WORD ;	//NEW WD Loader Fingers - Motor M50.5 Status Color
+   FINGERS_BELT_COLOR_WORD : WORD ;	//NEW WD Fingers Belt - Motor M54.6 Status Color
+   HIGH_LEVEL_23_GRAPHIC : WORD ;	//NEW WD High Level Conveyor 23
+   LOW_LEVEL_13_GRAPHIC : WORD ;	//NEW WD Low Level Conveyor 13
+   PIVOT_GRAPHIC : WORD ;	//NEW WD Pivot Conveyor Graphic
+   CONV_3_COUNT : WORD ;	//NEW WD Slat Conveyor 3 - Packet Count
+   CONV_4_COUNT : WORD ;	//NEW WD Collator Conveyor 4 - Packet Count
+   CONV_5_COUNT : WORD ;	//NEW WD Link Conveyor 5 - Packet Count
+   CONV_6_COUNT : WORD ;	//NEW WD Delivery Conveyor 6 - Packet Count
+   CONV_10_COUNT : WORD ;	//NEW WD Pivot Conveyor 10 - Packet Count
+   CONV_11_COUNT : WORD ;	//NEW WD Cumul Conveyor 11 - Packet Count
+   CONV_12_COUNT : WORD ;	//NEW WD Cumul Conveyor 12 - Packet Count
+   CONV_13_COUNT : WORD ;	//NEW WD Delivery Conveyor 13 - Packet Count
+   CONV_21_COUNT : WORD ;	//NEW WD Cumul Conveyor 21 - Packet Count
+   CONV_22_COUNT : WORD ;	//NEW WD Cumul Conveyor 22 - Packet Count
+   CONV_23_COUNT : WORD ;	//NEW WD Delivery Conveyor 23 - Packet Count
+   FLIPPER_CCW : WORD ;	//NEW WD Flipper Graphic CCW
+   FLIPPER_CW : WORD ;	//NEW WD Flipper Graphic CW
+   FLIPPER_POSITION : WORD ;	//NEW WD Flipper Positioning mS
+   TURN_COLOR : WORD ;	//NEW WD Turn Table - Turn Color
+   FLIPPER_COLOR : WORD ;	//NEW WD Flipper Color
+   FLIPPER_PACK_PRESENCE : WORD ;	//NEW WD Flipper - Packet Presence
+   TURNTABLE_PACK_PRESENCE : WORD ;	//NEW WD TurnTable - Packet Presence
+   ROLLER_PACK_PRESENCE : WORD ;	//NEW WD Pusher Roller - Packet Presence
+   PUSHER_PACK_PRESENCE : WORD ;	//NEW WD Pusher - Packet Presence
+   CONV_0_STATUS : BOOL ;	//NEW FL Conveyor 0 - Motor Status Bit
+   PUSHER_0_STATUS : BOOL ;	//NEW FL Pusher 0 - Motor Status 
+   ELEVATOR_STATUS : BOOL ;	//NEW FL Elevator - Motor Status 
+   PUSHER_1_STATUS : BOOL ;	//NEW FL Pusher 1 - Motor Status 
+   CONV_1_STATUS : BOOL ;	//NEW FL Conveyor 1 - Motor Status 
+   TURNTABLE_RNDTRIP : BOOL ;	//NEW FL TurnTable Round Trip CMD
+   RNDTRIP_PB_VISIBLE : BOOL ;	//NEW FL TurnTable Round Trip PB Visible
+   BOOL_SPARE227 : BOOL ;	//NEW FL  
+   SCREEN_CALL_0 : BOOL ;	//NEW FL  HMI Call Screen 0
+   SCREEN_CALL_1 : BOOL ;	//NEW FL  HMI Call Screen 1
+   SCREEN_CALL_2 : BOOL ;	//NEW FL  HMI Call Screen 2
+   SCREEN_CALL_3 : BOOL ;	//NEW FL  HMI Call Screen 3
+   SCREEN_CALL_4 : BOOL ;	//NEW FL  HMI Call Screen 4
+   BOOL_SPARE2276 : BOOL ;	//NEW FL  
+   BOOL_SPARE2277 : BOOL ;	//NEW FL  
+   BOOL_SPARE2278 : BOOL ;	//NEW FL  
+   BOOL_SPARE2279 : BOOL ;	//NEW FL  
+   BOOL_SPARE22710 : BOOL ;	//NEW FL  
+   BOOL_SPARE22711 : BOOL ;	//NEW FL  
+   BOOL_SPARE22712 : BOOL ;	//NEW FL  
+   BOOL_SPARE22713 : BOOL ;	//NEW FL  
+   BOOL_SPARE22714 : BOOL ;	//NEW FL  
+   BOOL_SPARE22715 : BOOL ;	//NEW FL  
+   BOOL_SPARE22716 : BOOL ;	//NEW FL  
+   BOOL_SPARE22717 : BOOL ;	//NEW FL  
+   BOOL_SPARE22718 : BOOL ;	//NEW FL  
+   BOOL_SPARE22719 : BOOL ;	//NEW FL  
+   BOOL_SPARE22720 : BOOL ;	//NEW FL  
+   BOOL_SPARE22721 : BOOL ;	//NEW FL  
+   BOOL_SPARE22722 : BOOL ;	//NEW FL  
+   BOOL_SPARE22723 : BOOL ;	//NEW FL  
+   BOOL_SPARE22724 : BOOL ;	//NEW FL  
+   WORD_SPARE23 : WORD ;	//NEW WD 
+   FLIPPER_TURN_COLOR : WORD ;	//NEW WD Flipper Turn Color
+   NEW_ORDER_COLOR : WORD ;	//NEW WD Conveyor 10 - New Order Color
+   SERVICE_FLIPPER : BOOL ;	//NEW FLS Flipper Service - Switch
+   FLIP_TEST : BOOL ;	//NEW FLS Flipper Flip - Test Switch
+   SERVICE_TURNTABLE : BOOL ;	//NEW FLS TurnTable Service - Switch
+   TURN_TEST_CW : BOOL ;	//NEW FLS TurnTable - Turn CW - Status Bit
+   TURN_TEST_CCW : BOOL ;	//NEW FLS TurnTable - Turn CCW - Status Bit
+   PUSHER_2_TEST : BOOL ;	//NEW FLS Pusher 2 - Test Switch
+   CONVEYOR_10_TEST_SW : BOOL ;	//NEW FLS Collator Conveyor 10 - Test Switch
+   PIVOT_SERVICE_SW : BOOL ;	//NEW FL Pivot Service - Status
+   PIVOT_UP_TEST_PB : BOOL ;	//NEW FLS Pivot Conveyor UP - Test Switch
+   PIVOT_DN_TEST_PB : BOOL ;	//NEW FLS Pivot Conveyor DN - Test Switch
+   PIVOT_STATUS : BOOL ;	//NEW FL Pivot ON - Status
+   CONV_8_INVERT_SELECT : BOOL ;	//NEW FL TurnTable Conveyor 8 - Positioning Time - Display Selector Bit - INVERT
+   CONVEYOR_11_TEST_SW : BOOL ;	//NEW FLS Cumul Conveyor 11 - Test Switch
+   CONVEYOR_12_TEST_SW : BOOL ;	//NEW FLS Cumul Conveyor 12 - Test Switch
+   CONVEYOR_13_TEST_SW : BOOL ;	//NEW FLS Delivery Conveyor 13 - Test Switch
+   CONVEYOR_21_TEST_SW : BOOL ;	//NEW FLS Cumul Conveyor 21 - Test Switch
+   CONVEYOR_22_TEST_SW : BOOL ;	//NEW FLS Cumul Conveyor 22 - Test Switch
+   CONVEYOR_23_TEST_SW : BOOL ;	//NEW FLS Delivery Conveyor 23 - Test Switch
+   LOADER_SERVICE_SW : BOOL ;	//NEW FLS Loader Service - Switch
+   LOADER_UP_TEST_PB : BOOL ;	//NEW FLS Loader Lift Up - Test Switch
+   LOADER_DN_TEST_PB : BOOL ;	//NEW FLS Loader Lift Dn - Test Switch
+   FINGERS_EXTEND_TEST_PB : BOOL ;	//NEW FLS Loader Finger Extend - Test Switch
+   FINGERS_RETRACT_TEST_PB : BOOL ;	//NEW FLS Loader Finger Retract - Test Switch
+   FP_ONESHOT_0 : BOOL ;	//NEW FP One Shot
+   CONVEYOR_0_SERVICE_SW : BOOL ;	//NEW FL Conveyor 0 / Pusher 0 - Service Enable 
+   ELEVATOR_SERVICE_SW : BOOL ;	//NEW FL Elevator / Pusher 1 - Service Enable 
+   CONVEYOR_1_SERVICE_SW : BOOL ;	//NEW FL Conveyor 1 - Service Enable Select - Screen 4
+   CONVEYOR_2_SERVICE_SW : BOOL ;	//NEW FL Conveyor 2 - Service Enable Select - Screen 4 
+   CONVEYOR_3_SERVICE_SW : BOOL ;	//NEW FL Conveyor 3 - Service Enable Select - Screen 4 
+   CONVEYOR_4_SERVICE_SW : BOOL ;	//NEW FL Conveyor 4 - Service Enable Select - Screen 4 
+   CONVEYOR_5_SERVICE_SW : BOOL ;	//NEW FL Conveyor 5 - Service Enable Select - Screen 4 
+   CONVEYOR_6_SERVICE_SW : BOOL ;	//NEW FL Conveyor 6 - Service Enable Select - Screen 4 
+   CONVEYOR_7_SERVICE_SW : BOOL ;	//NEW FL Conveyor 7 / Flipper - Service Enable Select - Screen 4 
+   CONVEYOR_8_SERVICE_SW : BOOL ;	//NEW FL Conveyor 8 / TurnTable - Service Enable Select - Screen 4 
+   CONVEYOR_9_SERVICE_SW : BOOL ;	//NEW FL Conveyor 9 / Pusher 2 - Service Enable Select - Screen 4 
+   CONVEYOR_10_SERVICE_SW : BOOL ;	//NEW FL Conveyor 10 - Service Enable Select - Screen 4 
+   CONVEYOR_11_SERVICE_SW : BOOL ;	//NEW FL Conveyors 11, 12, 13 - Service Enable Select - Screen 4 
+   CONVEYOR_21_SERVICE_SW : BOOL ;	//NEW FL Conveyors 21, 22, 23 - Service Enable Select - Screen 4 
+   LOADER_SERVICE_ENABLE_SW : BOOL ;	//NEW FL Loader - Service Enable 
+   CTRL48 : BOOL ;	//NEW FL Spare - Service Enable 
+   CTRL49 : BOOL ;	//NEW FL Spare -
+   CTRL50 : BOOL ;	//NEW FL Spare -
+   CTRL51 : BOOL ;	//NEW FL Spare -
+   CTRL52 : BOOL ;	//NEW FL Spare -
+   CTRL53 : BOOL ;	//NEW FL Spare -
+   CTRL54 : BOOL ;	//NEW FL Spare -
+   CTRL55 : BOOL ;	//NEW FL Spare -
+   CTRL56 : BOOL ;	//NEW FL Spare -
+   CLEARING_FUNCTION : WORD ;	//NEW WD Clearing Function - Underneat Rectangle
+   WORD57 : WORD ;	//NEW WD
+   WORD58 : WORD ;	//NEW WD
+   ACTUAL_HMI_SCREEN_NO : WORD ;	//NEW WD HMI Actual Display Screen
+   CONVEYOR_MAXCOUNT_L : WORD  := W#16#6;	//NEW WD All Conveyors Max Count Lenght (6)
+   CONVEYOR_MAXCOUNT_W : WORD  := W#16#7;	//NEW WD All Conveyors Max Count Widtht (7)
+   WORD62 : WORD ;	//NEW WD
+   CONV_7_POS_mS : WORD ;	//NEW WD Flipper Conveyor 7 - Positioning Time x10 [mS]
+   CONV_8_POS_FWD_mS : WORD ;	//NEW WD TurnTable Conveyor 8 - FWD Positioning Time x10 [mS]
+   CONV_8_POS_REV_mS : WORD ;	//NEW WD TurnTable Conveyor 8 - REV Positioning Time x10 [mS]
+   CONV_9_POS_mS : WORD ;	//NEW WD Pusher 2 Conveyor 9 - Positioning Time x10 [mS]
+   WORD_PACKET_LENGTH : WORD ;	//NEW WD Actual Packet Length mm
+   DELAY_DISPLAY_7 : WORD ;	//NEW WD HMI Flipper 7 Delay Display
+   DELAY_DISPLAY_9 : WORD ;	//NEW WD HMI Conveyor 9 Delay Display
+   WORD_SPARE2 : WORD ;	
+   WORD_SPARE3 : WORD ;	
+   WORD_SPARE4 : WORD ;	
+  END_STRUCT ;	
+BEGIN
+   GRAPHIC_INIT := FALSE; 
+   EMERGENCY_BLINK := FALSE; 
+   ON_SW := FALSE; 
+   COMPRESSED_AIR := FALSE; 
+   AERIAL_LINK_RUN_PB := FALSE; 
+   PACKET_in_FLIPPER_SW := FALSE; 
+   SERVICE_INIT_PB := FALSE; 
+   ALL_SERVICE_ENABLE_SW := FALSE; 
+   SERVICE_SW_1_STATUS := FALSE; 
+   SERVICE_SW_2_STATUS := FALSE; 
+   SERVICE_SW_3_STATUS := FALSE; 
+   SERVICE_SW_1_2_STATUS := FALSE; 
+   BIT12 := FALSE; 
+   BIT13 := FALSE; 
+   SERVICE_SW_2_TIME_ADJ := FALSE; 
+   PACKETIZER_GATE_STATUS := FALSE; 
+   E_STOP_CONSOLE_STATUS := FALSE; 
+   E_STOP_ELEVATOR_STATUS := FALSE; 
+   E_STOP_FLIPPER_STATUS := FALSE; 
+   E_STOP_LOADER_STATUS := FALSE; 
+   HAND_FEED_ARROW_STATUS := FALSE; 
+   ELEVATOR_DOOR_STATUS := FALSE; 
+   FLIPPER_DOOR_STATUS := FALSE; 
+   LOADER_DOOR_STATUS := FALSE; 
+   LIGHT_BARRIER_1_STATUS := FALSE; 
+   LIGHT_BARRIER_2_STATUS := FALSE; 
+   LIGHT_BARRIER_3_STATUS := FALSE; 
+   LIGHT_BARRIER_4_STATUS := FALSE; 
+   LIGHT_BARRIER_5_STATUS := FALSE; 
+   LIGHT_BARRIER_6_STATUS := FALSE; 
+   LIGHT_BARRIER_B_STATUS := FALSE; 
+   LIGHT_BARRIER_A_STATUS := FALSE; 
+   BIT32 := FALSE; 
+   BIT33 := FALSE; 
+   BIT34 := FALSE; 
+   BIT35 := FALSE; 
+   BIT36 := FALSE; 
+   BIT37 := FALSE; 
+   BIT38 := FALSE; 
+   BIT39 := FALSE; 
+   BIT40 := FALSE; 
+   BIT41 := FALSE; 
+   BIT42 := FALSE; 
+   BIT43 := FALSE; 
+   BIT44 := FALSE; 
+   BIT45 := FALSE; 
+   BIT46 := FALSE; 
+   BIT47 := FALSE; 
+   BIT48 := FALSE; 
+   BIT49 := FALSE; 
+   BIT50 := FALSE; 
+   BIT51 := FALSE; 
+   BIT52 := FALSE; 
+   BIT53 := FALSE; 
+   BIT54 := FALSE; 
+   BIT55 := FALSE; 
+   BIT56 := FALSE; 
+   BIT57 := FALSE; 
+   BIT58 := FALSE; 
+   BIT59 := FALSE; 
+   BIT60 := FALSE; 
+   BIT61 := FALSE; 
+   BIT62 := FALSE; 
+   CONVEYORS_CLEARING := FALSE; 
+   ELEVATOR_MOTOR_STATUS := FALSE; 
+   PUSHER_1_MOTOR_STATUS := FALSE; 
+   CONVEYOR_1_MOTOR_STATUS := FALSE; 
+   CONVEYOR_2B_MOTOR_STATUS := FALSE; 
+   CONVEYOR_2R_MOTOR_STATUS := FALSE; 
+   CONVEYOR_3_MOTOR_STATUS := FALSE; 
+   CONVEYOR_4_MOTOR_STATUS := FALSE; 
+   CONVEYOR_5_MOTOR_STATUS := FALSE; 
+   CONVEYOR_6_MOTOR_STATUS := FALSE; 
+   CONVEYOR_7_MOTOR_STATUS := FALSE; 
+   FLIPPER_MOTOR_STATUS := FALSE; 
+   CONVEYOR_8_MOTOR_STATUS := FALSE; 
+   TURNTABLE_MOTOR_STATUS := FALSE; 
+   CONVEYOR_9_MOTOR_STATUS := FALSE; 
+   PUSHER_2_MOTOR_STATUS := FALSE; 
+   CONVEYOR_10_MOTOR_STATUS := FALSE; 
+   CONVEYOR_11_MOTOR_STATUS := FALSE; 
+   CONVEYOR_12_MOTOR_STATUS := FALSE; 
+   CONVEYOR_13_MOTOR_STATUS := FALSE; 
+   CONVEYOR_21_MOTOR_STATUS := FALSE; 
+   CONVEYOR_22_MOTOR_STATUS := FALSE; 
+   CONVEYOR_23_MOTOR_STATUS := FALSE; 
+   LOADER_LIFT_MOTOR_STATUS := FALSE; 
+   LOADER_FING_MOTOR_STATUS := FALSE; 
+   LOADER_BELT_MOTOR_STATUS := FALSE; 
+   LIGHT_BARRIER_7_STATUS := FALSE; 
+   LIGHT_BARRIER_8_STATUS := FALSE; 
+   LIGHT_BARRIER_9_STATUS := FALSE; 
+   LIGHT_BARRIER_10_STATUS := FALSE; 
+   LIGHT_BARRIER_11_STATUS := FALSE; 
+   LIGHT_BARRIER_12_STATUS := FALSE; 
+   LIGHT_BARRIER_13_STATUS := FALSE; 
+   LIGHT_BARRIER_14_STATUS := FALSE; 
+   LIGHT_BARRIER_15_STATUS := FALSE; 
+   LIGHT_BARRIER_16_STATUS := FALSE; 
+   LIGHT_BARRIER_17_STATUS := FALSE; 
+   LIGHT_BARRIER_18_STATUS := FALSE; 
+   LIGHT_BARRIER_19_STATUS := FALSE; 
+   LIGHT_BARRIER_20_STATUS := FALSE; 
+   LIGHT_BARRIER_21_STATUS := FALSE; 
+   LIGHT_BARRIER_22_STATUS := FALSE; 
+   LIGHT_BARRIER_23_STATUS := FALSE; 
+   LIGHT_BARRIER_24_STATUS := FALSE; 
+   LIGHT_BARRIER_25_STATUS := FALSE; 
+   LIGHT_BARRIER_26_STATUS := FALSE; 
+   LIGHT_BARRIER_27_STATUS := FALSE; 
+   LIGHT_BARRIER_28_STATUS := FALSE; 
+   LIGHT_BARRIER_29_STATUS := FALSE; 
+   LIGHT_BARRIER_30_STATUS := FALSE; 
+   LIGHT_BARRIER_31_STATUS := FALSE; 
+   LIGHT_BARRIER_32_STATUS := FALSE; 
+   PROX_9_STATUS := FALSE; 
+   PROX_10_STATUS := FALSE; 
+   PROX_11_STATUS := FALSE; 
+   PROX_12_STATUS := FALSE; 
+   PROX_13_STATUS := FALSE; 
+   PROX_14_STATUS := FALSE; 
+   PROX_15_STATUS := FALSE; 
+   PROX_16_STATUS := FALSE; 
+   PROX_17_STATUS := FALSE; 
+   PROX_18_STATUS := FALSE; 
+   PROX_19_STATUS := FALSE; 
+   PROX_20_STATUS := FALSE; 
+   PROX_21_STATUS := FALSE; 
+   PROX_22_STATUS := FALSE; 
+   PROX_23_STATUS := FALSE; 
+   PROX_24_STATUS := FALSE; 
+   FP131 := FALSE; 
+   FP132 := FALSE; 
+   FP133 := FALSE; 
+   FP134 := FALSE; 
+   FP135 := FALSE; 
+   TURNTABLE_DELIV_POSITION := FALSE; 
+   TURNTABLE_REVERSE_ARROW := FALSE; 
+   TURNTABLE_DIR_SELECT_SW := FALSE; 
+   TURNTABLE_FLICK_MOTION := FALSE; 
+   FP140 := FALSE; 
+   FP141 := FALSE; 
+   FP142 := FALSE; 
+   FP143 := FALSE; 
+   PROX_1_STATUS := FALSE; 
+   PROX_2_STATUS := FALSE; 
+   PROX_3_STATUS := FALSE; 
+   PROX_4_STATUS := FALSE; 
+   PROX_5_STATUS := FALSE; 
+   PROX_6_STATUS := FALSE; 
+   PROX_7_STATUS := FALSE; 
+   PROX_8_STATUS := FALSE; 
+   BIT152 := FALSE; 
+   BIT153 := FALSE; 
+   BIT154 := FALSE; 
+   BIT155 := FALSE; 
+   BIT156 := FALSE; 
+   BIT157 := FALSE; 
+   BIT158 := FALSE; 
+   BIT159 := FALSE; 
+   SERVICE_SSW_MAIN := FALSE; 
+   SERVICE_SSW_STATUS := FALSE; 
+   CLEARING_SSW_MAIN := FALSE; 
+   CLEARING_SSW_STATUS := FALSE; 
+   MAN_FEED_SSW_MAIN := FALSE; 
+   MAN_FEED_SSW_STATUS := FALSE; 
+   TURNTABLE_SSW_MAIN := FALSE; 
+   TURNTABLE_SSW_STATUS := FALSE; 
+   FLIPPER_SSW_MAIN := FALSE; 
+   FLIPPER_SSW_STATUS := FALSE; 
+   ROLLER_SSW_MAIN := FALSE; 
+   ROLLER_SSW_STATUS := FALSE; 
+   ELEVATOR_ROUND_TRIP_SSW := FALSE; 
+   BIT173 := FALSE; 
+   BIT174 := FALSE; 
+   BIT175 := FALSE; 
+   HMI_PUSHER_0_TEST_SSW := FALSE; 
+   HMI_ELEVATOR_SERVICE_SSW := FALSE; 
+   HMI_ELEVATOR_TEST_DN_SSW := FALSE; 
+   HMI_ELEVATOR_TEST_UP_SSW := FALSE; 
+   HMI_ROLLER_TEST_FWD_SSW := FALSE; 
+   HMI_ROLLER_TEST_REV_SSW := FALSE; 
+   HMI_PUSHER_1_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_1_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_2B_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_2L_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_2R_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_3_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_4_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_5_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_6_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_7_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_8_TEST_SSW := FALSE; 
+   HMI_TURNTABLE_CCW_SSW := FALSE; 
+   HMI_TURNTABLE_CW_SSW := FALSE; 
+   HMI_FLIPPER_SERVICE_SSW := FALSE; 
+   HMI_FLIPPER_FLIP_SSW := FALSE; 
+   HMI_CONVEYOR_9_TEST_SSW := FALSE; 
+   HMI_PUSHER_2_TEST_SSW := FALSE; 
+   HMI_PIVOT_SERVICE_SSW := FALSE; 
+   HMI_PIVOT_TEST_DN_SSW := FALSE; 
+   HMI_PIVOT_TEST_UP_SSW := FALSE; 
+   BIT202 := FALSE; 
+   BIT203 := FALSE; 
+   TURNTABLE_SERVICE_PBSHOW := FALSE; 
+   TURNTABLE_SERVICE_SSW := FALSE; 
+   HMI_CONVEYOR_10_TEST_SSW := FALSE; 
+   LOADER_FING_SERVICE_SSW := FALSE; 
+   LOADER_LIFT_SERVICE_SSW := FALSE; 
+   LOADER_LIFT_TOP_PB := FALSE; 
+   LOADER_LIFT_UP_PB := FALSE; 
+   LOADER_LIFT_DN_PB := FALSE; 
+   FINGER_RETRACT_TEST_PB := FALSE; 
+   FINGER_EXTEND_TEST_PB := FALSE; 
+   FINGER_TILT_TEST_PB := FALSE; 
+   FINGER_BELT_TEST_SW := FALSE; 
+   HMI_CONVEYOR_11_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_12_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_13_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_21_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_22_TEST_SSW := FALSE; 
+   HMI_CONVEYOR_23_TEST_SSW := FALSE; 
+   CONVEYOR_0_MOTOR_STATUS := FALSE; 
+   PUSHER_0_MOTOR_STATUS := FALSE; 
+   PUSHER_0_COLOR_WORD := W#16#0; 
+   CONV_0_COLOR_WORD := W#16#0; 
+   ELEVATOR_COLOR_WORD := W#16#3226; 
+   PUSHER_1_COLOR_WORD := W#16#0; 
+   CONV_1_COLOR_WORD := W#16#0; 
+   CONV_2_BELT_COLOR_WORD := W#16#0; 
+   LIFT_ROLLER_2_COLOR_WORD := W#16#0; 
+   CONV_2_ROLLER_COLOR_WORD := W#16#0; 
+   CONV_3_COLOR_WORD := W#16#0; 
+   CONV_4_COLOR_WORD := W#16#0; 
+   CONV_5_COLOR_WORD := W#16#0; 
+   CONV_6_COLOR_WORD := W#16#0; 
+   CONV_7_COLOR_WORD := W#16#0; 
+   FLIPPER_COLOR_WORD := W#16#0; 
+   CONV_8_COLOR_WORD := W#16#0; 
+   TURN_TABLE_COLOR_WORD := W#16#0; 
+   CONV_9_COLOR_WORD := W#16#0; 
+   PUSHER_2_COLOR_WORD := W#16#0; 
+   CONV_10_COLOR_WORD := W#16#0; 
+   CONV_11_COLOR_WORD := W#16#0; 
+   CONV_12_COLOR_WORD := W#16#0; 
+   CONV_13_COLOR_WORD := W#16#0; 
+   CONV_21_COLOR_WORD := W#16#0; 
+   CONV_22_COLOR_WORD := W#16#0; 
+   CONV_23_COLOR_WORD := W#16#0; 
+   LOADER_LIFT_COLOR_WORD := W#16#0; 
+   LOADER_FING_COLOR_WORD := W#16#0; 
+   FINGERS_BELT_COLOR_WORD := W#16#0; 
+   HIGH_LEVEL_23_GRAPHIC := W#16#0; 
+   LOW_LEVEL_13_GRAPHIC := W#16#0; 
+   PIVOT_GRAPHIC := W#16#0; 
+   CONV_3_COUNT := W#16#6; 
+   CONV_4_COUNT := W#16#0; 
+   CONV_5_COUNT := W#16#0; 
+   CONV_6_COUNT := W#16#0; 
+   CONV_10_COUNT := W#16#0; 
+   CONV_11_COUNT := W#16#0; 
+   CONV_12_COUNT := W#16#0; 
+   CONV_13_COUNT := W#16#0; 
+   CONV_21_COUNT := W#16#0; 
+   CONV_22_COUNT := W#16#0; 
+   CONV_23_COUNT := W#16#0; 
+   FLIPPER_CCW := W#16#0; 
+   FLIPPER_CW := W#16#0; 
+   FLIPPER_POSITION := W#16#0; 
+   TURN_COLOR := W#16#0; 
+   FLIPPER_COLOR := W#16#0; 
+   FLIPPER_PACK_PRESENCE := W#16#0; 
+   TURNTABLE_PACK_PRESENCE := W#16#0; 
+   ROLLER_PACK_PRESENCE := W#16#0; 
+   PUSHER_PACK_PRESENCE := W#16#0; 
+   CONV_0_STATUS := FALSE; 
+   PUSHER_0_STATUS := FALSE; 
+   ELEVATOR_STATUS := FALSE; 
+   PUSHER_1_STATUS := FALSE; 
+   CONV_1_STATUS := FALSE; 
+   TURNTABLE_RNDTRIP := FALSE; 
+   RNDTRIP_PB_VISIBLE := FALSE; 
+   BOOL_SPARE227 := FALSE; 
+   SCREEN_CALL_0 := FALSE; 
+   SCREEN_CALL_1 := FALSE; 
+   SCREEN_CALL_2 := FALSE; 
+   SCREEN_CALL_3 := FALSE; 
+   SCREEN_CALL_4 := FALSE; 
+   BOOL_SPARE2276 := FALSE; 
+   BOOL_SPARE2277 := FALSE; 
+   BOOL_SPARE2278 := FALSE; 
+   BOOL_SPARE2279 := FALSE; 
+   BOOL_SPARE22710 := FALSE; 
+   BOOL_SPARE22711 := FALSE; 
+   BOOL_SPARE22712 := FALSE; 
+   BOOL_SPARE22713 := FALSE; 
+   BOOL_SPARE22714 := FALSE; 
+   BOOL_SPARE22715 := FALSE; 
+   BOOL_SPARE22716 := FALSE; 
+   BOOL_SPARE22717 := FALSE; 
+   BOOL_SPARE22718 := FALSE; 
+   BOOL_SPARE22719 := FALSE; 
+   BOOL_SPARE22720 := FALSE; 
+   BOOL_SPARE22721 := FALSE; 
+   BOOL_SPARE22722 := FALSE; 
+   BOOL_SPARE22723 := FALSE; 
+   BOOL_SPARE22724 := FALSE; 
+   WORD_SPARE23 := W#16#0; 
+   FLIPPER_TURN_COLOR := W#16#0; 
+   NEW_ORDER_COLOR := W#16#0; 
+   SERVICE_FLIPPER := FALSE; 
+   FLIP_TEST := FALSE; 
+   SERVICE_TURNTABLE := FALSE; 
+   TURN_TEST_CW := FALSE; 
+   TURN_TEST_CCW := FALSE; 
+   PUSHER_2_TEST := FALSE; 
+   CONVEYOR_10_TEST_SW := FALSE; 
+   PIVOT_SERVICE_SW := FALSE; 
+   PIVOT_UP_TEST_PB := FALSE; 
+   PIVOT_DN_TEST_PB := FALSE; 
+   PIVOT_STATUS := FALSE; 
+   CONV_8_INVERT_SELECT := FALSE; 
+   CONVEYOR_11_TEST_SW := FALSE; 
+   CONVEYOR_12_TEST_SW := FALSE; 
+   CONVEYOR_13_TEST_SW := FALSE; 
+   CONVEYOR_21_TEST_SW := FALSE; 
+   CONVEYOR_22_TEST_SW := FALSE; 
+   CONVEYOR_23_TEST_SW := FALSE; 
+   LOADER_SERVICE_SW := FALSE; 
+   LOADER_UP_TEST_PB := FALSE; 
+   LOADER_DN_TEST_PB := FALSE; 
+   FINGERS_EXTEND_TEST_PB := FALSE; 
+   FINGERS_RETRACT_TEST_PB := FALSE; 
+   FP_ONESHOT_0 := FALSE; 
+   CONVEYOR_0_SERVICE_SW := FALSE; 
+   ELEVATOR_SERVICE_SW := FALSE; 
+   CONVEYOR_1_SERVICE_SW := FALSE; 
+   CONVEYOR_2_SERVICE_SW := FALSE; 
+   CONVEYOR_3_SERVICE_SW := FALSE; 
+   CONVEYOR_4_SERVICE_SW := FALSE; 
+   CONVEYOR_5_SERVICE_SW := FALSE; 
+   CONVEYOR_6_SERVICE_SW := FALSE; 
+   CONVEYOR_7_SERVICE_SW := FALSE; 
+   CONVEYOR_8_SERVICE_SW := FALSE; 
+   CONVEYOR_9_SERVICE_SW := FALSE; 
+   CONVEYOR_10_SERVICE_SW := FALSE; 
+   CONVEYOR_11_SERVICE_SW := FALSE; 
+   CONVEYOR_21_SERVICE_SW := FALSE; 
+   LOADER_SERVICE_ENABLE_SW := FALSE; 
+   CTRL48 := FALSE; 
+   CTRL49 := FALSE; 
+   CTRL50 := FALSE; 
+   CTRL51 := FALSE; 
+   CTRL52 := FALSE; 
+   CTRL53 := FALSE; 
+   CTRL54 := FALSE; 
+   CTRL55 := FALSE; 
+   CTRL56 := FALSE; 
+   CLEARING_FUNCTION := W#16#0; 
+   WORD57 := W#16#0; 
+   WORD58 := W#16#0; 
+   ACTUAL_HMI_SCREEN_NO := W#16#0; 
+   CONVEYOR_MAXCOUNT_L := W#16#6; 
+   CONVEYOR_MAXCOUNT_W := W#16#7; 
+   WORD62 := W#16#0; 
+   CONV_7_POS_mS := W#16#96; 
+   CONV_8_POS_FWD_mS := W#16#0; 
+   CONV_8_POS_REV_mS := W#16#0; 
+   CONV_9_POS_mS := W#16#0; 
+   WORD_PACKET_LENGTH := W#16#0; 
+   DELAY_DISPLAY_7 := W#16#0; 
+   DELAY_DISPLAY_9 := W#16#0; 
+   WORD_SPARE2 := W#16#0; 
+   WORD_SPARE3 := W#16#0; 
+   WORD_SPARE4 := W#16#0; 
+END_DATA_BLOCK

@@ -1,0 +1,59 @@
+FUNCTION "LAUER_RE-START_PUP" : VOID
+TITLE =
+//Logique de remise à zéro du bit de redémarrage de la communication avec 
+//l'interface.
+//
+//Ce bit doit être remis à zéro en cas de perte de communication avec l'automate 
+//ou si l'interface est éteint.
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Lauer restart bit
+//DB50.DBW25 = S and mS   “Start a 5-second watchdog timer unless reset is 
+//active”
+      AN    "DB UTILITY".RAZ_TMR_RESTART_PCS; 
+      L     S5T#5S; 
+      SD    "Timer 100"; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =Lauer restart bit
+//“If nothing resets the timer for 5 seconds ? declare timeout”
+      A     "Timer 100"; 
+      =     "DB UTILITY".RAZ_TMR_RESTART_PCS; 
+NETWORK
+TITLE =Lauer restart bit
+//“When timeout happens > generate a clean single pulse and reset restart 
+//request”
+      A     "DB UTILITY".RAZ_TMR_RESTART_PCS; 
+      FP    "DB UTILITY".VAL_CMP_RESTART_PCS_OS; 
+      =     L      0.0; 
+      A     L      0.0; 
+      BLD   102; 
+      =     "DB UTILITY".VAL_CMP_RESTART_PCS; 
+      A     L      0.0; 
+      A     "DB UTILITY".DEM_RESTART_PCS; 
+      R     "M 210.0"; 
+      R     "DB UTILITY".DEM_RESTART_PCS; 
+NETWORK
+TITLE =Lauer restart bit
+//“If HMI value stopped changing > request restart”
+      A     "DB UTILITY".VAL_CMP_RESTART_PCS; 
+      A(    ; 
+      L     DB50.DBW   25; 
+      L     "DB UTILITY".VAL_TMP_SEC_MS_PCS; 
+      ==I   ; 
+      )     ; 
+      S     "DB UTILITY".DEM_RESTART_PCS; 
+NETWORK
+TITLE =
+
+      A     "DB UTILITY".VAL_CMP_RESTART_PCS; 
+      JNB   _001; 
+      L     DB50.DBW   25; 
+      T     "DB UTILITY".VAL_TMP_SEC_MS_PCS; 
+_001: NOP   0; 
+END_FUNCTION
