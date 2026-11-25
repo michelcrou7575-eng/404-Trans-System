@@ -6,8 +6,13 @@ TITLE =HMI Control - Screen 0 SSW Inputs
 //button is MOMENTARY ("HMI_DB".TST_SWITCH, DBX1.4): held 2 s = toggle the status.
 //LAUER F2 (unused key) = back to LAUER at once (if the NS12 is dead).
 //Was TRANS_SYSTEM_ON_SW AND SERVICE_SW_3_STATUS, which dropped by itself (H1).
+//v0.4 2026-11-25: BUMPLESS switch-over. NS12 takes over: its flipper / turntable
+//switches get the LAUER states (F13 M152.5, F16 M152.2). Back to LAUER (Tst or
+//F2): the LAUER keys get the NS12 states. Hand feed OFF on both sides. The hand
+//feed / turntable / flipper / roller networks moved before JNB MAIN: every scan
+//(were up to ~1.6 s late, H3).
 NAME : HMI_CTRL
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_TEMP
@@ -16,6 +21,8 @@ VAR_TEMP
   HAND_FEED : BOOL ;	
   UPDATE_PULSE : BOOL ;	
   TST_PULSE : BOOL ;	//Tst Held 2 s - One Scan
+  TO_NS12 : BOOL ;	//Switch-Over LAUER -> NS12 This Scan
+  TO_LAUER : BOOL ;	//Switch-Over NS12 -> LAUER This Scan
 END_VAR
 BEGIN
 NETWORK
@@ -63,6 +70,17 @@ TITLE =NS12 in Control - "Tst" Held 2 s Toggles TST_SWITCH_STATUS (DB12.DBX1.5)
       FP    M    283.5; // Edge Memory (Free)
       =     #TST_PULSE; 
 //;
+      A     #TST_PULSE; // Switch-Over Events (Before the Toggle)
+      AN    "HMI_DB".TST_SWITCH_STATUS; 
+      =     #TO_NS12; 
+//;
+      A(    ; 
+      O     #TST_PULSE; 
+      O     M    162.6; // LAUER F2 Pressed
+      )     ; 
+      A     "HMI_DB".TST_SWITCH_STATUS; 
+      =     #TO_LAUER; 
+//;
       A     #TST_PULSE; // Toggle
       JCN   K001; 
 
@@ -75,6 +93,71 @@ K001: A     M    162.6; // LAUER F2 Pressed (Edge) = Back to LAUER
 //;
       A     "HMI_DB".TST_SWITCH_STATUS; 
       =     "M 140.3"; // NS12 in Control of the Run Screen Switches
+NETWORK
+TITLE =Bumpless Switch-Over LAUER <-> NS12 (States Copied at the Moment of Switching)
+//NS12 takes over: NS12 switches = LAUER key states -> nothing changes.
+//Back to LAUER (Tst held 2 s or LAUER F2): LAUER keys = NS12 states (key LEDs follow).
+//Hand feed: OFF on both sides at the switch-over (safety).
+
+      A     #TO_NS12; 
+      JCN   B001; 
+
+      A     "M 152.5"; // LAUER F13 Flipper
+      =     "HMI_DB".FLIPPER_SSW_MAIN; 
+      A     "M 152.2"; // LAUER F16 TurnTable
+      =     "HMI_DB".TURNTABLE_SSW_MAIN; 
+      CLR   ; 
+      =     "HMI_DB".MAN_FEED_SSW_MAIN; // Hand Feed OFF
+      =     "M 152.0"; // LAUER F18 Hand Feed OFF
+
+B001: A     #TO_LAUER; 
+      JCN   B002; 
+
+      A     "HMI_DB".FLIPPER_SSW_MAIN; 
+      =     "M 152.5"; // LAUER F13 Flipper = NS12 State
+      A     "HMI_DB".TURNTABLE_SSW_MAIN; 
+      =     "M 152.2"; // LAUER F16 TurnTable = NS12 State
+      CLR   ; 
+      =     "M 152.0"; // LAUER F18 Hand Feed OFF
+      =     "HMI_DB".MAN_FEED_SSW_MAIN; // Hand Feed OFF
+
+B002: NOP   0; 
+NETWORK
+TITLE =Hand Feed Switch Status - Every Scan (v0.4, H3)
+
+      A     "M 140.3"; 
+      A     "HMI_DB".MAN_FEED_SSW_MAIN; 
+      L     S5T#20M; 
+      SD    "Timer 103"; 
+      =     #HAND_FEED; 
+      =     "M 110.0"; 
+      =     "HMI_DB".MAN_FEED_SSW_STATUS; 
+//;
+      A     #HAND_FEED; 
+      =     "HMI_DB".HAND_FEED_ARROW_STATUS; 
+//;
+      A     #HAND_FEED; 
+      A     "Timer 103"; 
+      R     "HMI_DB".MAN_FEED_SSW_MAIN; 
+NETWORK
+TITLE =Turn Table Switch Status - Every Scan (v0.4, H3)
+
+      A     "M 7.3"; 
+      =     "HMI_DB".TURNTABLE_SSW_STATUS; 
+NETWORK
+TITLE =Flipper Switch Status - Every Scan (v0.4, H3)
+
+      A     "M 140.3"; 
+      A     "HMI_DB".FLIPPER_SSW_MAIN; 
+      =     "M 111.1"; 
+      =     "HMI_DB".FLIPPER_SSW_STATUS; 
+NETWORK
+TITLE =Roller Switch Status - Every Scan (v0.4, H3)
+
+      A     "M 140.3"; 
+      A     "HMI_DB".ROLLER_SSW_MAIN; 
+      =     "M 111.0"; 
+      =     "HMI_DB".ROLLER_SSW_STATUS; 
 NETWORK
 TITLE =Screen UpDate
 
@@ -103,42 +186,6 @@ TITLE =Service Switch Status - Screen 0 SSW Inputs
       A     #SERVICE_ON; 
       A     "Timer 101"; 
       R     "HMI_DB".SERVICE_SSW_MAIN; 
-NETWORK
-TITLE =Hand Feed Switch Status - Screen 0 SSW Inputs
-
-      A     "M 140.3"; 
-      A     "HMI_DB".MAN_FEED_SSW_MAIN; 
-      L     S5T#20M; 
-      SD    "Timer 103"; 
-      =     #HAND_FEED; 
-      =     "M 110.0"; 
-      =     "HMI_DB".MAN_FEED_SSW_STATUS; 
-//;
-      A     #HAND_FEED; 
-      =     "HMI_DB".HAND_FEED_ARROW_STATUS; 
-//;
-      A     #HAND_FEED; 
-      A     "Timer 103"; 
-      R     "HMI_DB".MAN_FEED_SSW_MAIN; 
-NETWORK
-TITLE =Turn Table Switch Status - Screen 0 SSW Inputs
-
-      A     "M 7.3"; 
-      =     "HMI_DB".TURNTABLE_SSW_STATUS; 
-NETWORK
-TITLE =Flipper Switch Status - Screen 0 SSW Inputs
-
-      A     "M 140.3"; 
-      A     "HMI_DB".FLIPPER_SSW_MAIN; 
-      =     "M 111.1"; 
-      =     "HMI_DB".FLIPPER_SSW_STATUS; 
-NETWORK
-TITLE =Roller Switch Status - Screen 0 SSW Inputs
-
-      A     "M 140.3"; 
-      A     "HMI_DB".ROLLER_SSW_MAIN; 
-      =     "M 111.0"; 
-      =     "HMI_DB".ROLLER_SSW_STATUS; 
 NETWORK
 TITLE =HMI Service Switch Reset
 //HMI Service Switch Reset when 2145 Exits Packets + 10s Delay
