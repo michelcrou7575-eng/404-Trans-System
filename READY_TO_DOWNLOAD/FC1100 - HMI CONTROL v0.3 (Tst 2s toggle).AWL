@@ -1,12 +1,13 @@
 FUNCTION "HMI CONTROL" : VOID
 TITLE =HMI Control - Screen 0 SSW Inputs
 //Screen 0 - "RUN" Screen
-//v0.2 2026-11-25: NS12 in control of the run-screen switches (M140.3) = the
-//main screen "Tst" button only ("HMI_DB".TST_SWITCH, DBX1.4, Alternate, kept in
-//DB12). Was TRANS_SYSTEM_ON_SW AND SERVICE_SW_3_STATUS, which dropped by itself
-//(service switch reset 10 s after the 2145 flap, H1). Tst OFF = LAUER in charge.
+//v0.3 2026-11-25: NS12 in control of the run-screen switches (M140.3) =
+//"HMI_DB".TST_SWITCH_STATUS (DBX1.5, set by the PLC, kept in DB12). The NS12 "Tst"
+//button is MOMENTARY ("HMI_DB".TST_SWITCH, DBX1.4): held 2 s = toggle the status.
+//LAUER F2 (unused key) = back to LAUER at once (if the NS12 is dead).
+//Was TRANS_SYSTEM_ON_SW AND SERVICE_SW_3_STATUS, which dropped by itself (H1).
 NAME : HMI_CTRL
-VERSION : 0.2
+VERSION : 0.3
 
 
 VAR_TEMP
@@ -14,6 +15,7 @@ VAR_TEMP
   CLEARING_ON : BOOL ;	
   HAND_FEED : BOOL ;	
   UPDATE_PULSE : BOOL ;	
+  TST_PULSE : BOOL ;	//Tst Held 2 s - One Scan
 END_VAR
 BEGIN
 NETWORK
@@ -49,12 +51,30 @@ TITLE =New HMI Panel Switches
       A     "M 146.3"; 
       =     "H 57.3"; 
 NETWORK
-TITLE =NS12 in Control of the Run Screen Switches - "Tst" Button (DB12.DBX1.4)
-//Tst ON  = NS12: hand feed, flipper, turntable, roller, clearing, C7/C8/C9 times.
-//Tst OFF = LAUER (as before). Kept in DB12: no reset by START or service reset.
+TITLE =NS12 in Control - "Tst" Held 2 s Toggles TST_SWITCH_STATUS (DB12.DBX1.5)
+//Tst status ON  = NS12: hand feed, flipper, turntable, roller, clearing, C7/C8/C9
+//times. OFF = LAUER (as before). Kept in DB12: no reset by START / service reset.
 
-      A     "HMI_DB".TST_SWITCH; // NS12 Main Screen "Tst" - Alternate
-      =     "M 140.3"; 
+      A     "HMI_DB".TST_SWITCH; // NS12 "Tst" - Momentary (DBX1.4)
+      L     S5T#2S; 
+      SD    T    141; // Held 2 s
+//;
+      A     T    141; 
+      FP    M    283.5; // Edge Memory (Free)
+      =     #TST_PULSE; 
+//;
+      A     #TST_PULSE; // Toggle
+      JCN   K001; 
+
+      A     "HMI_DB".TST_SWITCH_STATUS; 
+      NOT   ; 
+      =     "HMI_DB".TST_SWITCH_STATUS; 
+
+K001: A     M    162.6; // LAUER F2 Pressed (Edge) = Back to LAUER
+      R     "HMI_DB".TST_SWITCH_STATUS; 
+//;
+      A     "HMI_DB".TST_SWITCH_STATUS; 
+      =     "M 140.3"; // NS12 in Control of the Run Screen Switches
 NETWORK
 TITLE =Screen UpDate
 
