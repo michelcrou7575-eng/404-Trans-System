@@ -108,3 +108,27 @@ Still needed for the time calculation: two stop measurements (time -> packet tai
 
 ## DB15 v1.7 (2026-11-26): field names
 Flipper fields renamed `C7_...` (C7_Time_Used_ms, C7_Plus_PB, C7_Stop_S5T, C7_Time_ms, C7_Disp_Length_mm, C7_Width_Class_1...4 ...). C9 fields `C9_...`. Shared: Length_mm, Class, Class_Lamps, Step_ms. **All NS12 addresses unchanged.**
+
+## DB15 v1.8 / FC1215 v1.9 - C7 flipper drawing: ONE packet moved (16 positions), like C9
+16 copies of the packet (Bit Lamp, lamp address `SERIALA:M00000.00`, Control Flag -> Display = bit below). Copy = (C7 time shown - 700) / 100 mS (`DBW186` / `DBW188`, settable). 1500 mS (default) = copy 8.
+
+| Copy | Time from | Control Flag |
+|---|---|---|
+| 0 | 700 mS | `DB0015_DBX00185.00` |
+| 1 | 800 mS | `DB0015_DBX00185.01` |
+| 2 | 900 mS | `DB0015_DBX00185.02` |
+| 3 | 1000 mS | `DB0015_DBX00185.03` |
+| 4 | 1100 mS | `DB0015_DBX00185.04` |
+| 5 | 1200 mS | `DB0015_DBX00185.05` |
+| 6 | 1300 mS | `DB0015_DBX00185.06` |
+| 7 | 1400 mS | `DB0015_DBX00185.07` |
+| 8 | 1500 mS | `DB0015_DBX00184.00` |
+| 9 | 1600 mS | `DB0015_DBX00184.01` |
+| 10 | 1700 mS | `DB0015_DBX00184.02` |
+| 11 | 1800 mS | `DB0015_DBX00184.03` |
+| 12 | 1900 mS | `DB0015_DBX00184.04` |
+| 13 | 2000 mS | `DB0015_DBX00184.05` |
+| 14 | 2100 mS | `DB0015_DBX00184.06` |
+| 15 | 2200 mS | `DB0015_DBX00184.07` |
+
+Display: `DBW190` copy shown. Remove leftover macros (screen / object / project).

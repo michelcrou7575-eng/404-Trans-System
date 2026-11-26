@@ -18,7 +18,10 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //C7_... (layout and addresses unchanged). C9_Default_ms 90 mS, C9_Max_ms 200 mS,
 //C9 drawing step 13 mS (16 copies = 0...200 mS). Shared: Length_mm, Class,
 //Class_Lamps (length class), Step_ms (arrow step).
-VERSION : 1.7
+//v1.8 2026-11-26: C7 HMI drawing like C9: one packet, 16 copies at 16 positions
+//(C7_Pos_Bits DBW184, one bit ON) from the C7 time shown. Defaults 700 / 100 mS:
+//16 copies = 700...2200 mS, 1500 mS (default) = copy 8.
+VERSION : 1.8
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -71,6 +74,10 @@ VERSION : 1.7
    C9_Pos_Step : INT ;	//C9 Drawing: Copy Shown 0...15 (DBW178)
    C9_Default_ms : INT  := 90;	//C9 Default (DEFAULT Button / Class Without Time) [mS] (DBW180)
    C9_Max_ms : INT  := 200;	//C9 Highest Time [mS] - Physical Limit From the Sensor (DBW182)
+   C7_Pos_Bits : WORD ;	//C7 Drawing: One Bit ON = Copy Shown - Copy 0 = DBX185.0 ... 7 = DBX185.7, 8 = DBX184.0 ... 15 = DBX184.7
+   C7_View_Min_ms : INT  := 700;	//C7 Drawing: Time of Copy 0 (Left) [mS] (DBW186)
+   C7_View_Step_ms : INT  := 100;	//C7 Drawing: Time Between 2 Copies [mS] (DBW188) - 16 Copies = 700...2200 mS
+   C7_Pos_Step : INT ;	//C7 Drawing: Copy Shown 0...15 (DBW190)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -99,7 +106,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //time copied at takeover is limited the same way.
 //v1.8 2026-11-26: DB15 flipper fields renamed C7_... (no code change). C9 defaults
 //now in DB15 v1.7: 90 / 200 mS.
-VERSION : 1.8
+//v1.9 2026-11-26: C7 HMI drawing: C7_Pos_Bits (one of 16 positions) from the C7
+//time shown (C7_Time_Used_ms), same as C9.
+VERSION : 1.9
 
 
 VAR_TEMP
@@ -488,4 +497,41 @@ C042: T     "PACKET POSITION DB".C9_Pos_Step;
       L     L#1; 
       SLD   ; 
       T     "PACKET POSITION DB".C9_Pos_Bits; 
+NETWORK
+TITLE =C7 Flipper - HMI Drawing: 1 of 16 Lateral Positions (Longer Time = Right)
+
+      L     "PACKET POSITION DB".C7_View_Step_ms; // Step 0 -> Copy 0
+      L     0; 
+      >I    ; 
+      JC    K040; 
+
+      L     0; 
+      JU    K042; 
+
+K040: L     "PACKET POSITION DB".C7_Time_Used_ms; 
+      L     "PACKET POSITION DB".C7_View_Min_ms; 
+      -I    ; 
+      L     "PACKET POSITION DB".C7_View_Step_ms; 
+      /I    ; 
+      T     #T_NEW; 
+      L     0; 
+      >=I   ; 
+      JC    K041; 
+
+      L     0; 
+      T     #T_NEW; 
+
+K041: L     #T_NEW; 
+      L     15; 
+      <=I   ; 
+      L     #T_NEW; 
+      JC    K042; 
+
+      L     15; 
+K042: T     "PACKET POSITION DB".C7_Pos_Step; 
+//;
+      L     "PACKET POSITION DB".C7_Pos_Step; // One Bit = Step
+      L     L#1; 
+      SLD   ; 
+      T     "PACKET POSITION DB".C7_Pos_Bits; 
 END_FUNCTION
