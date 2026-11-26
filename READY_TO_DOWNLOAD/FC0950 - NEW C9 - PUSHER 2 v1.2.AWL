@@ -6,7 +6,9 @@ NAME : POS_11
 //from DB15 "PACKET POSITION DB".C9_Stop_S5T (FC1215 "PACKET POSITIONING", called
 //by FC942). Class without time = "HMI_DB".CONV_9_POS_mS x 10 as before.
 //v1.1 2026-11-24: DB15 symbol renamed "PACKET POSITION DB" - no code change.
-VERSION : 1.1
+//v1.2 2026-11-26: dead MW184 conversion (CONV_9_POS_mS x 10, not used since v1.0)
+//removed, with its temps ZOOLOO / POSITION_TIME. Timer 62 / Timer 50 unchanged.
+VERSION : 1.2
 
 
 VAR_TEMP
@@ -14,8 +16,6 @@ VAR_TEMP
   CONVEYOR_9_RUN : BOOL ;	
   PUSHER_PUSH : BOOL ;	
   INITIALISATION : BOOL ;	
-  POSITION_TIME : S5TIME ;	
-  ZOOLOO : TIME ;	
 END_VAR
 BEGIN
 NETWORK
@@ -123,31 +123,13 @@ TITLE =Step 10N6 - Conveyor 9 - Packet Edge Sens
       A     "M 51.4"; 
       S     "M 51.5"; 
 NETWORK
-TITLE =Time Convertion - Lateral Packet Position to Feeder - Adj.(HMI)
-
-      A     "M 140.3"; 
-      AN    "M 6.7"; 
-      FP    "FP 147.2"; 
-      JNB   BYP1; 
-      L     "HMI_DB".CONV_9_POS_mS; // Integer contains MILLISECOND seconds
-      L     10; 
-      *I    ; 
-      ITD   ; 
-      T     #ZOOLOO; 
-
-      CALL "TIM_S5TI" (
-           IN                       := #ZOOLOO,
-           RET_VAL                  := #POSITION_TIME);
-
-      L     #POSITION_TIME; 
-      T     "MW 184"; 
-BYP1: CLR   ; 
+TITLE =Conveyor 9 - Lateral Packet Position to Feeder - NS12 Time (DB15, Timer 62)
 
       A     "M 140.3"; 
       A     "M 51.5"; 
       AN    "M 51.6"; 
       A     "M 0.3"; 
-      L     "PACKET POSITION DB".C9_Stop_S5T; // Was MW 184 - Now per Length Class (DB15)
+      L     "PACKET POSITION DB".C9_Stop_S5T; // Per Length Class (DB15, FC1215)
       SD    "Timer 62"; // OMRON HMI
 NETWORK
 TITLE =Conveyor 9 - Lateral Packet Position to Feeder - Adj.(HMI)

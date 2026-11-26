@@ -14,42 +14,46 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.5 2026-11-25: Spare_9 -> FP_Tst_On (DBX104.4, edge memory of M140.3), layout unchanged.
 //v1.6 2026-11-25: + C9_Default_ms 250 (center) and C9_Max_ms 500 (physical limit
 //from the sensor), DBW180 / DBW182. Drawing step 32 mS (16 copies = 0...500 mS).
-VERSION : 1.6
+//v1.7 2026-11-26: names say C7 (flipper) or C9 (pusher 2): flipper fields renamed
+//C7_... (layout and addresses unchanged). C9_Default_ms 90 mS, C9_Max_ms 200 mS,
+//C9 drawing step 13 mS (16 copies = 0...200 mS). Shared: Length_mm, Class,
+//Class_Lamps (length class), Step_ms (arrow step).
+VERSION : 1.7
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
    Class : INT ;	//Length Class 0 = < 525 mm ... 31 = >= 975 mm (15 mm Steps from 510)
-   Time_Used_ms : INT ;	//Stop Time Used for This Class [mS] - HMI Display
-   Default_ms : INT  := 1500;	//Stop Time When the Class Has No Time Set [mS] (= Before v1.0)
+   C7_Time_Used_ms : INT ;	//Stop Time Used for This Class [mS] - HMI Display
+   C7_Default_ms : INT  := 1500;	//Stop Time When the Class Has No Time Set [mS] (= Before v1.0)
    Step_ms : INT  := 10;	//One Arrow Press [mS]
-   Min_ms : INT  := 200;	//Lowest Time Allowed [mS]
-   Max_ms : INT  := 5000;	//Highest Time Allowed [mS]
-   Plus_PB : BOOL ;	//HMI Arrow -> : Longer (Packet Stops Further) - Momentary
-   Minus_PB : BOOL ;	//HMI Arrow <- : Shorter (Packet Stops Earlier) - Momentary
-   Reset_PB : BOOL ;	//HMI: This Class Back to Default - Momentary
-   Use_Table : BOOL  := TRUE;	//1 = Table / 0 = Default_ms Always (Old Fixed 1.5 s)
+   C7_Min_ms : INT  := 200;	//Lowest Time Allowed [mS]
+   C7_Max_ms : INT  := 5000;	//Highest Time Allowed [mS]
+   C7_Plus_PB : BOOL ;	//HMI Arrow -> : Longer (Packet Stops Further) - Momentary
+   C7_Minus_PB : BOOL ;	//HMI Arrow <- : Shorter (Packet Stops Earlier) - Momentary
+   C7_Reset_PB : BOOL ;	//HMI: This Class Back to Default - Momentary
+   C7_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = Default_ms Always (Old Fixed 1.5 s)
    Spare_1 : BOOL ;	
    Spare_2 : BOOL ;	
    Spare_3 : BOOL ;	
    Spare_4 : BOOL ;	
    Class_Lamps : DWORD ;	//One Bit per Class (HMI Lamps) - Class 0 = DBX19.0 ... 7 = DBX19.7, 8 = DBX18.0 ... 31 = DBX16.7
-   Stop_S5T : S5TIME  := S5T#1S500MS;	//Stop Time for FC942 Timer 42
-   Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//Stop Time per Class [mS] - 0 = Default_ms
-   Disp_Length_mm : INT ;	//HMI Packet Drawing - Length [mm] (DBW86)
-   Width_mm : INT ;	//Packet Width Used [mm] ("PACKET WIDTH DB".Width_mm_Cal, C10 Measured)
-   Width_Class_1 : BOOL ;	//HMI Drawing Pair 1 - Width < Width_Lim_1 (DBX90.0)
-   Width_Class_2 : BOOL ;	//HMI Drawing Pair 2 - Width_Lim_1 ... Width_Lim_2 (DBX90.1)
-   Width_Class_3 : BOOL ;	//HMI Drawing Pair 3 - Width_Lim_2 ... Width_Lim_3 (DBX90.2)
-   Width_Class_4 : BOOL ;	//HMI Drawing Pair 4 - Width >= Width_Lim_3 (DBX90.3)
+   C7_Stop_S5T : S5TIME  := S5T#1S500MS;	//Stop Time for FC942 Timer 42
+   C7_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//Stop Time per Class [mS] - 0 = Default_ms
+   C7_Disp_Length_mm : INT ;	//HMI Packet Drawing - Length [mm] (DBW86)
+   C7_Width_mm : INT ;	//Packet Width Used [mm] ("PACKET WIDTH DB".Width_mm_Cal, C10 Measured)
+   C7_Width_Class_1 : BOOL ;	//HMI Drawing Pair 1 - Width < Width_Lim_1 (DBX90.0)
+   C7_Width_Class_2 : BOOL ;	//HMI Drawing Pair 2 - Width_Lim_1 ... Width_Lim_2 (DBX90.1)
+   C7_Width_Class_3 : BOOL ;	//HMI Drawing Pair 3 - Width_Lim_2 ... Width_Lim_3 (DBX90.2)
+   C7_Width_Class_4 : BOOL ;	//HMI Drawing Pair 4 - Width >= Width_Lim_3 (DBX90.3)
    Spare_5 : BOOL ;	
    Spare_6 : BOOL ;	
    Spare_7 : BOOL ;	
    Spare_8 : BOOL ;	
-   Width_Lim_1 : INT  := 450;	//Width Class Limit 1/2 [mm]
-   Width_Lim_2 : INT  := 500;	//Width Class Limit 2/3 [mm]
-   Width_Lim_3 : INT  := 550;	//Width Class Limit 3/4 [mm]
-   Tail_mm : INT ;	//Reserved: Flipper Drawing - Packet Tail Position [mm] (DBW98)
-   Front_mm : INT ;	//Reserved: Flipper Drawing - Packet Front Position [mm] (DBW100)
+   C7_Width_Lim_1 : INT  := 450;	//Width Class Limit 1/2 [mm]
+   C7_Width_Lim_2 : INT  := 500;	//Width Class Limit 2/3 [mm]
+   C7_Width_Lim_3 : INT  := 550;	//Width Class Limit 3/4 [mm]
+   C7_Tail_mm : INT ;	//Reserved: Flipper Drawing - Packet Tail Position [mm] (DBW98)
+   C7_Front_mm : INT ;	//Reserved: Flipper Drawing - Packet Front Position [mm] (DBW100)
    C9_Time_Used_ms : INT ;	//C9 Stop Time Used for This Class [mS] - HMI Display (DBW102)
    C9_Plus_PB : BOOL ;	//HMI C9 Arrow -> : Longer - Momentary (DBX104.0)
    C9_Minus_PB : BOOL ;	//HMI C9 Arrow <- : Shorter - Momentary (DBX104.1)
@@ -63,10 +67,10 @@ VERSION : 1.6
    C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
    C9_Pos_Bits : WORD ;	//C9 Drawing: One Bit ON = Copy Shown - Copy 0 = DBX173.0 ... 7 = DBX173.7, 8 = DBX172.0 ... 15 = DBX172.7
    C9_View_Min_ms : INT ;	//C9 Drawing: Time of Copy 0 (Left) [mS] (DBW174)
-   C9_View_Step_ms : INT  := 32;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...500 mS
+   C9_View_Step_ms : INT  := 13;	//C9 Drawing: Time Between 2 Copies [mS] (DBW176) - 16 Copies = 0...200 mS
    C9_Pos_Step : INT ;	//C9 Drawing: Copy Shown 0...15 (DBW178)
-   C9_Default_ms : INT  := 250;	//C9 Default (DEFAULT Button / Class Without Time) [mS] - Center (DBW180)
-   C9_Max_ms : INT  := 500;	//C9 Highest Time [mS] - Physical Limit From the Sensor (DBW182)
+   C9_Default_ms : INT  := 90;	//C9 Default (DEFAULT Button / Class Without Time) [mS] (DBW180)
+   C9_Max_ms : INT  := 200;	//C9 Highest Time [mS] - Physical Limit From the Sensor (DBW182)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -93,7 +97,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.7 2026-11-25: C9 default = "PACKET POSITION DB".C9_Default_ms (250 mS, center)
 //instead of CONV_9_POS_mS x 10. C9 limited to 1...C9_Max_ms (500 mS). The LAUER
 //time copied at takeover is limited the same way.
-VERSION : 1.7
+//v1.8 2026-11-26: DB15 flipper fields renamed C7_... (no code change). C9 defaults
+//now in DB15 v1.7: 90 / 200 mS.
+VERSION : 1.8
 
 
 VAR_TEMP
@@ -166,13 +172,13 @@ TITLE =C7 Flipper - HMI Arrows / Reset - Change This Class Time
       <>I   ; 
       JC    K010; 
 
-      L     "PACKET POSITION DB".Default_ms; 
+      L     "PACKET POSITION DB".C7_Default_ms; 
       JU    K011; 
 
 K010: L     #T_TAB; 
 K011: T     #T_NEW; 
 //;
-      A     "PACKET POSITION DB".Plus_PB; 
+      A     "PACKET POSITION DB".C7_Plus_PB; 
       JCN   K012; 
 
       L     #T_NEW; 
@@ -180,7 +186,7 @@ K011: T     #T_NEW;
       +I    ; 
       T     #T_NEW; 
 
-K012: A     "PACKET POSITION DB".Minus_PB; 
+K012: A     "PACKET POSITION DB".C7_Minus_PB; 
       JCN   K013; 
 
       L     #T_NEW; 
@@ -189,26 +195,26 @@ K012: A     "PACKET POSITION DB".Minus_PB;
       T     #T_NEW; 
 
 K013: L     #T_NEW; // Clamp Min...Max
-      L     "PACKET POSITION DB".Min_ms; 
+      L     "PACKET POSITION DB".C7_Min_ms; 
       >=I   ; 
       JC    K014; 
 
-      L     "PACKET POSITION DB".Min_ms; 
+      L     "PACKET POSITION DB".C7_Min_ms; 
       T     #T_NEW; 
 
 K014: L     #T_NEW; 
-      L     "PACKET POSITION DB".Max_ms; 
+      L     "PACKET POSITION DB".C7_Max_ms; 
       <=I   ; 
       JC    K015; 
 
-      L     "PACKET POSITION DB".Max_ms; 
+      L     "PACKET POSITION DB".C7_Max_ms; 
       T     #T_NEW; 
 
 K015: NOP   0; 
 NETWORK
 TITLE =C7 Flipper - Write Back After an Arrow / Reset
 
-      A     "PACKET POSITION DB".Reset_PB; 
+      A     "PACKET POSITION DB".C7_Reset_PB; 
       O     #TST_ON; // NS12 Takes Over: LAUER Actual = 1.5 s = Default
       JCN   K020; 
 
@@ -217,8 +223,8 @@ TITLE =C7 Flipper - Write Back After an Arrow / Reset
       JU    K021; 
 
 K020: A(    ; 
-      O     "PACKET POSITION DB".Plus_PB; 
-      O     "PACKET POSITION DB".Minus_PB; 
+      O     "PACKET POSITION DB".C7_Plus_PB; 
+      O     "PACKET POSITION DB".C7_Minus_PB; 
       )     ; 
       JCN   K022; 
 
@@ -236,71 +242,71 @@ K021: L     #CLASS;
       T     DBW [AR1,P#0.0]; 
 
 K022: SET   ; // Momentary: Reset by the PLC
-      R     "PACKET POSITION DB".Plus_PB; 
-      R     "PACKET POSITION DB".Minus_PB; 
-      R     "PACKET POSITION DB".Reset_PB; 
+      R     "PACKET POSITION DB".C7_Plus_PB; 
+      R     "PACKET POSITION DB".C7_Minus_PB; 
+      R     "PACKET POSITION DB".C7_Reset_PB; 
 NETWORK
 TITLE =HMI Packet Drawing - Length + Width Class (4 Pairs of Level Meters)
 //Width = C10 measured width (DB30 Width_mm_Cal, last verified, same order).
 //0 (not measured yet) = smallest class.
 
       L     "PACKET POSITION DB".Length_mm; 
-      T     "PACKET POSITION DB".Disp_Length_mm; 
+      T     "PACKET POSITION DB".C7_Disp_Length_mm; 
 //;
       L     "PACKET WIDTH DB".Width_mm_Cal; 
-      T     "PACKET POSITION DB".Width_mm; 
+      T     "PACKET POSITION DB".C7_Width_mm; 
 //;
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_1; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_1; 
       <I    ; 
-      =     "PACKET POSITION DB".Width_Class_1; 
+      =     "PACKET POSITION DB".C7_Width_Class_1; 
 //;
       A(    ; 
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_1; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_1; 
       >=I   ; 
       )     ; 
       A(    ; 
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_2; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_2; 
       <I    ; 
       )     ; 
-      =     "PACKET POSITION DB".Width_Class_2; 
+      =     "PACKET POSITION DB".C7_Width_Class_2; 
 //;
       A(    ; 
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_2; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_2; 
       >=I   ; 
       )     ; 
       A(    ; 
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_3; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_3; 
       <I    ; 
       )     ; 
-      =     "PACKET POSITION DB".Width_Class_3; 
+      =     "PACKET POSITION DB".C7_Width_Class_3; 
 //;
-      L     "PACKET POSITION DB".Width_mm; 
-      L     "PACKET POSITION DB".Width_Lim_3; 
+      L     "PACKET POSITION DB".C7_Width_mm; 
+      L     "PACKET POSITION DB".C7_Width_Lim_3; 
       >=I   ; 
-      =     "PACKET POSITION DB".Width_Class_4; 
+      =     "PACKET POSITION DB".C7_Width_Class_4; 
 NETWORK
 TITLE =C7 Flipper - Stop Time Used -> S5TIME for FC942 Timer 42
 
       L     #T_TAB; 
       L     0; 
       <>I   ; 
-      A     "PACKET POSITION DB".Use_Table; 
+      A     "PACKET POSITION DB".C7_Use_Table; 
       JC    K030; 
 
-      L     "PACKET POSITION DB".Default_ms; 
+      L     "PACKET POSITION DB".C7_Default_ms; 
       JU    K031; 
 
 K030: L     #T_TAB; 
-K031: T     "PACKET POSITION DB".Time_Used_ms; // HMI (Preview When LAUER)
+K031: T     "PACKET POSITION DB".C7_Time_Used_ms; // HMI (Preview When LAUER)
       A     "M 140.3"; // Machine: Table Only When NS12 in Control
       JC    K032; 
 
-      L     "PACKET POSITION DB".Default_ms; // LAUER in Control: Fixed 1.5 s
+      L     "PACKET POSITION DB".C7_Default_ms; // LAUER in Control: Fixed 1.5 s
 K032: ITD   ; 
       T     #T_TIME; 
 
@@ -309,7 +315,7 @@ K032: ITD   ;
            RET_VAL                  := #S5);
 
       L     #S5; 
-      T     "PACKET POSITION DB".Stop_S5T; 
+      T     "PACKET POSITION DB".C7_Stop_S5T; 
 NETWORK
 TITLE =C9 Pusher 2 - Read the Class Time (C9_Time_ms[Class], DB15.DBW108 + 2 x Class)
 
@@ -324,7 +330,7 @@ TITLE =C9 Pusher 2 - Read the Class Time (C9_Time_ms[Class], DB15.DBW108 + 2 x C
       L     DBW [AR1,P#0.0]; 
       T     #T_TAB; 
 //;
-      L     "PACKET POSITION DB".C9_Default_ms; // C9 Default = 250 mS (Center)
+      L     "PACKET POSITION DB".C9_Default_ms; // C9 Default (DB15, 90 mS)
       T     #T_DEF; 
 NETWORK
 TITLE =C9 Pusher 2 - HMI Arrows / Reset - Change This Class Time
