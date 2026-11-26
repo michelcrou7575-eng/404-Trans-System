@@ -136,3 +136,12 @@ Display: `DBW190` copy shown. Remove leftover macros (screen / object / project)
 ## FC1215 v2.0 - arrows auto repeat (C7 and C9)
 Press = 1 step (10 mS). Hold 0.5 s = 1 step every 100 mS (100 mS per second). (v2.1: no fast step.) Release = stop.
 **The arrow buttons MUST be Momentary** (the PLC no longer resets them; Alternate would keep counting).
+
+## DB15 v2.0 / FC1215 v2.2 - C7 drawing with 2 Level Meters (packet moves, keeps its length)
+| Level Meter | Address | Direction | Range |
+|---|---|---|---|
+| Left half (from the fork centre to the left) | `SERIALA:DB0015_DBW00192` (C7_Left_mm) | **Left** | Min 0, Max = C7_Half_mm (665) |
+| Right half (from the fork centre to the right) | `SERIALA:DB0015_DBW00194` (C7_Right_mm) | **Right** | Min 0, Max 665 |
+
+Left = L/2 + offset, Right = L/2 - offset, offset = (C7 time - C7_Center_ms 1500) x C7_Speed_mm_s (400) / 1000. More time = packet further LEFT (downstream). 673 mm: 1500 mS = 336 / 336 (centred), 1800 mS = 456 / 216, 1200 mS = 216 / 456.
+Settable online: `DBW196` C7_Center_ms, `DBW198` C7_Speed_mm_s (set the measured C7 speed), `DBW200` C7_Half_mm (= meter Max).

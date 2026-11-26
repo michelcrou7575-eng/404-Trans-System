@@ -23,7 +23,11 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //16 copies = 700...2200 mS, 1500 mS (default) = copy 8.
 //v1.9 2026-11-26: Spare_1/2 -> C7_FP_Plus/Minus (DBX14.4/14.5), Spare_10/11 -> C9_FP_Plus/Minus
 //(DBX104.5/104.6): edge memories for the arrow auto repeat. Layout unchanged.
-VERSION : 1.9
+//v2.0 2026-11-26: C7 drawing with 2 Level Meters from the fork centre: C7_Left_mm
+//(DBW192, meter Direction Left) and C7_Right_mm (DBW194, Direction Right).
+//More time = packet further downstream (LEFT): left grows, right shrinks, left +
+//right = packet length. Offset = (time - C7_Center_ms) x C7_Speed_mm_s / 1000.
+VERSION : 2.0
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -80,6 +84,11 @@ VERSION : 1.9
    C7_View_Min_ms : INT  := 700;	//C7 Drawing: Time of Copy 0 (Left) [mS] (DBW186)
    C7_View_Step_ms : INT  := 100;	//C7 Drawing: Time Between 2 Copies [mS] (DBW188) - 16 Copies = 700...2200 mS
    C7_Pos_Step : INT ;	//C7 Drawing: Copy Shown 0...15 (DBW190)
+   C7_Left_mm : INT ;	//C7 Drawing: Packet Left of the Fork Centre [mm] - Level Meter Direction Left (DBW192)
+   C7_Right_mm : INT ;	//C7 Drawing: Packet Right of the Fork Centre [mm] - Level Meter Direction Right (DBW194)
+   C7_Center_ms : INT  := 1500;	//C7 Drawing: Time = Packet Centred on the Fork [mS] (DBW196)
+   C7_Speed_mm_s : INT  := 400;	//C7 Drawing: Belt Speed [mm/s] (DBW198) - Set When Measured
+   C7_Half_mm : INT  := 665;	//C7 Drawing: Half Fork = Level Meter Max [mm] (DBW200)
   END_STRUCT ;
 BEGIN
 END_DATA_BLOCK
@@ -116,7 +125,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //Timers T142 (0.5 s) / T143 (3 s), free.
 //v2.1 2026-11-26: no FAST step any more: held = 10 mS every 100 mS only (T143 not
 //used). DB15 unchanged (v1.9).
-VERSION : 2.1
+//v2.2 2026-11-26: C7 drawing with 2 Level Meters (C7_Left_mm / C7_Right_mm): the
+//packet moves LEFT (downstream) with more time, keeping its length.
+VERSION : 2.2
 
 
 VAR_TEMP
@@ -127,7 +138,10 @@ VAR_TEMP
   TST_ON : BOOL ;	
   DO_PLUS : BOOL ;	//Arrow -> Step This Scan
   DO_MINUS : BOOL ;	//Arrow <- Step This Scan
-  STEP : INT ;	//Step This Scan [mS] (= Step_ms)//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
+  STEP : INT ;	
+  OFF : DINT ;	//C7 Drawing Offset [mm] (+ = Left / Downstream)
+  HALF : DINT ;	//Half Packet Length [mm]
+  VAL : DINT ;	//Step This Scan [mS] (= Step_ms)//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
   T_TIME : TIME ;	
   S5 : S5TIME ;	
 END_VAR
@@ -591,4 +605,73 @@ K042: T     "PACKET POSITION DB".C7_Pos_Step;
       L     L#1; 
       SLD   ; 
       T     "PACKET POSITION DB".C7_Pos_Bits; 
+NETWORK
+TITLE =C7 Flipper - HMI Drawing: 2 Level Meters From the Fork Centre (More Time = Left)
+//Left = L/2 + Offset, Right = L/2 - Offset, each limited to 0...C7_Half_mm.
+//Offset = (C7 time shown - C7_Center_ms) x C7_Speed_mm_s / 1000.
+
+      L     "PACKET POSITION DB".C7_Time_Used_ms; 
+      L     "PACKET POSITION DB".C7_Center_ms; 
+      -I    ; 
+      ITD   ; 
+      L     "PACKET POSITION DB".C7_Speed_mm_s; 
+      ITD   ; 
+      *D    ; 
+      L     L#1000; 
+      /D    ; 
+      T     #OFF; 
+//;
+      L     "PACKET POSITION DB".Length_mm; 
+      ITD   ; 
+      L     L#2; 
+      /D    ; 
+      T     #HALF; 
+//;
+      L     #HALF; // Left Part
+      L     #OFF; 
+      +D    ; 
+      T     #VAL; 
+      L     L#0; 
+      >=D   ; 
+      JC    D001; 
+
+      L     L#0; 
+      T     #VAL; 
+
+D001: L     "PACKET POSITION DB".C7_Half_mm; 
+      ITD   ; 
+      L     #VAL; 
+      >=D   ; 
+      JC    D002; 
+
+      L     "PACKET POSITION DB".C7_Half_mm; 
+      ITD   ; 
+      T     #VAL; 
+
+D002: L     #VAL; 
+      T     "PACKET POSITION DB".C7_Left_mm; 
+//;
+      L     #HALF; // Right Part
+      L     #OFF; 
+      -D    ; 
+      T     #VAL; 
+      L     L#0; 
+      >=D   ; 
+      JC    D003; 
+
+      L     L#0; 
+      T     #VAL; 
+
+D003: L     "PACKET POSITION DB".C7_Half_mm; 
+      ITD   ; 
+      L     #VAL; 
+      >=D   ; 
+      JC    D004; 
+
+      L     "PACKET POSITION DB".C7_Half_mm; 
+      ITD   ; 
+      T     #VAL; 
+
+D004: L     #VAL; 
+      T     "PACKET POSITION DB".C7_Right_mm; 
 END_FUNCTION
