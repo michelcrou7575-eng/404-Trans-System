@@ -145,3 +145,20 @@ Press = 1 step (10 mS). Hold 0.5 s = 1 step every 100 mS (100 mS per second). (v
 
 Left = L/2 + offset, Right = L/2 - offset, offset = (C7 time - C7_Center_ms 1500) x C7_Speed_mm_s (400) / 1000. More time = packet further LEFT (downstream). 673 mm: 1500 mS = 336 / 336 (centred), 1800 mS = 456 / 216, 1200 mS = 216 / 456.
 Settable online: `DBW196` C7_Center_ms, `DBW198` C7_Speed_mm_s (set the measured C7 speed), `DBW200` C7_Half_mm (= meter Max).
+
+### Level Meter layout (2026-11-26, from the test photos)
+Test result: Left 615 = short block, Right 615 hidden by the Left meter, both 1200 = full fork.
+So the meters were set **Min ~600** and **overlapping**. The PLC sends **half lengths 0..665 mm** (a 724 mm packet = about 362 / 362), so with Min 600 almost nothing shows.
+
+Scale: fingers 210 mm apart = about **70 px** on the screen → **3 mm per px**. 665 mm = **222 px**.
+
+| | Left meter (`DBW192`) | Right meter (`DBW194`) |
+|---|---|---|
+| Direction | **Left** (grows from its right edge) | **Right** (grows from its left edge) |
+| Range | Min **0**, Max **665**, INT | Min **0**, Max **665**, INT |
+| Width | **222 px** | **222 px** |
+| X | right edge = centre of **finger 4** (X_f4 - 222) | left edge = centre of **finger 4** (X = X_f4) |
+| Y / Height | same as the other meter | same |
+| Frame / background | none / transparent (or fork grey) | same |
+
+The two meters must **touch at finger 4 and never overlap**. Values to test on the VAT: 362 / 362 (724 mm centred), 500 / 224 (moved left), 224 / 500 (moved right).
