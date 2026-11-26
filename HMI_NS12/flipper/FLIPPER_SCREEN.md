@@ -132,3 +132,7 @@ Flipper fields renamed `C7_...` (C7_Time_Used_ms, C7_Plus_PB, C7_Stop_S5T, C7_Ti
 | 15 | 2200 mS | `DB0015_DBX00184.07` |
 
 Display: `DBW190` copy shown. Remove leftover macros (screen / object / project).
+
+## FC1215 v2.0 - arrows auto repeat (C7 and C9)
+Press = 1 step (10 mS). Hold 0.5 s = 1 step every 100 mS (100 mS per second). Hold 3 s = 5 steps every 100 mS (500 mS per second). Release = stop.
+**The arrow buttons MUST be Momentary** (the PLC no longer resets them; Alternate would keep counting).

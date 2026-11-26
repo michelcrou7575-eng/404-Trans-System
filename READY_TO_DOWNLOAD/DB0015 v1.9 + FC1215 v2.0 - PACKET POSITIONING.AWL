@@ -21,7 +21,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //v1.8 2026-11-26: C7 HMI drawing like C9: one packet, 16 copies at 16 positions
 //(C7_Pos_Bits DBW184, one bit ON) from the C7 time shown. Defaults 700 / 100 mS:
 //16 copies = 700...2200 mS, 1500 mS (default) = copy 8.
-VERSION : 1.8
+//v1.9 2026-11-26: Spare_1/2 -> C7_FP_Plus/Minus (DBX14.4/14.5), Spare_10/11 -> C9_FP_Plus/Minus
+//(DBX104.5/104.6): edge memories for the arrow auto repeat. Layout unchanged.
+VERSION : 1.9
 
   STRUCT 
    Length_mm : INT ;	//Packet Length Used [mm] ("HOUSE_KEEPING DB".C4_Packet_Length_mm)
@@ -35,8 +37,8 @@ VERSION : 1.8
    C7_Minus_PB : BOOL ;	//HMI Arrow <- : Shorter (Packet Stops Earlier) - Momentary
    C7_Reset_PB : BOOL ;	//HMI: This Class Back to Default - Momentary
    C7_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = Default_ms Always (Old Fixed 1.5 s)
-   Spare_1 : BOOL ;	
-   Spare_2 : BOOL ;	
+   C7_FP_Plus : BOOL ;	//Edge Memory C7 Arrow -> (DBX14.4)
+   C7_FP_Minus : BOOL ;	//Edge Memory C7 Arrow <- (DBX14.5)
    Spare_3 : BOOL ;	
    Spare_4 : BOOL ;	
    Class_Lamps : DWORD ;	//One Bit per Class (HMI Lamps) - Class 0 = DBX19.0 ... 7 = DBX19.7, 8 = DBX18.0 ... 31 = DBX16.7
@@ -63,8 +65,8 @@ VERSION : 1.8
    C9_Reset_PB : BOOL ;	//HMI C9: This Class Back to Default - Momentary (DBX104.2)
    C9_Use_Table : BOOL  := TRUE;	//1 = Table / 0 = "HMI_DB".CONV_9_POS_mS Always (DBX104.3)
    FP_Tst_On : BOOL ;	//Edge Memory - M140.3 (NS12 Takes Over) (DBX104.4)
-   Spare_10 : BOOL ;	
-   Spare_11 : BOOL ;	
+   C9_FP_Plus : BOOL ;	//Edge Memory C9 Arrow -> (DBX104.5)
+   C9_FP_Minus : BOOL ;	//Edge Memory C9 Arrow <- (DBX104.6)
    Spare_12 : BOOL ;	
    C9_Stop_S5T : S5TIME ;	//C9 Stop Time for FC950 Timer 62 (DBW106)
    C9_Time_ms : ARRAY  [0 .. 31 ] OF INT ;	//C9 Stop Time per Class [mS] - 0 = CONV_9_POS_mS x 10 (DBW108...170)
@@ -108,7 +110,11 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //now in DB15 v1.7: 90 / 200 mS.
 //v1.9 2026-11-26: C7 HMI drawing: C7_Pos_Bits (one of 16 positions) from the C7
 //time shown (C7_Time_Used_ms), same as C9.
-VERSION : 1.9
+//v2.0 2026-11-26: arrows AUTO REPEAT. Press = 1 step. Hold > 0.5 s = 1 step every
+//100 mS (M13.0). Hold > 3 s = 5 steps (x Step_ms) every 100 mS. The HMI arrow bits
+//are NOT reset by the PLC any more (NS12 Momentary resets them at release).
+//Timers T142 (0.5 s) / T143 (3 s), free.
+VERSION : 2.0
 
 
 VAR_TEMP
@@ -116,7 +122,10 @@ VAR_TEMP
   T_TAB : INT ;	
   T_NEW : INT ;	
   T_DEF : INT ;	
-  TST_ON : BOOL ;	//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
+  TST_ON : BOOL ;	
+  DO_PLUS : BOOL ;	//Arrow -> Step This Scan
+  DO_MINUS : BOOL ;	//Arrow <- Step This Scan
+  STEP : INT ;	//Step This Scan [mS] (Step_ms, x5 After 3 s)//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
   T_TIME : TIME ;	
   S5 : S5TIME ;	
 END_VAR
@@ -127,6 +136,33 @@ TITLE =NS12 Takes Over (M140.3 0 -> 1) - Start From the LAUER Actual Values
       A     "M 140.3"; // NS12 in Control (FC1100, Tst)
       FP    "PACKET POSITION DB".FP_Tst_On; 
       =     #TST_ON; 
+NETWORK
+TITLE =HMI Arrows Held - Auto Repeat (0.5 s: Every 100 mS, 3 s: x5)
+
+      A(    ; 
+      O     "PACKET POSITION DB".C7_Plus_PB; 
+      O     "PACKET POSITION DB".C7_Minus_PB; 
+      O     "PACKET POSITION DB".C9_Plus_PB; 
+      O     "PACKET POSITION DB".C9_Minus_PB; 
+      )     ; 
+      L     S5T#500MS; 
+      SD    T    142; // Held 0.5 s -> Repeat (Free)
+//;
+      A     T    142; 
+      L     S5T#2S500MS; 
+      SD    T    143; // + 2.5 s = Held 3 s -> Fast (Free)
+//;
+      L     "PACKET POSITION DB".Step_ms; 
+      T     #STEP; 
+      A     T    143; 
+      JCN   H001; 
+
+      L     "PACKET POSITION DB".Step_ms; // Fast: 5 x Step
+      L     5; 
+      *I    ; 
+      T     #STEP; 
+
+H001: NOP   0; 
 NETWORK
 TITLE =Packet Length -> Class (15 mm Steps from 510 mm, 0...31)
 
@@ -173,8 +209,8 @@ TITLE =C7 Flipper - Read the Class Time (Time_ms[Class], DB15.DBW22 + 2 x Class)
       T     #T_TAB; 
 NETWORK
 TITLE =C7 Flipper - HMI Arrows / Reset - Change This Class Time
-//The HMI sets Plus_PB / Minus_PB / Reset_PB, the PLC resets them after use:
-//one press = one step.
+//Arrows: press = 1 step, hold = auto repeat (network "HMI Arrows Held").
+//DEFAULT (Reset_PB) is reset by the PLC.
 
       L     #T_TAB; // Start From the Time Used (0 = Default)
       L     0; 
@@ -187,19 +223,37 @@ TITLE =C7 Flipper - HMI Arrows / Reset - Change This Class Time
 K010: L     #T_TAB; 
 K011: T     #T_NEW; 
 //;
-      A     "PACKET POSITION DB".C7_Plus_PB; 
+      A     "PACKET POSITION DB".C7_Plus_PB; // Arrow -> : Press = 1 Step
+      FP    "PACKET POSITION DB".C7_FP_Plus; 
+      =     #DO_PLUS; 
+      A     "PACKET POSITION DB".C7_Plus_PB; // Held: 1 Step Every 100 mS
+      A     T    142; 
+      A     "M 13.0"; 
+      O     #DO_PLUS; 
+      =     #DO_PLUS; 
+//;
+      A     "PACKET POSITION DB".C7_Minus_PB; // Arrow <- : Press = 1 Step
+      FP    "PACKET POSITION DB".C7_FP_Minus; 
+      =     #DO_MINUS; 
+      A     "PACKET POSITION DB".C7_Minus_PB; // Held: 1 Step Every 100 mS
+      A     T    142; 
+      A     "M 13.0"; 
+      O     #DO_MINUS; 
+      =     #DO_MINUS; 
+//;
+      A     #DO_PLUS; 
       JCN   K012; 
 
       L     #T_NEW; 
-      L     "PACKET POSITION DB".Step_ms; 
+      L     #STEP; 
       +I    ; 
       T     #T_NEW; 
 
-K012: A     "PACKET POSITION DB".C7_Minus_PB; 
+K012: A     #DO_MINUS; 
       JCN   K013; 
 
       L     #T_NEW; 
-      L     "PACKET POSITION DB".Step_ms; 
+      L     #STEP; 
       -I    ; 
       T     #T_NEW; 
 
@@ -232,8 +286,8 @@ TITLE =C7 Flipper - Write Back After an Arrow / Reset
       JU    K021; 
 
 K020: A(    ; 
-      O     "PACKET POSITION DB".C7_Plus_PB; 
-      O     "PACKET POSITION DB".C7_Minus_PB; 
+      O     #DO_PLUS; 
+      O     #DO_MINUS; 
       )     ; 
       JCN   K022; 
 
@@ -251,8 +305,6 @@ K021: L     #CLASS;
       T     DBW [AR1,P#0.0]; 
 
 K022: SET   ; // Momentary: Reset by the PLC
-      R     "PACKET POSITION DB".C7_Plus_PB; 
-      R     "PACKET POSITION DB".C7_Minus_PB; 
       R     "PACKET POSITION DB".C7_Reset_PB; 
 NETWORK
 TITLE =HMI Packet Drawing - Length + Width Class (4 Pairs of Level Meters)
@@ -355,19 +407,37 @@ TITLE =C9 Pusher 2 - HMI Arrows / Reset - Change This Class Time
 C010: L     #T_TAB; 
 C011: T     #T_NEW; 
 //;
-      A     "PACKET POSITION DB".C9_Plus_PB; 
+      A     "PACKET POSITION DB".C9_Plus_PB; // Arrow -> : Press = 1 Step
+      FP    "PACKET POSITION DB".C9_FP_Plus; 
+      =     #DO_PLUS; 
+      A     "PACKET POSITION DB".C9_Plus_PB; // Held: 1 Step Every 100 mS
+      A     T    142; 
+      A     "M 13.0"; 
+      O     #DO_PLUS; 
+      =     #DO_PLUS; 
+//;
+      A     "PACKET POSITION DB".C9_Minus_PB; // Arrow <- : Press = 1 Step
+      FP    "PACKET POSITION DB".C9_FP_Minus; 
+      =     #DO_MINUS; 
+      A     "PACKET POSITION DB".C9_Minus_PB; // Held: 1 Step Every 100 mS
+      A     T    142; 
+      A     "M 13.0"; 
+      O     #DO_MINUS; 
+      =     #DO_MINUS; 
+//;
+      A     #DO_PLUS; 
       JCN   C012; 
 
       L     #T_NEW; 
-      L     "PACKET POSITION DB".Step_ms; 
+      L     #STEP; 
       +I    ; 
       T     #T_NEW; 
 
-C012: A     "PACKET POSITION DB".C9_Minus_PB; 
+C012: A     #DO_MINUS; 
       JCN   C013; 
 
       L     #T_NEW; 
-      L     "PACKET POSITION DB".Step_ms; 
+      L     #STEP; 
       -I    ; 
       T     #T_NEW; 
 
@@ -415,8 +485,8 @@ C018: A     "PACKET POSITION DB".C9_Reset_PB;
       JU    C021; 
 
 C020: A(    ; 
-      O     "PACKET POSITION DB".C9_Plus_PB; 
-      O     "PACKET POSITION DB".C9_Minus_PB; 
+      O     #DO_PLUS; 
+      O     #DO_MINUS; 
       )     ; 
       JCN   C022; 
 
@@ -434,8 +504,6 @@ C021: L     #CLASS;
       T     DBW [AR1,P#0.0]; 
 
 C022: SET   ; // Momentary: Reset by the PLC
-      R     "PACKET POSITION DB".C9_Plus_PB; 
-      R     "PACKET POSITION DB".C9_Minus_PB; 
       R     "PACKET POSITION DB".C9_Reset_PB; 
 NETWORK
 TITLE =C9 Pusher 2 - Stop Time Used -> S5TIME for FC950 Timer 62
