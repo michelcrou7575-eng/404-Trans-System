@@ -114,7 +114,9 @@ TITLE =Packet Positioning - Flipper C7 + Pusher 2 C9 - Stop Time per Length (HMI
 //100 mS (M13.0). Hold > 3 s = 5 steps (x Step_ms) every 100 mS. The HMI arrow bits
 //are NOT reset by the PLC any more (NS12 Momentary resets them at release).
 //Timers T142 (0.5 s) / T143 (3 s), free.
-VERSION : 2.0
+//v2.1 2026-11-26: no FAST step any more: held = 10 mS every 100 mS only (T143 not
+//used). DB15 unchanged (v1.9).
+VERSION : 2.1
 
 
 VAR_TEMP
@@ -125,7 +127,7 @@ VAR_TEMP
   TST_ON : BOOL ;	
   DO_PLUS : BOOL ;	//Arrow -> Step This Scan
   DO_MINUS : BOOL ;	//Arrow <- Step This Scan
-  STEP : INT ;	//Step This Scan [mS] (Step_ms, x5 After 3 s)//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
+  STEP : INT ;	//Step This Scan [mS] (= Step_ms)//M140.3 0 -> 1 (NS12 Takes Over) - One Scan
   T_TIME : TIME ;	
   S5 : S5TIME ;	
 END_VAR
@@ -137,7 +139,7 @@ TITLE =NS12 Takes Over (M140.3 0 -> 1) - Start From the LAUER Actual Values
       FP    "PACKET POSITION DB".FP_Tst_On; 
       =     #TST_ON; 
 NETWORK
-TITLE =HMI Arrows Held - Auto Repeat (0.5 s: Every 100 mS, 3 s: x5)
+TITLE =HMI Arrows Held - Auto Repeat (After 0.5 s: 1 Step Every 100 mS)
 
       A(    ; 
       O     "PACKET POSITION DB".C7_Plus_PB; 
@@ -148,21 +150,8 @@ TITLE =HMI Arrows Held - Auto Repeat (0.5 s: Every 100 mS, 3 s: x5)
       L     S5T#500MS; 
       SD    T    142; // Held 0.5 s -> Repeat (Free)
 //;
-      A     T    142; 
-      L     S5T#2S500MS; 
-      SD    T    143; // + 2.5 s = Held 3 s -> Fast (Free)
-//;
-      L     "PACKET POSITION DB".Step_ms; 
+      L     "PACKET POSITION DB".Step_ms; // 10 mS per Step
       T     #STEP; 
-      A     T    143; 
-      JCN   H001; 
-
-      L     "PACKET POSITION DB".Step_ms; // Fast: 5 x Step
-      L     5; 
-      *I    ; 
-      T     #STEP; 
-
-H001: NOP   0; 
 NETWORK
 TITLE =Packet Length -> Class (15 mm Steps from 510 mm, 0...31)
 
