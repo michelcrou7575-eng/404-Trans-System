@@ -92,3 +92,16 @@ Settable: `DBW174` C9_View_Min_ms, `DBW176` C9_View_Step_ms. Display: `DBW178` c
 
 ## DB15 v1.6 / FC1215 v1.7 - C9 limits
 C9 time used `DB0015_DBW00102` [mS], 1...500 mS (`DBW182` C9_Max_ms). DEFAULT / size without time = `DBW180` C9_Default_ms = 250 mS (center). Drawing: copy = time / 32 mS (`DBW176`) -> 250 mS = copy 7, 500 mS = copy 15.
+
+## Fork geometry (from maintenance, 2026-11-26)
+7 long fingers, **210 mm** between fingers (6 x 210 = 1260 mm first -> last finger) + 1 short finger.
+Best stop ("no loose ends"): packet centred on the finger group it can cover.
+
+| Packet length | Spaces x 210 | Fingers under the packet | Overhang each end |
+|---|---|---|---|
+| 510-629 mm | 2 (420 mm) | 3 | 45-105 mm |
+| 630-839 mm | 3 (630 mm) | 4 | 0-105 mm |
+| 840-975 mm | 4 (840 mm) | 5 | 0-68 mm |
+
+Drawing scale: Level Meter Max [mm] = meter width [px] x 210 / finger spacing [px].
+Still needed for the time calculation: two stop measurements (time -> packet tail distance from the first long finger).
