@@ -2,9 +2,10 @@ DATA_BLOCK "DB UTILITY"
 TITLE =
 //v0.2 2026-11-27: C4 encoder settings in spare words (same addresses, names only):
 //DBW0 C4_Encoder_PPR (100 = E6B2 now, 1000 = E6C2), DBW18 C4_Wheel_Circ_01mm
-//(6350 = 6.35 mm/pulse as before), DBW8 C4_Last_Count + DBX5.7 C4_Moving reserved
-//(encoder-stopped check, later). LENGTH/WIDTH_CONST initial = FC2 values.
-VERSION : 0.2
+//(6350 = 6.35 mm/pulse as before), DBX5.7 C4_Moving reserved. LENGTH/WIDTH_CONST initial = FC2 values.
+//v0.3 2026-11-27: DBW8 = C4_Stop_Delay_ms (1500): FC932 closes the C4 surface gate
+//(M166.3) this long after the C4 VFD release (A44.3) is OFF, instead of E 6.6.
+VERSION : 0.3
 
 
   STRUCT 	
@@ -27,7 +28,7 @@ VERSION : 0.2
    DB_bool14 : BOOL ;	//Temporary placeholder variable
    C4_Moving : BOOL ;	//Reserved - Conveyor 4 is Moving (Encoder Count Changing)
    Scan_Cycle_Previous : INT ;	//Previous Scan Cycle - OB1
-   C4_Last_Count : INT ;	//Reserved - C4 Encoder Stopped Check (Last PIW 330)
+   C4_Stop_Delay_ms : INT  := 1500;	//C4 Real Stop Delay after VFD Release OFF [mS] (Was E 6.6 Static 500 mS)
    LENGTH_CONST : REAL ;	//Packet Constant - Length
    WIDTH_CONST : REAL ;	//Packet Constant - Width
    C4_Wheel_Circ_01mm : INT  := 6350;	//C4 Encoder Wheel Circumference [0.1 mm] (Calibrate)
@@ -106,7 +107,7 @@ BEGIN
    DB_bool14 := FALSE; 
    C4_Moving := FALSE; 
    Scan_Cycle_Previous := 8; 
-   C4_Last_Count := 0; 
+   C4_Stop_Delay_ms := 1500; 
    LENGTH_CONST := 1.000000e+001; 
    WIDTH_CONST := 5.200000e-001; 
    C4_Wheel_Circ_01mm := 6350; 

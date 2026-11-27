@@ -29,3 +29,4 @@ Swap day: set DBW0 = 1000 (VAT) + DB1 initial value 1000. Still open before the 
 (FC932 T90/T91 and **FC1300** Timer 130/131 fault M30.0). Note: PIW 330/332 are gated (count only while their gate
 is open), so a free-running count is needed (spare FM350 channel wired in parallel, like Ch2/Ch3) or a check limited
 to when the gate is open.
+Update 2026-11-27: FC932 v0.3 / DB1 v0.3: the gate reset uses `C4_Stop_Delay_ms` (DB1.DBW8, 1500) after A44.3 OFF, no E 6.6. Remaining E 6.6 user: **FC1300** (fault M30.0 + LAUER DBW232).
