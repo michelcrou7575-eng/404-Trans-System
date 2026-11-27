@@ -7,9 +7,12 @@ TITLE =FC 932 > NEW FC931 (was FC1031) - Collator Conveyor 4 Pos.6
 //v0.2 2026-11-27: C4 encoder PPR / wheel from DB1 (DBW0 C4_Encoder_PPR, DBW18
 //C4_Wheel_Circ_01mm). mm/pulse = Circ / 10 / PPR (6350 / 100 = 6.35 as before).
 //Clearing = 20 x PPR pulses (2000 as before). Defaults written if 0.
-//E 6.6 encoder-stopped check unchanged (OK at 100 P/R only).
+//v0.3 2026-11-27: C4 real stop WITHOUT E 6.6 (a 1000 P/R encoder is too fast for
+//the input): Soft Timer 90 now runs while M167.0 (reset request) AND C4 VFD
+//release A44.3 OFF; after DB1.DBW8 C4_Stop_Delay_ms (1500, settable) it closes
+//the surface gate M166.3 and clears M167.0. Soft Timer 91 removed (now free).
 NAME : POS_6
-VERSION : 0.2
+VERSION : 0.3
 
 
 VAR_TEMP
@@ -43,7 +46,14 @@ P001: L     "DB UTILITY".C4_Wheel_Circ_01mm;
       L     6350; // Not Set: 635.0 mm (As Before)
       T     "DB UTILITY".C4_Wheel_Circ_01mm; 
 
-P002: NOP   0; 
+P002: L     "DB UTILITY".C4_Stop_Delay_ms; 
+      L     0; 
+      >I    ; 
+      JC    P003; 
+      L     1500; // Not Set: 1.5 s
+      T     "DB UTILITY".C4_Stop_Delay_ms; 
+
+P003: NOP   0; 
 NETWORK
 TITLE =Conveyor 4 - Service
 
@@ -76,9 +86,12 @@ CON4: R     #SERVICE_RUN;
       FP    "FP 158.4"; 
       =     "M 26.1"; 
 NETWORK
-TITLE =Soft Timer 90 Reset Conveyor 4 - Encoder has Stop L - Timer  500
+TITLE =Soft Timer 90 Reset - C4 Real Stop Delay (Was E 6.6 Encoder Static)
+//Runs only while a gate reset is requested (M167.0) and the C4 VFD release
+//(A44.3) is OFF. C4 restarts = timer back to 0.
 
-      AN    "E 6.6"; 
+      A     "M 167.0"; // Gate Reset Requested
+      AN    "A 44.3"; // C4 VFD Release OFF
       AN    "M 30.0"; 
       A     "M 0.3"; 
       JCN   R900; 
@@ -90,9 +103,10 @@ R900: L     L#0;
 
 E900: NOP   0; 
 NETWORK
-TITLE =Soft Timer 90 Add Conveyor 4 - Encoder has Stop H - Timer  500mS
+TITLE =Soft Timer 90 Add - C4 Real Stop Delay
 
-      AN    "E 6.6"; 
+      A     "M 167.0"; 
+      AN    "A 44.3"; 
       AN    "M 30.0"; 
       A     "M 0.3"; 
       AN    "DB UTILITY".Freeze_Sequence_2; 
@@ -107,58 +121,18 @@ TITLE =Soft Timer 90 Add Conveyor 4 - Encoder has Stop H - Timer  500mS
 
 E901: NOP   0; 
 NETWORK
-TITLE =Soft Timer 90 Done 500mS
+TITLE =Soft Timer 90 Done - C4_Stop_Delay_ms (DB1.DBW8, 1500)
 
+      L     "DB UTILITY".C4_Stop_Delay_ms; 
+      ITD   ; 
       L     "DB UTILITY".T90_ET; 
-      L     L#500; 
-      >=D   ; 
+      <=D   ; // Delay <= Elapsed
       =     "DB UTILITY".T90_DN; 
 NETWORK
-TITLE =Soft Timer 91 Reset
-
-      A     "E 6.6"; 
-      AN    "M 30.0"; 
-      A     "M 0.3"; 
-      JCN   R910; 
-      JU    E910; 
-
-R910: L     L#0; 
-      T     "DB UTILITY".T91_ET; 
-      R     "DB UTILITY".T91_DN; 
-
-E910: NOP   0; 
-NETWORK
-TITLE =Soft Timer 91 Add
-
-      A     "E 6.6"; 
-      AN    "M 30.0"; 
-      A     "M 0.3"; 
-      AN    "DB UTILITY".Freeze_Sequence_2; 
-      AN    "DB UTILITY".T91_DN; 
-      JCN   E911; 
-
-      L     "DB UTILITY".T91_ET; 
-      L     "DB UTILITY".Scan_Cycle_Previous; 
-      ITD   ; 
-      +D    ; 
-      T     "DB UTILITY".T91_ET; 
-
-E911: NOP   0; 
-NETWORK
-TITLE =Soft Timer 91 Done 500mS
-
-      L     "DB UTILITY".T91_ET; 
-      L     L#500; 
-      >=D   ; 
-      =     "DB UTILITY".T91_DN; 
-NETWORK
-TITLE =Conveyor 4 - Encoder Stopped & Reset
+TITLE =Conveyor 4 - Stopped & Gate Reset
 
       A     "M 167.0"; 
-      A(    ; 
-      O     "DB UTILITY".T90_DN; 
-      O     "DB UTILITY".T91_DN; 
-      )     ; 
+      A     "DB UTILITY".T90_DN; 
       R     "M 166.3"; 
       R     "M 167.0"; 
 NETWORK
