@@ -11,8 +11,12 @@ TITLE =FC 932 > NEW FC931 (was FC1031) - Collator Conveyor 4 Pos.6
 //the input): Soft Timer 90 now runs while M167.0 (reset request) AND C4 VFD
 //release A44.3 OFF; after DB1.DBW8 C4_Stop_Delay_ms (1500, settable) it closes
 //the surface gate M166.3 and clears M167.0. Soft Timer 91 removed (now free).
+//v0.4 2026-11-27: FM350 resets the counter well only if the gate is OFF >= 1 s:
+//Soft Timer 91 = gate OFF time (T91_ET, DB1.DBD62, cleared when the gate closes,
+//so while collating it shows the LAST OFF time). M31.1 re-opens the gate only
+//when T91_DN (OFF >= 1000 mS).
 NAME : POS_6
-VERSION : 0.3
+VERSION : 0.4
 
 
 VAR_TEMP
@@ -135,6 +139,33 @@ TITLE =Conveyor 4 - Stopped & Gate Reset
       A     "DB UTILITY".T90_DN; 
       R     "M 166.3"; 
       R     "M 167.0"; 
+NETWORK
+TITLE =Soft Timer 91 - C4 Surface Gate OFF Time (FM350 Needs >= 1 s to Reset)
+//T91_ET = gate OFF time [mS] (max 30 s). Cleared when the gate closes, so while
+//the gate is ON it keeps the LAST OFF time (VAT DB1.DBD62).
+
+      A     "M 166.3"; 
+      FN    "DB UTILITY".C4_Gate_FN; 
+      JCN   G001; 
+      L     L#0; 
+      T     "DB UTILITY".T91_ET; 
+
+G001: A     "M 166.3"; 
+      JC    G002; 
+      L     "DB UTILITY".T91_ET; 
+      L     L#30000; 
+      >=D   ; 
+      JC    G002; 
+      L     "DB UTILITY".T91_ET; 
+      L     "DB UTILITY".Scan_Cycle_Previous; 
+      ITD   ; 
+      +D    ; 
+      T     "DB UTILITY".T91_ET; 
+
+G002: L     "DB UTILITY".T91_ET; 
+      L     L#1000; // FM350 Counter Reset: Gate OFF >= 1 s
+      >=D   ; 
+      =     "DB UTILITY".T91_DN; 
 NETWORK
 TITLE =Conveyor 4 - Packet Length - Measurements
 
@@ -273,6 +304,7 @@ NETWORK
 TITLE =Conveyor 4 - Surface Length Left (PulseUnit) - Measurements
 
       A     "M 31.1"; 
+      A     "DB UTILITY".T91_DN; // Gate Was OFF >= 1 s (FM350 Counter Reset)
       S     "M 166.3"; 
 //;
       A     "M 166.3"; 

@@ -5,7 +5,9 @@ TITLE =
 //(6350 = 6.35 mm/pulse as before), DBX5.7 C4_Moving reserved. LENGTH/WIDTH_CONST initial = FC2 values.
 //v0.3 2026-11-27: DBW8 = C4_Stop_Delay_ms (1500): FC932 closes the C4 surface gate
 //(M166.3) this long after the C4 VFD release (A44.3) is OFF, instead of E 6.6.
-VERSION : 0.3
+//v0.4 2026-11-27: DBX4.4 = C4_Gate_FN (edge memory, FC932): gate OFF time in T91_ET
+//(DBD62), the gate re-opens only after >= 1 s OFF (FM350 counter reset).
+VERSION : 0.4
 
 
   STRUCT 	
@@ -15,7 +17,7 @@ VERSION : 0.3
    VAL_CMP_RESTART_PCS_OS : BOOL ;	// PCS
    VAL_CMP_RESTART_PCS : BOOL ;	
    DEM_RESTART_PCS : BOOL ;	
-   DB_bool4 : BOOL ;	//Temporary placeholder variable
+   C4_Gate_FN : BOOL ;	//FC932 Edge Memory - C4 Surface Gate M166.3 Closed
    DB_bool5 : BOOL ;	//Temporary placeholder variable
    DB_bool6 : BOOL ;	//Temporary placeholder variable
    DB_bool7 : BOOL ;	//Temporary placeholder variable
@@ -66,7 +68,7 @@ VERSION : 0.3
    T28_DN : BOOL ;	//Adder Done Conveyor 3 Slat Timeout 11s
    T29_DN : BOOL ;	//Adder Done Conveyor 4 LB obstruction alarm 10s
    T90_DN : BOOL ;	//Adder Done Conveyor 4 Encoder-stop helper timers 500ms
-   T91_DN : BOOL ;	//Adder Done Conveyor 4 Encoder-stop helper timers 500ms
+   T91_DN : BOOL ;	//C4 Surface Gate OFF >= 1 s (FM350 Counter Reset OK)
    T31_DN : BOOL ;	//Adder Done Conveyor 4 InFeed timeout 5s
    T32_DN : BOOL ;	//Adder Done Conveyor 4 Transfer max time 20s
    T33_DN : BOOL ;	//Adder Done Conveyor 4 Clearing timeout 20s
@@ -81,7 +83,7 @@ VERSION : 0.3
    T28_ET : DINT ;	//Adder Count Conveyor 3 Slat Timeout 11s
    T29_ET : DINT ;	//Adder Count Conveyor 4 LB obstruction alarm 10s
    T90_ET : DINT ;	//Adder Count Conveyor 4 Encoder-stop helper timers 500ms
-   T91_ET : DINT ;	//Adder Count Conveyor 4 Encoder-stop helper timers 500ms
+   T91_ET : DINT ;	//C4 Surface Gate OFF Time [mS] (Last OFF Time While Collating)
    T31_ET : DINT ;	//Adder Count Conveyor 4 InFeed timeout 5s
    T32_ET : DINT ;	//Adder Count Conveyor 4 Transfer max time 20s
    T33_ET : DINT ;	//Adder Count Conveyor 4 Clearing timeout 20s
@@ -94,7 +96,7 @@ BEGIN
    VAL_CMP_RESTART_PCS_OS := FALSE; 
    VAL_CMP_RESTART_PCS := FALSE; 
    DEM_RESTART_PCS := FALSE; 
-   DB_bool4 := FALSE; 
+   C4_Gate_FN := FALSE; 
    DB_bool5 := FALSE; 
    DB_bool6 := FALSE; 
    DB_bool7 := FALSE; 
