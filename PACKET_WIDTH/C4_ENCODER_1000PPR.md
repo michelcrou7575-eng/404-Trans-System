@@ -22,3 +22,10 @@ Also: FM350 DB / HW Config limits or comparison values for Ch2/Ch3, if any; the 
 16-bit check: Ch3 (surface) wraps every 32767 x 0.635 = 20.8 m. Differences with -I stay correct if < 20 m.
 
 Note: FC932 uses 6.35 and FC1208 uses 6.673 for the same encoder - two calibrations. Check one packet with a tape.
+
+## Done 2026-11-27: set 4f in READY_TO_DOWNLOAD (DB1 v0.2, FC2 v0.2, FC932 v0.2, FC948 v0.1, FC1208 v1.1)
+DB1.DBW0 `C4_Encoder_PPR` = 100, DB1.DBW18 `C4_Wheel_Circ_01mm` = 6350. At 100 P/R every value is the same as today.
+Swap day: set DBW0 = 1000 (VAT) + DB1 initial value 1000. Still open before the swap: replace the E 6.6 checks
+(FC932 T90/T91 and **FC1300** Timer 130/131 fault M30.0). Note: PIW 330/332 are gated (count only while their gate
+is open), so a free-running count is needed (spare FM350 channel wired in parallel, like Ch2/Ch3) or a check limited
+to when the gate is open.

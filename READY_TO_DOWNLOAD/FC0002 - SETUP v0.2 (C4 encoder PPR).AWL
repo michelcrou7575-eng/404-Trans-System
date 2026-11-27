@@ -1,0 +1,73 @@
+FUNCTION "SETUP" : VOID
+TITLE =Setup Values
+//Do Not Change These Values !!!
+//v0.2 2026-11-27: C4 Surface_Length_C4 = 8 x C4_Encoder_PPR (DB1.DBW0): 100 P/R = 800
+//as before, 1000 P/R = 8000.
+NAME : SETUP
+VERSION : 0.2
+
+BEGIN
+NETWORK
+TITLE =Setup Values - Slat Conveyor 3
+
+      L     8000; 
+      T     "COLLATORS DB".Conveyor_Length_C3; 
+NETWORK
+TITLE =Setup Values - Conveyor 4
+
+      L     "DB UTILITY".C4_Encoder_PPR; 
+      L     0; 
+      >I    ; 
+      JC    S001; 
+      L     100; // Not Set: 100 P/R (As Before)
+      T     "DB UTILITY".C4_Encoder_PPR; 
+
+S001: L     "DB UTILITY".C4_Encoder_PPR; 
+      L     8; // Was 800 @ 100 P/R (//900)
+      *I    ; 
+      T     "COLLATORS DB".Surface_Length_C4; // [Encoder Pulses]
+NETWORK
+TITLE =Setup Value  - TurnTable - Need " Packet IN " to Start
+
+      S     "M 47.4"; 
+
+NETWORK
+TITLE =Setup Values - Conveyor 10
+
+      L     13000; 
+      T     "COLLATORS DB".Surface_Length_10; 
+NETWORK
+TITLE =Counter Setup
+
+
+      S     "M 167.7"; 
+NETWORK
+TITLE =Packet Counter Constants 11.0 & 5.5
+
+      L     1.000000e+001; 
+      T     "DB UTILITY".LENGTH_CONST; 
+//;
+      L     5.200000e-001; 
+      T     "DB UTILITY".WIDTH_CONST; 
+NETWORK
+TITLE =HMI - Conveyor Time 
+
+      L     150; 
+      T     "HMI_DB".CONV_7_POS_mS; 
+//;
+      L     30; 
+      T     "HMI_DB".CONV_8_POS_FWD_mS; 
+//;
+      L     70; 
+      T     "HMI_DB".CONV_8_POS_REV_mS; 
+//;
+      L     15; 
+      T     "HMI_DB".CONV_9_POS_mS; 
+NETWORK
+TITLE =HMI Control - Reset
+
+      R     "HMI_DB".SERVICE_SW_1_STATUS; 
+      R     "HMI_DB".SERVICE_SW_2_STATUS; 
+      R     "HMI_DB".SERVICE_SW_3_STATUS; 
+      R     "HMI_DB".SERVICE_SW_1_2_STATUS; 
+END_FUNCTION
