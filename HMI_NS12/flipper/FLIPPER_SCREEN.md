@@ -164,3 +164,4 @@ Scale: fingers 210 mm apart = about **70 px** on the screen → **3 mm per px**.
 The two meters must **touch at finger 4 and never overlap**. Values to test on the VAT: 362 / 362 (724 mm centred), 500 / 224 (moved left), 224 / 500 (moved right).
 
 Checked 2026-11-27 on the user's drawing: the 7 long fingers span 1260 mm = 420 px, 70 px apart, so **3 mm per px exactly**. Finger "0" (far left) is ignored. The meters join at the **centre of finger 4**. The fingers must be in **front** of the meters (Bring to Front), so the packet shows behind them.
+Screen 800 x 600. **Finger 4 centre = X 426** (centre line 0051). So: **L1-L4 X = 204**, **R1-R4 X = 426**, width 222 each (L spans 204-426, R spans 426-648).
